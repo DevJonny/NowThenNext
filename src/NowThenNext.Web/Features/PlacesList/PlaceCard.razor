@@ -1,0 +1,16 @@
+<div class="col">
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">@Name</h5>
+            <p class="card-text">@Description</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public required string Name { get; init; }
+    
+    [Parameter]
+    public required string Description { get; init; }
+}
