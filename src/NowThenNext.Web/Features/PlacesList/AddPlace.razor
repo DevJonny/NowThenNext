@@ -1,0 +1,52 @@
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<form>
+    <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" class="form-control" id="name" @bind="NewPlace.Name" aria-describedby="nameHelp">
+        <div id="nameHelp" class="form-text">Name of the place you want to save.</div>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <input type="text" class="form-control" id="description" @bind="NewPlace.Description" aria-describedby="descriptionHelp">
+        <div id="descriptionHelp" class="form-text">Description of the place.</div>
+    </div>
+    <div class="mb-3">
+        <label for="group" class="form-label">Group</label>
+        <input type="text" class="form-control" id="group" @bind="NewPlace.Group" aria-describedby="groupHelp">
+        <div id="groupHelp" class="form-text">Group the place belongs to.</div>
+    </div>
+    <div class="mb-3">
+        <label class="form-check-label" for="photo">Photo of the place.</label>
+        <InputFile id="photo" class="form-control" OnChange="LoadPhoto" />
+    </div>
+    <button type="submit" class="btn btn-primary" @onclick="SaveAndClose">Submit</button>
+</form>
+
+@code {
+    
+    [CascadingParameter] IModalService Modal { get; set; } = default!;
+
+    private Place NewPlace { get; set; } = new();
+    
+    private async Task LoadPhoto(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        
+        var buffer = new byte[file.Size];
+        await file.OpenReadStream().ReadAsync(buffer);
+        
+        var base64String = Convert.ToBase64String(buffer);
+
+        NewPlace.Image = $"{Guid.NewGuid()}"; 
+        
+        await LocalStorage.SetItemAsStringAsync(NewPlace.Image, base64String);
+    }
+
+    private async Task SaveAndClose()
+    {
+        await LocalStorage.SetItemAsync($"{NewPlace.Id}", NewPlace);
+
+        NewPlace = new();
+    }
+}

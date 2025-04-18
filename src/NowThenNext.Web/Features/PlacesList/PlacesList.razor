@@ -1,7 +1,53 @@
-﻿@page "/"
+﻿@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
-<PageTitle>Now -> Then -> Next - List - foo</PageTitle>
+@page "/"
 
-<button type="button" class="btn btn-primary float-end">Add Place</button>
-<PlaceGroup Name="Home & Away"/>
-<PlaceGroup Name="Dorset"/>
+<PageTitle>Now -> Then -> Next - List</PageTitle>
+
+<div class="container gap-3">
+    <div class="row p-2">
+        <div class="col">
+            <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+                <div class="btn-group me-2" role="group">
+                    <button
+                        type="button"
+                        class="btn btn-primary float-end"
+                        @onclick="@(() => Modal.Show<AddPlace>("Add Place"))">
+                        Add Place
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <div class="row p-2">
+        <div class="col">
+            <ul class="list-group">
+                @foreach (var place in Places)
+                {
+                    <PlaceCard Place="@place"/>
+                }
+            </ul>  
+        </div>
+    </div>
+</div>
+
+@code {
+    
+    [CascadingParameter] public IModalService Modal { get; set; } = default!;
+    
+    private IReadOnlyCollection<Place> Places { get; } = 
+    [
+        new("The Farm", "Where the real horses are", "Home & Away"),
+        new("Godstone Park", "Where the fake horses are", "Home & Away"),
+        new("Crendell Cottage", "Where Granny and Pop-Pops are", "Dorset")
+    ];
+    
+    protected override async Task OnInitializedAsync()
+    {
+        await LocalStorage.SetItemAsync("name", "John Smith");
+        var name = await LocalStorage.GetItemAsync<string>("name");
+        
+        Console.WriteLine(name);
+    }
+}

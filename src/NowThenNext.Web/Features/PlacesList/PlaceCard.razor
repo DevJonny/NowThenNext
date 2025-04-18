@@ -1,16 +1,12 @@
-<div class="col">
-    <div class="card" style="width: 18rem;">
-        <div class="card-body">
-            <h5 class="card-title">@Name</h5>
-            <p class="card-text">@Description</p>
-        </div>
+<li class="list-group-item d-flex justify-content-between align-items-start">
+    <div class="ms-2 me-auto">
+        <div class="fw-bold">@Place.Name</div>
+        @Place.Description
     </div>
-</div>
+    <span class="badge bg-primary rounded-pill">@Place.Group</span>
+</li>
 
 @code {
     [Parameter]
-    public required string Name { get; init; }
-    
-    [Parameter]
-    public required string Description { get; init; }
+    public required Place Place { get; init; }
 }

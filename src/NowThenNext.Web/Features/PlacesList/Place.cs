@@ -1,6 +1,19 @@
 namespace NowThenNext.Web.Features.PlacesList;
 
-public record Place(string Name, string Description)
+public class Place
 {
-    public IReadOnlyCollection<Place>? Places { get; init; } = [];
-};
+    public Place() { }
+
+    public Place(string name, string description, string group)
+    {
+        Name = name;
+        Description = description;
+        Group = group;
+    }
+    
+    public Guid Id { get; init; } = Guid.NewGuid();
+    public string Name { get; set; } = string.Empty;
+    public string Image { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string? Group { get; set; }
+}
