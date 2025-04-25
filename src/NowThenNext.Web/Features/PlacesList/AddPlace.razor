@@ -33,10 +33,19 @@
     {
         var file = e.File;
         
-        var buffer = new byte[file.Size];
-        await file.OpenReadStream().ReadAsync(buffer);
+        // Define maximum dimensions for the resized image
+        const int maxWidth = 800;
+        const int maxHeight = 600;
+        const long maxAllowedSize = 10 * 1024 * 1024; // 10MB max for safety
         
-        var base64String = Convert.ToBase64String(buffer);
+        // Request a resized image file using Blazor's built-in capabilities
+        var resizedImageFile = await file.RequestImageFileAsync("image/jpeg", maxWidth, maxHeight);
+        
+        // Read the resized image
+        var resizedBuffer = new byte[resizedImageFile.Size];
+        await resizedImageFile.OpenReadStream(maxAllowedSize).ReadAsync(resizedBuffer);
+        
+        var base64String = Convert.ToBase64String(resizedBuffer);
 
         NewPlace.Image = $"{Guid.NewGuid()}"; 
         

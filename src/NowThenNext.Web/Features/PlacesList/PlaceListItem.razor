@@ -1,0 +1,24 @@
+<li class="list-group-item d-flex justify-content-between align-items-start" 
+    @onclick="ShowPlaceDetails">
+    <div class="ms-2 me-auto">
+        <div class="fw-bold">@Place.Name</div>
+        @Place.Description
+    </div>
+    <div class="ms-1 float-right">
+        <span class="badge bg-primary rounded-pill">@Place.Group</span>
+    </div>
+</li>
+
+@code {
+    
+    [CascadingParameter] public IModalService Modal { get; set; }
+    
+    [Parameter]
+    public required Place Place { get; init; }
+    
+    private void ShowPlaceDetails()
+    {
+        var parameters = new ModalParameters().Add(nameof(PlaceCard.Place), Place);
+        Modal.Show<PlaceCard>(nameof(Place), parameters);
+    }
+}
