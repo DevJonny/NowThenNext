@@ -54,7 +54,10 @@
 
     private async Task SaveAndClose()
     {
-        await LocalStorage.SetItemAsync($"{NewPlace.Id}", NewPlace);
+        var places = await LocalStorage.GetItemAsync<List<Place>>("places") ?? [];
+        places.Add(NewPlace);
+        
+        await LocalStorage.SetItemAsync("places", places);
 
         NewPlace = new();
     }
