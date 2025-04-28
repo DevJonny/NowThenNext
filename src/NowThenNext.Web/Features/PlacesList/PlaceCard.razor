@@ -54,13 +54,13 @@
     
     protected override async Task OnInitializedAsync()
     {
-        if (!string.IsNullOrEmpty(Place.Image))
+        if (string.IsNullOrEmpty(Place.Image))
+            return;
+        
+        var base64Image = await LocalStorage.GetItemAsStringAsync(Place.Image);
+        if (!string.IsNullOrEmpty(base64Image))
         {
-            var base64Image = await LocalStorage.GetItemAsStringAsync(Place.Image);
-            if (!string.IsNullOrEmpty(base64Image))
-            {
-                ImageData = $"data:image/jpeg;base64,{base64Image}";
-            }
+            ImageData = $"data:image/jpeg;base64,{base64Image}";
         }
     }
 }
