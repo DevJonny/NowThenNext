@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace NowThenNext.Web.Features.PlacesList;
 
 public class Place

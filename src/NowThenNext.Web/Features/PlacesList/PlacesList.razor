@@ -31,7 +31,7 @@
             <ul class="list-group">
                 @foreach (var place in FilteredPlaces)
                 {
-                    <PlaceListItem Place="@place"/>
+                    <PlaceListItem Place="@place" />
                 }
             </ul>
             @if (FilteredPlaces.Count == 0)
@@ -57,7 +57,7 @@
     
     protected override async Task OnInitializedAsync()
     {
-        Places = await LocalStorage.GetItemAsync<List<Place>>("places") ?? []; 
+        Places = await LocalStorage.GetItemAsync<List<Place>>(StorageKeys.Places) ?? []; 
     }
     
     private bool FilterPlace(Place place, string filterText)
@@ -71,5 +71,4 @@
                (place.Description?.ToLower().Contains(filterText) ?? false) ||
                (place.Group?.ToLower().Contains(filterText) ?? false);
     }
-    
 }

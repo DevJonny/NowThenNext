@@ -1,45 +1,44 @@
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
-<div class="card h-100 shadow-sm">
-    @if (!string.IsNullOrEmpty(Place.Image))
-    {
-        <div class="card-img-container" style="height: 200px; overflow: hidden;">
-            @if (ImageData != null)
-            {
-                <img src="@ImageData" class="card-img-top" alt="@Place.Name" style="object-fit: cover; width: 100%; height: 100%;">
-            }
-            else
-            {
-                <div class="d-flex align-items-center justify-content-center bg-light" style="height: 100%;">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-    <div class="card-body d-flex flex-column">
-        <p class="card-text">@Place.Description</p>
-    </div>
-    <div class="card-body d-flex flex-column">
-        @if (!string.IsNullOrEmpty(Place.Group))
+<form>
+    <div class="card h-100 shadow-sm">
+        @if (!string.IsNullOrEmpty(Place.Image))
         {
-            <span class="badge bg-primary mb-2 float-right">@Place.Group</span>
+            <div class="card-img-container" style="height: 200px; overflow: hidden;">
+                @if (ImageData != null)
+                {
+                    <img src="@ImageData" class="card-img-top" alt="@Place.Name" style="object-fit: cover; width: 100%; height: 100%;">
+                }
+                else
+                {
+                    <div class="d-flex align-items-center justify-content-center bg-light" style="height: 100%;">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+            </div>
         }
-    </div>
-    <div class="card-footer text-body-secondary">
-        <div class="btn-group me-2" role="group" aria-label="First group">
-            <button type="button" class="btn btn-outline-danger float-left">Delete</button>
+        <div class="card-body d-flex flex-column">
+            <p class="card-text">@Place.Description</p>
         </div>
-        <div class="btn-group float-end" role="group" aria-label="First group">
-            <button type="button" class="btn btn-secondary">Edit</button>
+        <div class="card-body d-flex flex-column">
+            @if (!string.IsNullOrEmpty(Place.Group))
+            {
+                <span class="badge bg-primary mb-2 float-right">@Place.Group</span>
+            }
+        </div>
+        <div class="card-footer text-body-secondary">
+            <div class="btn-group me-2" role="group" aria-label="First group">
+                <button type="submit" class="btn btn-outline-danger float-left" @onclick="Delete">Delete</button>
+            </div>
         </div>
     </div>
-</div>
+</form>
 
 @code {
     
-    [CascadingParameter] IModalService Modal { get; set; } = default!;
+    [CascadingParameter] BlazoredModalInstance Modal { get; set; } = default!;
     
     [Parameter]
     public required Place Place { get; set; }
@@ -62,5 +61,16 @@
         {
             ImageData = $"data:image/jpeg;base64,{base64Image}";
         }
+    }
+
+    private async Task Delete()
+    {
+        var places = await LocalStorage.GetItemAsync<List<Place>>(StorageKeys.Places) ?? [];
+        var placeToRemove = places.First(p => p.Id == Place.Id);
+        
+        places.Remove(placeToRemove);
+        
+        await LocalStorage.SetItemAsync(StorageKeys.Places, places);
+        await LocalStorage.RemoveItemAsync(Place.Image);
     }
 }

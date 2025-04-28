@@ -26,6 +26,7 @@
 @code {
     
     [CascadingParameter] IModalService Modal { get; set; } = default!;
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; } = default!;
 
     private Place NewPlace { get; set; } = new();
     
@@ -34,8 +35,8 @@
         var file = e.File;
         
         // Define maximum dimensions for the resized image
-        const int maxWidth = 800;
-        const int maxHeight = 600;
+        const int maxWidth = 1000;
+        const int maxHeight = 1000;
         const long maxAllowedSize = 10 * 1024 * 1024; // 10MB max for safety
         
         // Request a resized image file using Blazor's built-in capabilities
@@ -54,10 +55,10 @@
 
     private async Task SaveAndClose()
     {
-        var places = await LocalStorage.GetItemAsync<List<Place>>("places") ?? [];
+        var places = await LocalStorage.GetItemAsync<List<Place>>(StorageKeys.Places) ?? [];
         places.Add(NewPlace);
         
-        await LocalStorage.SetItemAsync("places", places);
+        await LocalStorage.SetItemAsync(StorageKeys.Places, places);
 
         NewPlace = new();
     }
