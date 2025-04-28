@@ -19,6 +19,6 @@
     private void ShowPlaceDetails()
     {
         var parameters = new ModalParameters().Add(nameof(PlaceCard.Place), Place);
-        Modal.Show<PlaceCard>(nameof(Place), parameters);
+        Modal.Show<PlaceCard>(Place.Name, parameters);
     }
 }
