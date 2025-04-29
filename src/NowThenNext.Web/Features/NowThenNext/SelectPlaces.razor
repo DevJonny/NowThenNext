@@ -1,0 +1,132 @@
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+@page "/select-places"
+@using global::NowThenNext.Web.Models
+
+<PageTitle>Now -> Then -> Next - Select</PageTitle>
+
+<label for="nowSelectList" class="form-label">Now</label>
+<div class="input-group mb-3">
+    <input 
+        class="form-control" 
+        list="nowSelectListOptions" 
+        id="nowSelectList" 
+        placeholder="Type to search..."
+        @bind-value="NowText">
+    <button class="btn btn-outline-secondary" 
+            type="button" 
+            id="button-clear-now" 
+            @onclick="ClearNow">
+        <svg xmlns="http://www.w3.org/2000/svg" 
+             width="16" 
+             height="16" 
+             fill="currentColor" 
+             class="bi bi-x-circle" 
+             viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+        </svg>
+    </button>
+</div>
+<datalist id="nowListOptions">
+    @foreach(var place in Places)
+    {
+        <option value="@place.Name" @onclick="@(() => Now = place)" />
+    }
+</datalist>
+
+<label for="thenSelectList" class="form-label">Then</label>
+<div class="input-group mb-3">
+    <input 
+        class="form-control" 
+        list="thenSelectListOptions" 
+        id="thenSelectList" 
+        placeholder="Type to search..."
+        @bind-value="ThenText">
+    <button class="btn btn-outline-secondary" 
+            type="button" 
+            id="button-clear-then" 
+            @onclick="ClearThen">
+        <svg xmlns="http://www.w3.org/2000/svg" 
+             width="16" 
+             height="16" 
+             fill="currentColor" 
+             class="bi bi-x-circle" 
+             viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+        </svg>
+    </button>
+</div>
+<datalist id="thenListOptions">
+    @foreach(var place in Places)
+    {
+        <option value="@place.Name" @onclick="@(() => Then = place)" />
+    }
+</datalist>
+
+<label for="nextSelectList" class="form-label">Next</label>
+<div class="input-group mb-3">
+    <input 
+        class="form-control" 
+        list="thenSelectListOptions" 
+        id="nextSelectList" 
+        placeholder="Type to search..."
+        @bind-value="NextText">
+    <button class="btn btn-outline-secondary" 
+            type="button" 
+            id="button-clear-next" 
+            @onclick="ClearNext">
+        <svg xmlns="http://www.w3.org/2000/svg" 
+             width="16" 
+             height="16" 
+             fill="currentColor" 
+             class="bi bi-x-circle" 
+             viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+        </svg>
+    </button>
+</div>
+<datalist id="nextListOptions">
+    @foreach(var place in Places)
+    {
+        <option value="@place.Name" @onclick="@(() => Next = place)" />
+    }
+</datalist>
+
+@code {
+    
+    private List<Place> Places { get; set; } = [];
+    
+    private Place? Now { get; set; }
+    private Place? Then { get; set; }
+    private Place? Next { get; set; }
+    
+    private string? NowText { get; set; }
+    private string? ThenText { get; set; }
+    private string? NextText { get; set; }
+ 
+    protected override async Task OnInitializedAsync()
+    {
+        Places = await LocalStorage.GetItemAsync<List<Place>>(StorageKeys.Places) ?? []; 
+    }
+    
+    private void ClearNow()
+    {
+        Now = null;
+        NowText = null;
+    }
+    
+    private void ClearThen()
+    {
+        Then = null;
+        ThenText = null;
+    }
+    
+    private void ClearNext()
+    {
+        Next = null;
+        NextText = null;
+    }
+}
