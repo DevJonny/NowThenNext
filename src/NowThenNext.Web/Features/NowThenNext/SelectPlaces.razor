@@ -1,0 +1,115 @@
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+@page "/select-places"
+@using global::NowThenNext.Web.Models
+
+<PageTitle>Now -> Then -> Next - Select</PageTitle>
+
+<div class="container gap-3">
+    <div class="row p-2 h-25">
+        <div class="col">
+            <ul class="list-group">
+                <li class="list-group-item">@(GetSelectedPlace(0))</li>
+                <li class="list-group-item">@(GetSelectedPlace(1))</li>
+                <li class="list-group-item">@(GetSelectedPlace(2))</li>
+            </ul>
+        </div>
+        <button type="button" class="btn btn-primary">Go!</button>
+    </div>
+    <div class="row p-2">
+        <div class="col">
+            <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+                <div class="input-group me-1">
+                    <div class="input-group-text" id="btnGroupAddon2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                        </svg>
+                    </div>
+                    <input type="text" class="form-control" placeholder="Filter..." @bind-value="FilterText" @bind-value:event="oninput"/>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="row p-2 h-75">
+        <div class="col">
+            <ul class="list-group">
+                @foreach (var food in FilteredPlaces)
+                {
+                    <PlaceListItem Place="food" OnPlaceItemClicked="async f => await SelectPlace(f)"/>
+                }
+            </ul>
+            @if (FilteredPlaces.Count == 0)
+            {
+                <div class="alert alert-info mt-3">
+                    No food found @(string.IsNullOrWhiteSpace(FilterText) ? "" : $"matching '{FilterText}'").
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    
+    private List<Place> Places { get; set; } = [];
+    private List<Place> SelectedPlaces { get; set; } = [];
+    private string FilterText { get; set; } = string.Empty;
+    
+    private Place? Now { get; set; }
+    private Place? Then { get; set; }
+    private Place? Next { get; set; }
+    
+    private List<Place> FilteredPlaces => string.IsNullOrWhiteSpace(FilterText) 
+        ? Places 
+        : Places.Where(p => FilterPlace(p, FilterText)).ToList();
+ 
+    protected override async Task OnInitializedAsync()
+    {
+        Places = await LocalStorage.GetItemAsync<List<Place>>(StorageKeys.Places) ?? []; 
+    }
+    
+    private static bool FilterPlace(Place place, string filterText)
+    {
+        if (string.IsNullOrWhiteSpace(filterText))
+            return true;
+            
+        filterText = filterText.Trim().ToLower();
+        
+        return place.Name.ToLower().Contains(filterText) ||
+               (place.Description?.ToLower().Contains(filterText) ?? false) ||
+               (place.Group?.ToLower().Contains(filterText) ?? false);
+    }
+
+    private string GetSelectedPlace(int index)
+    {
+        if (SelectedPlaces.Count - 1 < index)
+            return index switch
+            {
+                0 => "Now",
+                1 => "Then",
+                2 => "Next",
+                _ => "Unknown"
+            };
+        
+        return SelectedPlaces[index].Name;
+    }
+    
+    private async Task SelectPlace(Place place)
+    {
+        if (SelectedPlaces.Count == 3 && !place.Selected)
+            return;
+        
+        var base64Image = await LocalStorage.GetItemAsStringAsync(place.Image);
+        if (!string.IsNullOrEmpty(base64Image))
+        {
+            place.ImageData = $"data:image/jpeg;base64,{base64Image}";
+        }
+
+        place.Selected = !place.Selected;
+
+        if (place.Selected)
+            SelectedPlaces.Add(place);
+        else
+            SelectedPlaces.Remove(place);
+    }
+}

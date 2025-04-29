@@ -1,0 +1,14 @@
+@using global::NowThenNext.Web.Models
+
+<li class="@CssClass" @onclick="ItemClicked">@Place.Name</li>
+
+@code {
+    
+    [Parameter] public Place Place { get; set; } = default!;
+    
+    [Parameter] public EventCallback<Place> OnPlaceItemClicked { get; set; }
+
+    private async Task ItemClicked() => await OnPlaceItemClicked.InvokeAsync(Place);
+    
+    private string CssClass => Place.Selected ? "list-group-item active" : "list-group-item";
+}
