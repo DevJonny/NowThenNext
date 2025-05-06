@@ -1,0 +1,80 @@
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+@inject IJSRuntime JSRuntime
+
+@page "/backup-restore"
+@using System.Text.Json
+@using NowThenNext.Web.Features.PlacesList
+
+<PageTitle>Now -> Then -> Next - Backup and Restore</PageTitle>
+
+<div class="container">
+    <div class="card">
+        <h5 class="card-header">Backup</h5>
+        <div class="card-body">
+            <p class="card-text">Save this value somewhere safe</p>
+            <textarea class="w-100" rows="9" disabled>@BackupText</textarea>
+            <button class="btn btn-primary" @onclick="CopyToClipboard">Copy To Clipboard</button>
+        </div>
+    </div>
+    <div class="card">
+        <h5 class="card-header">Restore</h5>
+        <div class="card-body">
+            <p class="card-text">Paste your backup value here</p>
+            <textarea class="w-100" rows="8" @bind="RestoreText" @bind:event="oninput"></textarea>
+            <button class="btn btn-primary" @onclick="Restore">Restore From Backup</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    
+    private string BackupText { get; set; } = string.Empty;
+    private string RestoreText { get; set; } = string.Empty;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var places = await LocalStorage.GetItemAsync<List<Place>>(StorageKeys.Places) ?? [];
+
+        if (places.Count == 0)
+        {
+            BackupText = "No places found";
+            return;
+        }
+
+        foreach (var place in places)
+        {
+            var imageData = await LocalStorage.GetItemAsStringAsync(place.Image);
+
+            place.ImageData = imageData;
+        }
+
+        var placesJsonBytes = System.Text.Encoding.UTF8.GetBytes(
+            JsonSerializer.Serialize(places, SerialiserSettings.Standard));
+        
+        BackupText = Convert.ToBase64String(placesJsonBytes);
+    }
+    
+    private async Task CopyToClipboard()
+    {
+        await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", BackupText);
+    }
+
+    private async Task Restore()
+    {
+        if (string.IsNullOrWhiteSpace(RestoreText))
+            return;
+
+        var placesJsonBytes = Convert.FromBase64String(RestoreText);
+        var placesJson = System.Text.Encoding.UTF8.GetString(placesJsonBytes);
+
+        var places = JsonSerializer.Deserialize<List<Place>>(placesJson, SerialiserSettings.Standard);
+
+        if (places is null)
+            return;
+
+        foreach (var place in places)
+            await LocalStorage.SetItemAsStringAsync(place.Image, place.ImageData ?? string.Empty);
+        
+        await LocalStorage.SetItemAsync(StorageKeys.Places, places);
+    }
+}
