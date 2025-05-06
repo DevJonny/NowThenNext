@@ -14,10 +14,20 @@
             <p class="card-text">Save this value somewhere safe</p>
             <textarea class="w-100" rows="9" disabled>@BackupText</textarea>
             <button class="btn btn-primary" @onclick="CopyToClipboard">Copy To Clipboard</button>
+            <button class="btn btn-primary" @onclick="SaveToFile">Save To File</button>
         </div>
     </div>
     <div class="card">
-        <h5 class="card-header">Restore</h5>
+        <h5 class="card-header">Restore from file</h5>
+        <div class="card-body">
+            <p class="card-text">Paste your backup value here</p>
+            <label class="form-check-label" for="backup">Backup file</label>
+            <InputFile id="backup" class="form-control" OnChange="LoadBackup" />
+            <button class="btn btn-primary" @onclick="Restore">Restore From Backup</button>
+        </div>
+    </div>
+    <div class="card">
+        <h5 class="card-header">Restore from text</h5>
         <div class="card-body">
             <p class="card-text">Paste your backup value here</p>
             <textarea class="w-100" rows="8" @bind="RestoreText" @bind:event="oninput"></textarea>
@@ -54,9 +64,47 @@
         BackupText = Convert.ToBase64String(placesJsonBytes);
     }
     
-    private async Task CopyToClipboard()
-    {
+    private async Task CopyToClipboard() =>
         await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", BackupText);
+
+    private async Task SaveToFile()
+    {
+        if (string.IsNullOrWhiteSpace(BackupText))
+            return;
+
+        var bytes = System.Text.Encoding.UTF8.GetBytes(BackupText);
+        var stream = new MemoryStream(bytes);
+
+        var fileName = "nowthennext-backup.txt";
+
+        using var streamRef = new DotNetStreamReference(stream: stream);
+        await JSRuntime.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
+    }
+
+    private async Task LoadBackup(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            var file = e.File;
+
+            const long maxAllowedSize = 10 * 1024 * 1024; // 10MB max for safety
+            
+            await using var stream = file.OpenReadStream(maxAllowedSize);
+            using var reader = new StreamReader(stream);
+            RestoreText = await reader.ReadToEndAsync();
+
+            await Restore();
+
+            RestoreText = string.Empty;
+            
+            // Force UI update
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions (you might want to show an error message)
+            Console.WriteLine($"Error loading backup file: {ex.Message}");
+        }
     }
 
     private async Task Restore()
