@@ -1,0 +1,92 @@
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+@page "/food"
+
+<PageTitle>Now -> Then -> Next - Food</PageTitle>
+
+<div class="container gap-3">
+    <div class="row p-2">
+        <div class="col">
+            <div class="btn-toolbar justify-content-between" role="toolbar" aria-label="Toolbar with button groups">
+                <div class="input-group me-1">
+                    <div class="input-group-text" id="btnGroupAddon2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                        </svg>
+                    </div>
+                    <input type="text" class="form-control" placeholder="Filter..." @bind-value="FilterText" @bind-value:event="oninput" />
+                    <button
+                        type="button"
+                        class="btn btn-success float-end"
+                        @onclick="@(() => Modal.Show<AddFood>("Add Food"))">
+                        +
+                    </button>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+    <div class="row p-2">
+        <div class="col">
+            <ul class="list-group">
+                @foreach (var food in FilteredFoods)
+                {
+                    <FoodListItem Food="food" OnFoodItemClicked="async f => await ShowFoodDetails(f)" />
+                }
+            </ul>
+            @if (FilteredFoods.Count == 0)
+            {
+                <div class="alert alert-info mt-3">
+                    No food found @(string.IsNullOrWhiteSpace(FilterText) ? "" : $"matching '{FilterText}'").
+                </div>
+            }
+        </div>
+    </div>
+    <div class="row p-2">
+        <div class="card" style="width: 18rem;">
+            <img src="@SelectedFood.ImageData" class="card-img-top">
+            <div class="card-body">
+                <h5 class="card-title">@SelectedFood.Name</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    
+    [CascadingParameter] public IModalService Modal { get; set; } = default!;
+
+    private List<Food> Foods { get; set; } = [];
+    private string FilterText { get; set; } = string.Empty;
+    private Food SelectedFood { get; set; } = new();
+    
+    private List<Food> FilteredFoods => string.IsNullOrWhiteSpace(FilterText) 
+        ? Foods 
+        : Foods.Where(p => FilterFood(p, FilterText)).ToList();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        Foods = await LocalStorage.GetItemAsync<List<Food>>(StorageKeys.Foods) ?? []; 
+    }
+    
+    private bool FilterFood(Food food, string filterText)
+    {
+        if (string.IsNullOrWhiteSpace(filterText))
+            return true;
+            
+        filterText = filterText.Trim().ToLower();
+        
+        return food.Name.ToLower().Contains(filterText);
+    }
+    
+    private async Task ShowFoodDetails(Food food)
+    {
+        var base64Image = await LocalStorage.GetItemAsStringAsync(food.Image);
+        if (!string.IsNullOrEmpty(base64Image))
+        {
+            food.ImageData = $"data:image/jpeg;base64,{base64Image}";
+        }
+        
+        SelectedFood = food;
+    }
+}

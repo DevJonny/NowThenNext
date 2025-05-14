@@ -1,0 +1,12 @@
+<li class="@CssClass" @onclick="ItemClicked">@Food.Name</li>
+
+@code {
+    
+    [Parameter] public Food Food { get; set; } = default!;
+    
+    [Parameter] public EventCallback<Food> OnFoodItemClicked { get; set; }
+
+    private async Task ItemClicked() => await OnFoodItemClicked.InvokeAsync(Food);
+    
+    private string CssClass => Food.Selected ? "list-group-item active" : "list-group-item";
+}

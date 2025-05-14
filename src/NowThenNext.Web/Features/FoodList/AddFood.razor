@@ -1,0 +1,55 @@
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<form>
+    <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" class="form-control" id="name" @bind="NewFood.Name" aria-describedby="nameHelp">
+        <div id="nameHelp" class="form-text">Name of the place you want to save.</div>
+    </div>
+    <div class="mb-3">
+        <label class="form-check-label" for="photo">Photo of the place.</label>
+        <InputFile id="photo" class="form-control" OnChange="LoadPhoto" />
+    </div>
+    <button type="submit" class="btn btn-primary" @onclick="SaveAndClose">Submit</button>
+</form>
+
+@code {
+    
+    [CascadingParameter] IModalService Modal { get; set; } = default!;
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; } = default!;
+
+    private Food NewFood { get; set; } = new();
+    
+    private async Task LoadPhoto(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        
+        // Define maximum dimensions for the resized image
+        const int maxWidth = 1000;
+        const int maxHeight = 1000;
+        const long maxAllowedSize = 10 * 1024 * 1024; // 10MB max for safety
+        
+        // Request a resized image file using Blazor's built-in capabilities
+        var resizedImageFile = await file.RequestImageFileAsync("image/jpeg", maxWidth, maxHeight);
+        
+        // Read the resized image
+        var resizedBuffer = new byte[resizedImageFile.Size];
+        await resizedImageFile.OpenReadStream(maxAllowedSize).ReadAsync(resizedBuffer);
+        
+        var base64String = Convert.ToBase64String(resizedBuffer);
+
+        NewFood.Image = $"{Guid.NewGuid()}"; 
+        
+        await LocalStorage.SetItemAsStringAsync(NewFood.Image, base64String);
+    }
+
+    private async Task SaveAndClose()
+    {
+        var foods = await LocalStorage.GetItemAsync<List<Food>>(StorageKeys.Foods) ?? [];
+        foods.Add(NewFood);
+        
+        await LocalStorage.SetItemAsync(StorageKeys.Foods, foods);
+
+        NewFood = new();
+    }
+}
