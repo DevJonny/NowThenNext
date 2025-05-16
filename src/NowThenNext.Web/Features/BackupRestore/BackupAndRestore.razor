@@ -47,7 +47,7 @@
         var places = await LocalStorage.GetItemAsync<List<Place>>(StorageKeys.Places) ?? [];
         var foods = await LocalStorage.GetItemAsync<List<Food>>(StorageKeys.Foods) ?? [];
 
-        if (places.Count == 0 || foods.Count == 0)
+        if (places.Count == 0 && foods.Count == 0)
         {
             BackupText = "No places or foods found";
             return;
@@ -69,10 +69,10 @@
 
         Data data = new(places, foods);
 
-        var placesJsonBytes = System.Text.Encoding.UTF8.GetBytes(
+        var jsonBytes = System.Text.Encoding.UTF8.GetBytes(
             JsonSerializer.Serialize(data, SerialiserSettings.Standard));
         
-        BackupText = Convert.ToBase64String(placesJsonBytes);
+        BackupText = Convert.ToBase64String(jsonBytes);
     }
     
     private async Task CopyToClipboard() =>
@@ -140,4 +140,6 @@
         await LocalStorage.SetItemAsync(StorageKeys.Places, data.Places);
         await LocalStorage.SetItemAsync(StorageKeys.Foods, data.Foods);
     }
+    
+    record Data(List<Place> Places, List<Food> Foods);
 }
