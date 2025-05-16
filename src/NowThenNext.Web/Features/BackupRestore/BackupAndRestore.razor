@@ -3,6 +3,7 @@
 
 @page "/backup-restore"
 @using System.Text.Json
+@using NowThenNext.Web.Features.FoodList
 @using NowThenNext.Web.Features.PlacesList
 
 <PageTitle>Now -> Then -> Next - Backup and Restore</PageTitle>
@@ -44,10 +45,11 @@
     protected override async Task OnInitializedAsync()
     {
         var places = await LocalStorage.GetItemAsync<List<Place>>(StorageKeys.Places) ?? [];
+        var foods = await LocalStorage.GetItemAsync<List<Food>>(StorageKeys.Foods) ?? [];
 
-        if (places.Count == 0)
+        if (places.Count == 0 || foods.Count == 0)
         {
-            BackupText = "No places found";
+            BackupText = "No places or foods found";
             return;
         }
 
@@ -58,8 +60,17 @@
             place.ImageData = imageData;
         }
 
+        foreach (var food in foods)
+        {
+            var imageData = await LocalStorage.GetItemAsStringAsync(food.Image);
+
+            food.ImageData = imageData;
+        }
+
+        Data data = new(places, foods);
+
         var placesJsonBytes = System.Text.Encoding.UTF8.GetBytes(
-            JsonSerializer.Serialize(places, SerialiserSettings.Standard));
+            JsonSerializer.Serialize(data, SerialiserSettings.Standard));
         
         BackupText = Convert.ToBase64String(placesJsonBytes);
     }
@@ -112,17 +123,21 @@
         if (string.IsNullOrWhiteSpace(RestoreText))
             return;
 
-        var placesJsonBytes = Convert.FromBase64String(RestoreText);
-        var placesJson = System.Text.Encoding.UTF8.GetString(placesJsonBytes);
+        var jsonBytes = Convert.FromBase64String(RestoreText);
+        var json = System.Text.Encoding.UTF8.GetString(jsonBytes);
 
-        var places = JsonSerializer.Deserialize<List<Place>>(placesJson, SerialiserSettings.Standard);
+        var data = JsonSerializer.Deserialize<Data>(json, SerialiserSettings.Standard);
 
-        if (places is null)
+        if (data is null)
             return;
 
-        foreach (var place in places)
+        foreach (var place in data.Places)
             await LocalStorage.SetItemAsStringAsync(place.Image, place.ImageData ?? string.Empty);
         
-        await LocalStorage.SetItemAsync(StorageKeys.Places, places);
+        foreach (var food in data.Foods)
+            await LocalStorage.SetItemAsStringAsync(food.Image, food.ImageData ?? string.Empty);
+        
+        await LocalStorage.SetItemAsync(StorageKeys.Places, data.Places);
+        await LocalStorage.SetItemAsync(StorageKeys.Foods, data.Foods);
     }
 }
