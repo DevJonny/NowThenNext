@@ -43,12 +43,15 @@
         </div>
     </div>
     <div class="row p-2">
-        <div class="card" style="width: 18rem;">
-            <img src="@SelectedFood.ImageData" class="card-img-top">
-            <div class="card-body">
-                <h5 class="card-title">@SelectedFood.Name</h5>
+        @foreach (var food in SelectedFoods)
+        {
+            <div class="card" style="width: 18rem;">
+                <img src="@food.ImageData" class="card-img-top">
+                <div class="card-body">
+                    <h5 class="card-title">@food.Name</h5>
+                </div>
             </div>
-        </div>
+        }
     </div>
 </div>
 
@@ -58,6 +61,7 @@
 
     private List<Food> Foods { get; set; } = [];
     private string FilterText { get; set; } = string.Empty;
+    private List<Food> SelectedFoods { get; set; } = [];
     private Food SelectedFood { get; set; } = new();
     
     private List<Food> FilteredFoods => string.IsNullOrWhiteSpace(FilterText) 
@@ -86,7 +90,14 @@
         {
             food.ImageData = $"data:image/jpeg;base64,{base64Image}";
         }
+
+        food.Selected = !food.Selected;
+
+        if (food.Selected)
+            SelectedFoods.Add(food);
+        else
+            SelectedFoods.Remove(food);
         
-        SelectedFood = food;
+        SelectedFood = food.Selected ? food : new();
     }
 }
