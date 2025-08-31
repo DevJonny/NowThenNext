@@ -1,0 +1,252 @@
+@page "/addplace"
+@using System.ComponentModel.DataAnnotations
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Add Place</PageTitle>
+
+<div class="max-w-2xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Add New Place</h1>
+    
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <EditForm Model="@_placeModel" OnValidSubmit="@HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-red-500 mb-4" />
+            
+            <!-- Place Name -->
+            <div class="mb-4">
+                <label for="placeName" class="block text-sm font-medium text-gray-700 mb-2">
+                    Place Name
+                </label>
+                <InputText id="placeName" @bind-Value="_placeModel.Name" 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                          placeholder="Enter place name" />
+                <ValidationMessage For="@(() => _placeModel.Name)" class="text-red-500 text-sm mt-1" />
+            </div>
+            
+            <!-- Description -->
+            <div class="mb-4">
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                </label>
+                <InputTextArea id="description" @bind-Value="_placeModel.Description" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                              rows="3" placeholder="Describe this place..." />
+                <ValidationMessage For="@(() => _placeModel.Description)" class="text-red-500 text-sm mt-1" />
+            </div>
+            
+            <!-- Group -->
+            <div class="mb-4">
+                <label for="group" class="block text-sm font-medium text-gray-700 mb-2">
+                    Group
+                </label>
+                <InputText id="group" @bind-Value="_placeModel.Group" 
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                          placeholder="Enter group name" />
+                <ValidationMessage For="@(() => _placeModel.Group)" class="text-red-500 text-sm mt-1" />
+            </div>
+            
+            <!-- Image Upload -->
+            <div class="mb-6">
+                <label for="imageUpload" class="block text-sm font-medium text-gray-700 mb-2">
+                    Upload Image (Max 50MB)
+                </label>
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                    <InputFile id="imageUpload" OnChange="@OnImageSelected" 
+                              accept="image/*" 
+                              class="hidden" />
+                    
+                    @if (_selectedImage == null)
+                    {
+                        <div class="cursor-pointer" @onclick="TriggerFileInput">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <p class="mt-2 text-sm text-gray-600">
+                                <span class="font-medium text-blue-600 hover:text-blue-500">Click to upload</span>
+                                or drag and drop
+                            </p>
+                            <p class="text-xs text-gray-500">PNG, JPG, GIF up to 50MB</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="relative">
+                            <img src="@_selectedImageDataUrl" alt="Preview" class="max-w-full h-auto max-h-64 mx-auto rounded-lg shadow-md" />
+                            <button type="button" @onclick="RemoveImage" 
+                                   class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-600">
+                            Image will be resized to max width of 800px
+                        </p>
+                    }
+                </div>
+                
+                @if (!string.IsNullOrEmpty(_uploadError))
+                {
+                    <p class="text-red-500 text-sm mt-2">@_uploadError</p>
+                }
+            </div>
+            
+            <!-- Submit Button -->
+            <div class="flex justify-end space-x-4">
+                <button type="button" @onclick="ResetForm" 
+                       class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
+                    Reset
+                </button>
+                <button type="submit" disabled="@_isProcessing"
+                       class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    @if (_isProcessing)
+                    {
+                        <span class="inline-flex items-center">
+                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                        </span>
+                    }
+                    else
+                    {
+                        <text>Add Place</text>
+                    }
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private PlaceModel _placeModel = new();
+    private IBrowserFile? _selectedImage;
+    private string? _selectedImageDataUrl;
+    private string _uploadError = string.Empty;
+    private bool _isProcessing;
+    private const long MaxFileSize = 50 * 1024 * 1024; // 50MB
+    private const int MaxImageWidth = 800;
+
+    public class PlaceModel
+    {
+        [Required(ErrorMessage = "Place name is required")]
+        [StringLength(100, ErrorMessage = "Place name cannot exceed 100 characters")]
+        public string Name { get; set; } = string.Empty;
+
+        [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
+        public string Description { get; set; } = string.Empty;
+
+        [StringLength(50, ErrorMessage = "Group name cannot exceed 50 characters")]
+        public string Group { get; set; } = string.Empty;
+    }
+
+    private async Task TriggerFileInput()
+    {
+        await JsRuntime.InvokeVoidAsync("triggerFileInput", "imageUpload");
+    }
+
+    private async Task OnImageSelected(InputFileChangeEventArgs e)
+    {
+        _uploadError = string.Empty;
+        _selectedImage = null;
+        _selectedImageDataUrl = null;
+
+        var file = e.File;
+
+        // Validate file size
+        if (file.Size > MaxFileSize)
+        {
+            _uploadError = $"File size ({file.Size / 1024 / 1024:F1}MB) exceeds the maximum allowed size of 50MB.";
+            return;
+        }
+
+        // Validate file type
+        if (!file.ContentType.StartsWith("image/"))
+        {
+            _uploadError = "Please select a valid image file.";
+            return;
+        }
+
+        try
+        {
+            _selectedImage = file;
+            
+            // Create a preview of the original image
+            var buffer = new byte[file.Size];
+            var bytesRead = await file.OpenReadStream(MaxFileSize).ReadAsync(buffer);
+            var base64String = Convert.ToBase64String(buffer, 0, bytesRead);
+            _selectedImageDataUrl = $"data:{file.ContentType};base64,{base64String}";
+        }
+        catch (Exception ex)
+        {
+            _uploadError = $"Error loading image: {ex.Message}";
+        }
+    }
+
+    private void RemoveImage()
+    {
+        _selectedImage = null;
+        _selectedImageDataUrl = null;
+        _uploadError = string.Empty;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        _isProcessing = true;
+        
+        try
+        {
+            // Process the image if one is selected
+            if (_selectedImage != null)
+            {
+                var processedImageData = await ProcessImage(_selectedImage);
+                // Here you would save the processedImageData to your storage/database
+            }
+
+            // Here you would typically save the place data to your database
+            // For now, we'll just simulate processing
+            await Task.Delay(1000);
+            
+            // Reset form after successful submission
+            _placeModel = new();
+            _selectedImage = null;
+            _selectedImageDataUrl = null;
+            _uploadError = string.Empty;
+            
+            // You could add a success message or redirect here
+            await JsRuntime.InvokeVoidAsync("alert", "Place added successfully!");
+        }
+        catch (Exception ex)
+        {
+            _uploadError = $"Error processing place: {ex.Message}";
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+
+    private async Task<string> ProcessImage(IBrowserFile imageFile)
+    {
+        // Read the image file
+        var buffer = new byte[imageFile.Size];
+        var bytesRead = await imageFile.OpenReadStream(MaxFileSize).ReadAsync(buffer);
+        
+        // Use JavaScript to resize the image on the client side
+        var resizedImageData = await JsRuntime.InvokeAsync<string>("resizeImage", 
+            Convert.ToBase64String(buffer, 0, bytesRead), 
+            imageFile.ContentType, 
+            MaxImageWidth);
+            
+        return resizedImageData;
+    }
+
+    private void ResetForm()
+    {
+        _placeModel = new();
+        _selectedImage = null;
+        _selectedImageDataUrl = null;
+        _uploadError = string.Empty;
+    }
+}
