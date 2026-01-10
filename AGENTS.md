@@ -23,7 +23,8 @@ cd flowchart && npm run build
 ## Key Files
 
 - `ralph.sh` - The bash loop that spawns fresh AI instances (supports `--tool amp` or `--tool claude`)
-- `prompt.md` - Instructions given to each AI instance
+- `prompt.md` - Instructions given to each AMP instance
+-  `CLAUDE.md` - Instructions given to each Claude Code instance
 - `prd.json.example` - Example PRD format
 - `flowchart/` - Interactive React Flow diagram explaining how Ralph works
 
