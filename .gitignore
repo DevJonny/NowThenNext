@@ -11,3 +11,17 @@ progress.txt
 
 #Claude
 .claude/
+
+# .NET build outputs
+bin/
+obj/
+*.user
+*.suo
+*.csproj.user
+*.dll
+*.pdb
+
+# IDE
+.idea/
+.vs/
+*.swp
