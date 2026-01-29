@@ -1,0 +1,395 @@
+@page "/upload"
+@page "/upload/{CategoryParam}"
+@using NowThenNext.Models
+@inject NavigationManager Navigation
+
+<PageTitle>Upload Image - NowThenNext</PageTitle>
+
+<div class="flex flex-col items-center min-h-screen">
+    <!-- Header -->
+    <header class="w-full max-w-lg px-4 mb-6">
+        <div class="flex items-center gap-4">
+            <button @onclick="GoBack" class="back-button" aria-label="Go back">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1 class="text-2xl sm:text-3xl font-bold text-calm-primary">
+                Upload Image
+            </h1>
+        </div>
+    </header>
+
+    <div class="w-full max-w-lg px-4">
+        @if (string.IsNullOrEmpty(PreviewImage))
+        {
+            <!-- Upload Area -->
+            <div class="upload-area" @onclick="TriggerFileInput" @ondragover="HandleDragOver" @ondragover:preventDefault @ondrop="HandleDrop" @ondrop:preventDefault>
+                <div class="upload-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-calm-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <p class="text-lg font-semibold text-calm-text mb-2">Tap to choose an image</p>
+                <p class="text-calm-text-light">JPG, PNG, or WebP</p>
+            </div>
+
+            <InputFile @ref="fileInput" OnChange="HandleFileSelected" accept="image/jpeg,image/png,image/webp" class="hidden-file-input" id="file-upload" />
+        }
+        else
+        {
+            <!-- Preview Area -->
+            <div class="preview-area">
+                <img src="@PreviewImage" alt="Preview" class="preview-image" />
+                <button @onclick="ClearPreview" class="clear-preview-button" aria-label="Remove image">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Label Input -->
+            <div class="form-group">
+                <label for="image-label" class="form-label">Label (optional)</label>
+                <input type="text"
+                       id="image-label"
+                       @bind="ImageLabel"
+                       placeholder="e.g., Park, Sandwich, School..."
+                       class="form-input"
+                       maxlength="50" />
+            </div>
+
+            <!-- Category Selector -->
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <div class="category-buttons">
+                    <button @onclick="() => SelectCategory(ImageCategory.Places)"
+                            class="category-button @(SelectedCategory == ImageCategory.Places ? "category-selected" : "")"
+                            type="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Places
+                    </button>
+                    <button @onclick="() => SelectCategory(ImageCategory.Food)"
+                            class="category-button @(SelectedCategory == ImageCategory.Food ? "category-selected" : "")"
+                            type="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2c1 0 2 1 2 2s-1 2-2 2" />
+                            <path d="M12 6c-4 0-7 3-7 8s3 8 7 8 7-3 7-8-3-8-7-8z" />
+                            <path d="M12 6v3" />
+                        </svg>
+                        Food
+                    </button>
+                </div>
+            </div>
+
+            <!-- Confirm Button -->
+            <button @onclick="OnConfirmUpload" class="confirm-button" type="button">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Confirm Upload
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? CategoryParam { get; set; }
+
+    private InputFile? fileInput;
+    private string? PreviewImage;
+    private string ImageLabel = string.Empty;
+    private ImageCategory SelectedCategory = ImageCategory.Places;
+
+    // Event callback for when upload is confirmed - to be used by parent components
+    [Parameter]
+    public EventCallback<(string Base64Data, string Label, ImageCategory Category)> OnUploadConfirmed { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Set category from URL parameter if provided
+        if (!string.IsNullOrEmpty(CategoryParam))
+        {
+            if (Enum.TryParse<ImageCategory>(CategoryParam, true, out var category))
+            {
+                SelectedCategory = category;
+            }
+        }
+    }
+
+    private async Task TriggerFileInput()
+    {
+        // This will be handled by the InputFile component through JavaScript interop
+        // The actual click is handled via the label/onclick
+        await Task.CompletedTask;
+    }
+
+    private void HandleDragOver()
+    {
+        // Prevent default to allow drop
+    }
+
+    private async Task HandleDrop()
+    {
+        // Drop handling is limited in Blazor WASM - rely on InputFile
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        // Validate file type
+        var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp" };
+        if (!allowedTypes.Contains(file.ContentType))
+        {
+            return;
+        }
+
+        // Read file as base64 (limit to 10MB)
+        var maxSize = 10 * 1024 * 1024;
+        if (file.Size > maxSize)
+        {
+            return;
+        }
+
+        using var stream = file.OpenReadStream(maxSize);
+        using var memoryStream = new System.IO.MemoryStream();
+        await stream.CopyToAsync(memoryStream);
+        var bytes = memoryStream.ToArray();
+        var base64 = Convert.ToBase64String(bytes);
+        PreviewImage = $"data:{file.ContentType};base64,{base64}";
+    }
+
+    private void ClearPreview()
+    {
+        PreviewImage = null;
+        ImageLabel = string.Empty;
+    }
+
+    private void SelectCategory(ImageCategory category)
+    {
+        SelectedCategory = category;
+    }
+
+    private async Task OnConfirmUpload()
+    {
+        if (string.IsNullOrEmpty(PreviewImage))
+        {
+            return;
+        }
+
+        // Invoke the callback if provided (for component use)
+        if (OnUploadConfirmed.HasDelegate)
+        {
+            await OnUploadConfirmed.InvokeAsync((PreviewImage, ImageLabel, SelectedCategory));
+        }
+
+        // The actual storage connection will be done in US-008
+        // For now, this component just handles the UI portion
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
+
+<style>
+    .back-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        background-color: white;
+        color: #5B9A9A;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+        background-color: #F0EDE8;
+    }
+
+    .upload-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 2rem;
+        border: 3px dashed #E2DFD8;
+        border-radius: 1rem;
+        background-color: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-height: 200px;
+    }
+
+    .upload-area:hover {
+        border-color: #5B9A9A;
+        background-color: #F9F7F3;
+    }
+
+    .upload-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 5rem;
+        height: 5rem;
+        background-color: #F9F7F3;
+        border-radius: 50%;
+        margin-bottom: 1rem;
+    }
+
+    .hidden-file-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .preview-area {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .preview-image {
+        width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        border-radius: 0.75rem;
+        background-color: white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .clear-preview-button {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background-color: rgba(61, 72, 82, 0.8);
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .clear-preview-button:hover {
+        background-color: rgba(61, 72, 82, 1);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #3D4852;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        font-size: 1.125rem;
+        border: 2px solid #E2DFD8;
+        border-radius: 0.75rem;
+        background-color: white;
+        color: #3D4852;
+        transition: border-color 0.2s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #5B9A9A;
+    }
+
+    .form-input::placeholder {
+        color: #606F7B;
+    }
+
+    .category-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .category-button {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        min-height: 3rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        border: 2px solid #E2DFD8;
+        border-radius: 0.75rem;
+        background-color: white;
+        color: #3D4852;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .category-button:hover {
+        border-color: #5B9A9A;
+    }
+
+    .category-selected {
+        border-color: #5B9A9A;
+        background-color: #5B9A9A;
+        color: white;
+    }
+
+    .category-selected:hover {
+        background-color: #4A8585;
+    }
+
+    .confirm-button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 1rem 1.5rem;
+        min-height: 3.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        background-color: #5B9A9A;
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(91, 154, 154, 0.3);
+    }
+
+    .confirm-button:hover {
+        background-color: #4A8585;
+        box-shadow: 0 4px 12px rgba(91, 154, 154, 0.4);
+    }
+
+    .confirm-button:active {
+        transform: translateY(1px);
+    }
+</style>
