@@ -7,6 +7,71 @@
     <title>NowThenNext</title>
     <base href="/" />
     <link rel="preload" id="webassembly" />
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Calm color palette for children with SEN
+                        'calm': {
+                            // Soft teal primary - soothing and calming
+                            'primary': '#5B9A9A',
+                            'primary-dark': '#4A8585',
+                            'primary-light': '#7FB5B5',
+                            // Muted green accent - gentle and natural
+                            'accent': '#7BA893',
+                            'accent-dark': '#6A9480',
+                            'accent-light': '#9BBFAE',
+                            // Warm off-white background - soft and welcoming
+                            'bg': '#F9F7F3',
+                            'bg-alt': '#F0EDE8',
+                            // Dark gray text - readable but not harsh
+                            'text': '#3D4852',
+                            'text-light': '#606F7B',
+                            // Calm warning color - muted amber (not harsh red/yellow)
+                            'warning': '#D4A06A',
+                            'warning-dark': '#C08B55',
+                            // Success - muted green
+                            'success': '#6B9A7D',
+                            // Border/divider - subtle gray
+                            'border': '#E2DFD8'
+                        }
+                    },
+                    fontFamily: {
+                        // Rounded, friendly sans-serif fonts
+                        'sans': ['Nunito', 'Quicksand', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    fontSize: {
+                        // Minimum 18px body text for accessibility
+                        'base': ['1.125rem', { lineHeight: '1.75rem' }], // 18px
+                        'lg': ['1.25rem', { lineHeight: '1.875rem' }],   // 20px
+                        'xl': ['1.5rem', { lineHeight: '2rem' }],        // 24px
+                        '2xl': ['1.875rem', { lineHeight: '2.25rem' }],  // 30px
+                        '3xl': ['2.25rem', { lineHeight: '2.5rem' }]     // 36px
+                    },
+                    spacing: {
+                        // Touch-friendly minimum tap target size
+                        'tap': '3rem' // 48px
+                    },
+                    minHeight: {
+                        'tap': '3rem' // 48px minimum tap target
+                    },
+                    minWidth: {
+                        'tap': '3rem' // 48px minimum tap target
+                    },
+                    borderRadius: {
+                        'calm': '0.75rem' // Soft, rounded corners
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts - Nunito (rounded, friendly) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
