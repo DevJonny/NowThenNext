@@ -36,4 +36,29 @@ public interface IImageStorageService
     /// Get all images (for internal use)
     /// </summary>
     Task<List<ImageItem>> GetAllImagesAsync();
+
+    /// <summary>
+    /// Get current storage usage as a percentage of estimated quota (0-100)
+    /// </summary>
+    Task<double> GetStorageUsagePercentageAsync();
+
+    /// <summary>
+    /// Get estimated remaining image capacity based on average image size
+    /// </summary>
+    Task<int> GetEstimatedRemainingCapacityAsync();
+
+    /// <summary>
+    /// Storage information including usage percentage and remaining capacity
+    /// </summary>
+    Task<StorageInfo> GetStorageInfoAsync();
 }
+
+/// <summary>
+/// Contains storage usage information
+/// </summary>
+public record StorageInfo(
+    double UsagePercentage,
+    int EstimatedRemainingImages,
+    long CurrentUsageBytes,
+    long EstimatedQuotaBytes
+);
