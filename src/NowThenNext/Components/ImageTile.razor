@@ -1,0 +1,190 @@
+@using NowThenNext.Models
+
+<div class="image-tile">
+    <!-- Image Container -->
+    <div class="image-container">
+        <img src="@GetImageSrc()" alt="@(string.IsNullOrEmpty(Image.Label) ? "Image" : Image.Label)" class="tile-image" />
+
+        <!-- Favorite Toggle Button -->
+        <button @onclick="OnFavoriteClicked"
+                @onclick:stopPropagation="true"
+                class="favorite-button @(Image.IsFavorite ? "favorited" : "")"
+                aria-label="@(Image.IsFavorite ? "Remove from favorites" : "Add to favorites")"
+                type="button">
+            @if (Image.IsFavorite)
+            {
+                <!-- Filled heart -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+            }
+            else
+            {
+                <!-- Outline heart -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                </svg>
+            }
+        </button>
+
+        <!-- Delete Button -->
+        <button @onclick="OnDeleteClicked"
+                @onclick:stopPropagation="true"
+                class="delete-button"
+                aria-label="Delete image"
+                type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Label (if present) -->
+    @if (!string.IsNullOrEmpty(Image.Label))
+    {
+        <div class="tile-label">
+            @Image.Label
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public ImageItem Image { get; set; } = default!;
+
+    [Parameter]
+    public EventCallback<string> OnFavoriteToggle { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OnDelete { get; set; }
+
+    private string GetImageSrc()
+    {
+        // Handle both data URL format and raw base64
+        if (Image.Base64Data.StartsWith("data:"))
+        {
+            return Image.Base64Data;
+        }
+        // Default to JPEG if raw base64
+        return $"data:image/jpeg;base64,{Image.Base64Data}";
+    }
+
+    private async Task OnFavoriteClicked()
+    {
+        if (OnFavoriteToggle.HasDelegate)
+        {
+            await OnFavoriteToggle.InvokeAsync(Image.Id);
+        }
+    }
+
+    private async Task OnDeleteClicked()
+    {
+        if (OnDelete.HasDelegate)
+        {
+            await OnDelete.InvokeAsync(Image.Id);
+        }
+    }
+}
+
+<style>
+    .image-tile {
+        display: flex;
+        flex-direction: column;
+        min-width: 200px;
+        min-height: 200px;
+        background-color: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: all 0.2s ease;
+    }
+
+    .image-tile:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .image-container {
+        position: relative;
+        flex: 1;
+        min-height: 160px;
+        background-color: #F0EDE8;
+    }
+
+    .tile-image {
+        width: 100%;
+        height: 100%;
+        min-height: 160px;
+        object-fit: cover;
+    }
+
+    .favorite-button {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #606F7B;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .favorite-button:hover {
+        background-color: white;
+        transform: scale(1.1);
+    }
+
+    .favorite-button.favorited {
+        color: #D4A06A;
+    }
+
+    .favorite-button.favorited:hover {
+        color: #C4905A;
+    }
+
+    .delete-button {
+        position: absolute;
+        bottom: 0.5rem;
+        right: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background-color: rgba(61, 72, 82, 0.7);
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        opacity: 0;
+    }
+
+    .image-tile:hover .delete-button {
+        opacity: 1;
+    }
+
+    .delete-button:hover {
+        background-color: rgba(61, 72, 82, 0.9);
+        transform: scale(1.1);
+    }
+
+    .tile-label {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #3D4852;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background-color: white;
+        border-top: 1px solid #F0EDE8;
+    }
+</style>
