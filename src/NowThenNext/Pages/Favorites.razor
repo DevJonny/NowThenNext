@@ -361,6 +361,22 @@
         gap: 1.5rem;
     }
 
+    /* Tablet optimization - consistent 3 columns on tablets */
+    @@media (min-width: 768px) and (max-width: 1023px) {
+        .image-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+    }
+
+    /* Larger tablets/small desktop - 4 columns */
+    @@media (min-width: 1024px) {
+        .image-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+    }
+
     /* Modal Styles */
     .modal-overlay {
         position: fixed;

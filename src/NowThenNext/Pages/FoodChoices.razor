@@ -417,6 +417,56 @@
         color: #D4A06A;
     }
 
+    /* Tablet optimization for selection preview */
+    @@media (min-width: 768px) {
+        .selection-preview {
+            gap: 1.25rem;
+            justify-content: flex-start;
+        }
+
+        .preview-item {
+            width: 120px;
+        }
+
+        .preview-item-image {
+            height: 100px;
+        }
+
+        .preview-item-label {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.625rem;
+        }
+
+        .preview-remove-button {
+            width: 1.75rem;
+            height: 1.75rem;
+        }
+    }
+
+    /* Large tablets / small desktop */
+    @@media (min-width: 1024px) {
+        .selection-preview {
+            gap: 1.5rem;
+        }
+
+        .preview-item {
+            width: 140px;
+        }
+
+        .preview-item-image {
+            height: 120px;
+        }
+
+        .preview-item-label {
+            font-size: 0.9375rem;
+        }
+
+        .preview-remove-button {
+            width: 2rem;
+            height: 2rem;
+        }
+    }
+
     /* Image Grid */
     .image-grid {
         display: grid;
@@ -425,11 +475,27 @@
         padding-bottom: 6rem; /* Space for fixed bottom button */
     }
 
+    /* Tablet optimization - consistent 3 columns */
+    @@media (min-width: 768px) and (max-width: 1023px) {
+        .image-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+    }
+
+    /* Large tablets/small desktop - 4 columns */
+    @@media (min-width: 1024px) {
+        .image-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+    }
+
     .selectable-tile {
         position: relative;
         display: flex;
         flex-direction: column;
-        min-width: 200px;
+        min-width: 0; /* Allow shrinking in grid */
         min-height: 200px;
         background-color: white;
         border-radius: 0.75rem;

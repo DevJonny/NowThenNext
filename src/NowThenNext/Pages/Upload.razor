@@ -11,7 +11,7 @@
 
 <div class="flex flex-col items-center min-h-screen">
     <!-- Header -->
-    <header class="w-full max-w-lg px-4 mb-6">
+    <header class="w-full max-w-lg md:max-w-xl px-4 md:px-6 mb-6">
         <div class="flex items-center gap-4">
             <button @onclick="GoBack" class="back-button" aria-label="Go back">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -24,7 +24,7 @@
         </div>
     </header>
 
-    <div class="w-full max-w-lg px-4">
+    <div class="w-full max-w-lg md:max-w-xl px-4 md:px-6">
         <!-- Storage Warning Banner -->
         <StorageWarningBanner @ref="storageWarningBanner" />
         @* Success Message *@
@@ -574,6 +574,63 @@
         }
         to {
             transform: rotate(360deg);
+        }
+    }
+
+    /* Tablet optimization */
+    @@media (min-width: 768px) {
+        .upload-area {
+            padding: 4rem 3rem;
+            min-height: 250px;
+        }
+
+        .upload-icon {
+            width: 6rem;
+            height: 6rem;
+        }
+
+        .upload-icon svg {
+            width: 3.5rem;
+            height: 3.5rem;
+        }
+
+        .preview-image {
+            max-height: 400px;
+        }
+
+        .form-input {
+            padding: 1rem 1.25rem;
+        }
+
+        .category-button {
+            padding: 1.25rem;
+            min-height: 3.5rem;
+        }
+
+        .confirm-button {
+            padding: 1.25rem 2rem;
+            min-height: 4rem;
+            font-size: 1.375rem;
+        }
+    }
+
+    /* Large tablets / small desktop */
+    @@media (min-width: 1024px) {
+        .upload-area {
+            padding: 5rem 4rem;
+            min-height: 300px;
+        }
+
+        .preview-image {
+            max-height: 450px;
+        }
+
+        .category-buttons {
+            gap: 1.5rem;
+        }
+
+        .category-button {
+            padding: 1.5rem;
         }
     }
 </style>

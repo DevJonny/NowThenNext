@@ -443,6 +443,65 @@
         color: #E2DFD8;
     }
 
+    /* Tablet optimization for selection preview */
+    @@media (min-width: 768px) {
+        .selection-preview {
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .preview-slot {
+            min-width: 140px;
+            max-width: 220px;
+        }
+
+        .preview-slot-image {
+            height: 100px;
+        }
+
+        .preview-slot-placeholder {
+            height: 100px;
+        }
+
+        .preview-slot-label {
+            padding: 0.625rem;
+            font-size: 1rem;
+        }
+
+        .preview-slot-name {
+            font-size: 0.875rem;
+        }
+    }
+
+    /* Large tablets / small desktop */
+    @@media (min-width: 1024px) {
+        .selection-preview {
+            gap: 2rem;
+        }
+
+        .preview-slot {
+            min-width: 160px;
+            max-width: 250px;
+        }
+
+        .preview-slot-image {
+            height: 120px;
+        }
+
+        .preview-slot-placeholder {
+            height: 120px;
+        }
+
+        .preview-slot-label {
+            padding: 0.75rem;
+            font-size: 1.0625rem;
+        }
+
+        .preview-slot-name {
+            font-size: 0.9375rem;
+        }
+    }
+
     /* Image Grid */
     .image-grid {
         display: grid;
@@ -451,11 +510,27 @@
         padding-bottom: 6rem; /* Space for fixed bottom button */
     }
 
+    /* Tablet optimization - consistent 3 columns */
+    @@media (min-width: 768px) and (max-width: 1023px) {
+        .image-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+    }
+
+    /* Large tablets/small desktop - 4 columns */
+    @@media (min-width: 1024px) {
+        .image-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+    }
+
     .selectable-tile {
         position: relative;
         display: flex;
         flex-direction: column;
-        min-width: 200px;
+        min-width: 0; /* Allow shrinking in grid */
         min-height: 200px;
         background-color: white;
         border-radius: 0.75rem;
