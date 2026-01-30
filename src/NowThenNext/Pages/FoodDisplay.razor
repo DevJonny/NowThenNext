@@ -1,0 +1,529 @@
+@page "/food-display"
+@using NowThenNext.Models
+@using NowThenNext.Services
+@inject IImageStorageService ImageStorage
+@inject NavigationManager Navigation
+
+<PageTitle>Food Choices - NowThenNext</PageTitle>
+
+<div class="food-display-container">
+    <!-- Unobtrusive Back Button -->
+    <button @onclick="GoBack" class="back-button" aria-label="Go back to selection">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+    </button>
+
+    @if (IsLoading)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+        </div>
+    }
+    else if (FoodItems.Count == 0)
+    {
+        <div class="empty-state">
+            <p class="text-calm-text-light text-xl">No food items selected</p>
+            <button @onclick="GoBack" class="return-button">
+                Select Food
+            </button>
+        </div>
+    }
+    else
+    {
+        <!-- Food Choices Grid -->
+        <div class="food-choices-grid @GetLayoutClass()">
+            @foreach (var item in FoodItems)
+            {
+                var isSelected = SelectedFoodId == item.Id;
+
+                <button class="food-choice-item @(isSelected ? "selected" : "")"
+                        @onclick="() => SelectFood(item.Id)"
+                        aria-label="@(string.IsNullOrEmpty(item.Label) ? "Food choice" : item.Label)">
+                    <!-- Image Container -->
+                    <div class="food-image-container">
+                        <img src="@GetImageSrc(item)"
+                             alt="@(string.IsNullOrEmpty(item.Label) ? "Food" : item.Label)"
+                             class="food-image" />
+                    </div>
+
+                    <!-- Optional Food Name -->
+                    @if (!string.IsNullOrEmpty(item.Label))
+                    {
+                        <div class="food-name">
+                            @item.Label
+                        </div>
+                    }
+
+                    <!-- Selection Indicator -->
+                    @if (isSelected)
+                    {
+                        <div class="selection-indicator">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                    }
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<ImageItem> FoodItems = new();
+    private string? SelectedFoodId = null;
+    private bool IsLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFoodItemsAsync();
+    }
+
+    private async Task LoadFoodItemsAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            // Parse image IDs from query string
+            var uri = new Uri(Navigation.Uri);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            var idsParam = query["ids"];
+
+            if (!string.IsNullOrEmpty(idsParam))
+            {
+                var imageIds = idsParam.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+                // Load all food images from storage and filter by IDs
+                var allImages = await ImageStorage.GetImagesByCategoryAsync(ImageCategory.Food);
+
+                // Maintain the order from the query string
+                foreach (var id in imageIds)
+                {
+                    var image = allImages.FirstOrDefault(img => img.Id == id);
+                    if (image != null)
+                    {
+                        FoodItems.Add(image);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void SelectFood(string foodId)
+    {
+        // Toggle selection - tap again to deselect
+        if (SelectedFoodId == foodId)
+        {
+            SelectedFoodId = null;
+        }
+        else
+        {
+            SelectedFoodId = foodId;
+        }
+        StateHasChanged();
+    }
+
+    private string GetLayoutClass()
+    {
+        return FoodItems.Count switch
+        {
+            2 => "two-items",
+            3 => "three-items",
+            4 => "four-items",
+            _ => "two-items"
+        };
+    }
+
+    private string GetImageSrc(ImageItem image)
+    {
+        if (image.Base64Data.StartsWith("data:"))
+        {
+            return image.Base64Data;
+        }
+        return $"data:image/jpeg;base64,{image.Base64Data}";
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/food-choices");
+    }
+}
+
+<style>
+    .food-display-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        min-height: 100dvh;
+        width: 100%;
+        padding: 1.5rem;
+        background-color: var(--calm-bg, #F9F7F3);
+        box-sizing: border-box;
+    }
+
+    /* Unobtrusive Back Button */
+    .back-button {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #606F7B;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 50;
+        opacity: 0.7;
+    }
+
+    .back-button:hover {
+        opacity: 1;
+        background-color: white;
+        color: #7BA893;
+    }
+
+    /* Loading State */
+    .loading-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loading-spinner {
+        width: 3rem;
+        height: 3rem;
+        border: 3px solid #E2DFD8;
+        border-top-color: #7BA893;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    /* Empty State */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        text-align: center;
+    }
+
+    .return-button {
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        background-color: #7BA893;
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(123, 168, 147, 0.3);
+    }
+
+    .return-button:hover {
+        background-color: #6A9580;
+    }
+
+    /* Food Choices Grid */
+    .food-choices-grid {
+        display: grid;
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 1200px;
+    }
+
+    /* Layout variations based on item count */
+    .food-choices-grid.two-items {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 900px;
+    }
+
+    .food-choices-grid.three-items {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1100px;
+    }
+
+    .food-choices-grid.four-items {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 900px;
+    }
+
+    /* Food Choice Item */
+    .food-choice-item {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: white;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        border: 4px solid transparent;
+        transition: all 0.3s ease;
+        min-height: 200px;
+        padding: 0;
+    }
+
+    .food-choice-item:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .food-choice-item:active {
+        transform: scale(0.98);
+    }
+
+    .food-choice-item.selected {
+        border-color: #7BA893;
+        box-shadow: 0 8px 30px rgba(123, 168, 147, 0.35);
+        animation: selectPulse 0.5s ease-out;
+    }
+
+    /* Image Container */
+    .food-image-container {
+        width: 100%;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #F0EDE8;
+        min-height: 180px;
+    }
+
+    .food-image {
+        width: 100%;
+        height: 100%;
+        min-height: 180px;
+        object-fit: cover;
+    }
+
+    /* Food Name */
+    .food-name {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        text-align: center;
+        color: #3D4852;
+        background-color: white;
+        border-top: 1px solid #F0EDE8;
+    }
+
+    /* Selection Indicator */
+    .selection-indicator {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 3.5rem;
+        height: 3.5rem;
+        background-color: #7BA893;
+        color: white;
+        border-radius: 50%;
+        box-shadow: 0 4px 16px rgba(123, 168, 147, 0.4);
+        animation: popIn 0.3s ease-out;
+    }
+
+    /* Animations */
+    @@keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes selectPulse {
+        0% {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 0 0 0 rgba(123, 168, 147, 0.5);
+        }
+        50% {
+            box-shadow: 0 8px 30px rgba(123, 168, 147, 0.35), 0 0 30px 10px rgba(123, 168, 147, 0.3);
+        }
+        100% {
+            box-shadow: 0 8px 30px rgba(123, 168, 147, 0.35);
+        }
+    }
+
+    @@keyframes popIn {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        70% {
+            transform: scale(1.15);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    /* Tablet responsiveness */
+    @@media (min-width: 768px) {
+        .food-display-container {
+            padding: 2rem;
+        }
+
+        .food-choices-grid {
+            gap: 2rem;
+        }
+
+        .food-choices-grid.four-items {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 1000px;
+        }
+
+        .food-image-container {
+            min-height: 250px;
+        }
+
+        .food-image {
+            min-height: 250px;
+        }
+
+        .food-name {
+            font-size: 1.5rem;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .selection-indicator {
+            width: 4rem;
+            height: 4rem;
+        }
+
+        .selection-indicator svg {
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+    }
+
+    /* Large screens */
+    @@media (min-width: 1024px) {
+        .food-choices-grid.three-items {
+            max-width: 1200px;
+        }
+
+        .food-choices-grid.four-items {
+            grid-template-columns: repeat(4, 1fr);
+            max-width: 1400px;
+        }
+
+        .food-image-container {
+            min-height: 300px;
+        }
+
+        .food-image {
+            min-height: 300px;
+        }
+
+        .food-name {
+            font-size: 1.75rem;
+            padding: 1.5rem 2rem;
+        }
+    }
+
+    /* Mobile portrait - stack 2 items per row for 4 items, single column for 2-3 */
+    @@media (max-width: 767px) and (orientation: portrait) {
+        .food-display-container {
+            padding: 1rem;
+            padding-top: 4rem;
+        }
+
+        .food-choices-grid.two-items,
+        .food-choices-grid.three-items {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .food-choices-grid.four-items {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .food-choice-item {
+            min-height: 150px;
+            border-radius: 1rem;
+        }
+
+        .food-image-container {
+            min-height: 120px;
+        }
+
+        .food-image {
+            min-height: 120px;
+        }
+
+        .food-name {
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .selection-indicator {
+            width: 2.5rem;
+            height: 2.5rem;
+            top: 0.5rem;
+            right: 0.5rem;
+        }
+
+        .selection-indicator svg {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+    }
+
+    /* Mobile landscape - side by side */
+    @@media (max-width: 896px) and (orientation: landscape) {
+        .food-display-container {
+            padding: 1rem 2rem;
+        }
+
+        .food-choices-grid.two-items {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .food-choices-grid.three-items {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .food-choices-grid.four-items {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .food-image-container {
+            min-height: 100px;
+        }
+
+        .food-image {
+            min-height: 100px;
+            max-height: 40vh;
+        }
+
+        .food-name {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+        }
+    }
+</style>
