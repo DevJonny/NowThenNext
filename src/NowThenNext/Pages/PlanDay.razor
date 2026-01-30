@@ -1,0 +1,579 @@
+@page "/plan"
+@using NowThenNext.Models
+@using NowThenNext.Services
+@using NowThenNext.Components
+@inject IImageStorageService ImageStorage
+@inject NavigationManager Navigation
+
+<PageTitle>Plan the Day - NowThenNext</PageTitle>
+
+<div class="flex flex-col min-h-screen">
+    <!-- Header with Back Button -->
+    <header class="w-full max-w-5xl mx-auto px-4 sm:px-6 mb-4">
+        <div class="flex items-center gap-4">
+            <button @onclick="GoHome" class="back-button" aria-label="Go back to home">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-calm-text">
+                    Plan the Day
+                </h1>
+                <p class="text-calm-text-light text-sm mt-1">
+                    Select up to 3 activities for Now, Then, Next
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="w-full max-w-5xl mx-auto px-4 sm:px-6 flex-1">
+        @if (IsLoading)
+        {
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <p class="text-calm-text-light mt-4">Loading places...</p>
+            </div>
+        }
+        else if (PlacesImages.Count == 0)
+        {
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-calm-primary-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-calm-text mb-2">
+                    No Places Yet
+                </h2>
+                <p class="text-calm-text-light mb-6">
+                    Add pictures of places and activities before you can plan the day.
+                </p>
+                <a href="/upload/places" class="empty-action-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add First Place
+                </a>
+            </div>
+        }
+        else
+        {
+            <!-- Selection Info Bar -->
+            <div class="selection-info-bar">
+                <div class="selection-count">
+                    <span class="selection-count-number">@SelectedImages.Count</span>
+                    <span class="selection-count-label">of 3 selected</span>
+                </div>
+                @if (SelectedImages.Count > 0)
+                {
+                    <button @onclick="ClearSelection" class="clear-button">
+                        Clear All
+                    </button>
+                }
+            </div>
+
+            <!-- Selection Preview -->
+            @if (SelectedImages.Count > 0)
+            {
+                <div class="selection-preview">
+                    @for (int i = 0; i < 3; i++)
+                    {
+                        var index = i;
+                        var label = GetSlotLabel(index);
+                        var image = index < SelectedImages.Count ? SelectedImages[index] : null;
+
+                        <div class="preview-slot @(image != null ? "preview-slot-filled" : "preview-slot-empty")">
+                            <div class="preview-slot-label">@label</div>
+                            @if (image != null)
+                            {
+                                <img src="@GetImageSrc(image)" alt="@(string.IsNullOrEmpty(image.Label) ? label : image.Label)" class="preview-slot-image" />
+                                @if (!string.IsNullOrEmpty(image.Label))
+                                {
+                                    <div class="preview-slot-name">@image.Label</div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="preview-slot-placeholder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Image Grid -->
+            <div class="image-grid">
+                @foreach (var image in PlacesImages)
+                {
+                    var selectionIndex = GetSelectionIndex(image.Id);
+                    var isSelected = selectionIndex >= 0;
+
+                    <div class="selectable-tile @(isSelected ? "selected" : "")"
+                         @onclick="() => ToggleSelection(image)">
+                        <!-- Selection Badge -->
+                        @if (isSelected)
+                        {
+                            <div class="selection-badge">
+                                <span class="badge-number">@(selectionIndex + 1)</span>
+                                <span class="badge-label">@GetSlotLabel(selectionIndex)</span>
+                            </div>
+                        }
+
+                        <!-- Image Container -->
+                        <div class="image-container">
+                            <img src="@GetImageSrc(image)" alt="@(string.IsNullOrEmpty(image.Label) ? "Place" : image.Label)" class="tile-image" />
+                        </div>
+
+                        <!-- Label -->
+                        @if (!string.IsNullOrEmpty(image.Label))
+                        {
+                            <div class="tile-label">
+                                @image.Label
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Show Schedule Button (Fixed at bottom when items selected) -->
+    @if (SelectedImages.Count > 0)
+    {
+        <div class="bottom-action-bar">
+            <button @onclick="ShowSchedule" class="show-schedule-button">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Show Schedule
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ImageItem> PlacesImages = new();
+    private List<ImageItem> SelectedImages = new();
+    private bool IsLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPlacesAsync();
+    }
+
+    private async Task LoadPlacesAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            PlacesImages = await ImageStorage.GetImagesByCategoryAsync(ImageCategory.Places);
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleSelection(ImageItem image)
+    {
+        var existingIndex = SelectedImages.FindIndex(i => i.Id == image.Id);
+
+        if (existingIndex >= 0)
+        {
+            // Deselect
+            SelectedImages.RemoveAt(existingIndex);
+        }
+        else if (SelectedImages.Count < 3)
+        {
+            // Select (only if we have room)
+            SelectedImages.Add(image);
+        }
+
+        StateHasChanged();
+    }
+
+    private int GetSelectionIndex(string imageId)
+    {
+        return SelectedImages.FindIndex(i => i.Id == imageId);
+    }
+
+    private string GetSlotLabel(int index)
+    {
+        return index switch
+        {
+            0 => "Now",
+            1 => "Then",
+            2 => "Next",
+            _ => ""
+        };
+    }
+
+    private void ClearSelection()
+    {
+        SelectedImages.Clear();
+        StateHasChanged();
+    }
+
+    private void ShowSchedule()
+    {
+        // Pass selected image IDs as comma-separated query string
+        var imageIds = string.Join(",", SelectedImages.Select(i => i.Id));
+        Navigation.NavigateTo($"/schedule?ids={imageIds}");
+    }
+
+    private string GetImageSrc(ImageItem image)
+    {
+        if (image.Base64Data.StartsWith("data:"))
+        {
+            return image.Base64Data;
+        }
+        return $"data:image/jpeg;base64,{image.Base64Data}";
+    }
+
+    private void GoHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
+
+<style>
+    .back-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        background-color: white;
+        color: #5B9A9A;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+        background-color: #F0EDE8;
+    }
+
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+    }
+
+    .loading-spinner {
+        width: 3rem;
+        height: 3rem;
+        border: 3px solid #E2DFD8;
+        border-top-color: #5B9A9A;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 4rem 2rem;
+        background-color: white;
+        border-radius: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 6rem;
+        height: 6rem;
+        background-color: #F9F7F3;
+        border-radius: 50%;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-action-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem 1.5rem;
+        min-height: 3rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        background-color: #5B9A9A;
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(91, 154, 154, 0.3);
+        text-decoration: none;
+    }
+
+    .empty-action-button:hover {
+        background-color: #4A8585;
+        box-shadow: 0 4px 12px rgba(91, 154, 154, 0.4);
+    }
+
+    /* Selection Info Bar */
+    .selection-info-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background-color: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1rem;
+    }
+
+    .selection-count {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+    }
+
+    .selection-count-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #5B9A9A;
+    }
+
+    .selection-count-label {
+        font-size: 1rem;
+        color: #606F7B;
+    }
+
+    .clear-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        background-color: #F0EDE8;
+        color: #606F7B;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .clear-button:hover {
+        background-color: #E2DFD8;
+        color: #3D4852;
+    }
+
+    /* Selection Preview */
+    .selection-preview {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .preview-slot {
+        flex: 1;
+        min-width: 100px;
+        max-width: 200px;
+        background-color: white;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .preview-slot-filled {
+        border: 2px solid #5B9A9A;
+    }
+
+    .preview-slot-empty {
+        border: 2px dashed #E2DFD8;
+        opacity: 0.7;
+    }
+
+    .preview-slot-label {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 700;
+        text-align: center;
+        color: #5B9A9A;
+        background-color: rgba(91, 154, 154, 0.1);
+    }
+
+    .preview-slot-image {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+    }
+
+    .preview-slot-name {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-align: center;
+        color: #3D4852;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background-color: white;
+        border-top: 1px solid #F0EDE8;
+    }
+
+    .preview-slot-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 80px;
+        color: #E2DFD8;
+    }
+
+    /* Image Grid */
+    .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+        padding-bottom: 6rem; /* Space for fixed bottom button */
+    }
+
+    .selectable-tile {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 200px;
+        min-height: 200px;
+        background-color: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 3px solid transparent;
+    }
+
+    .selectable-tile:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .selectable-tile.selected {
+        border-color: #5B9A9A;
+        box-shadow: 0 4px 16px rgba(91, 154, 154, 0.3);
+    }
+
+    /* Selection Badge */
+    .selection-badge {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.375rem 0.625rem;
+        background-color: #5B9A9A;
+        color: white;
+        border-radius: 0.5rem;
+        z-index: 10;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .badge-number {
+        font-size: 1.25rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .badge-label {
+        font-size: 0.625rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .image-container {
+        flex: 1;
+        min-height: 160px;
+        background-color: #F0EDE8;
+    }
+
+    .tile-image {
+        width: 100%;
+        height: 100%;
+        min-height: 160px;
+        object-fit: cover;
+    }
+
+    .tile-label {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #3D4852;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background-color: white;
+        border-top: 1px solid #F0EDE8;
+    }
+
+    /* Bottom Action Bar */
+    .bottom-action-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 1rem;
+        background: linear-gradient(to top, rgba(249, 247, 243, 1), rgba(249, 247, 243, 0.95));
+        display: flex;
+        justify-content: center;
+        z-index: 20;
+    }
+
+    .show-schedule-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
+        min-height: 3.5rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        background-color: #5B9A9A;
+        color: white;
+        border: none;
+        border-radius: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 16px rgba(91, 154, 154, 0.4);
+    }
+
+    .show-schedule-button:hover {
+        background-color: #4A8585;
+        box-shadow: 0 6px 20px rgba(91, 154, 154, 0.5);
+        transform: translateY(-2px);
+    }
+
+    @@keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
