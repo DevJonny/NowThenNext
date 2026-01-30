@@ -1,0 +1,541 @@
+@page "/food-choices"
+@using NowThenNext.Models
+@using NowThenNext.Services
+@using NowThenNext.Components
+@inject IImageStorageService ImageStorage
+@inject NavigationManager Navigation
+
+<PageTitle>Food Choices - NowThenNext</PageTitle>
+
+<div class="flex flex-col min-h-screen">
+    <!-- Header with Back Button -->
+    <header class="w-full max-w-5xl mx-auto px-4 sm:px-6 mb-4">
+        <div class="flex items-center gap-4">
+            <button @onclick="GoHome" class="back-button" aria-label="Go back to home">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-calm-text">
+                    Food Choices
+                </h1>
+                <p class="text-calm-text-light text-sm mt-1">
+                    Select 2-4 food items to show as choices
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="w-full max-w-5xl mx-auto px-4 sm:px-6 flex-1">
+        @if (IsLoading)
+        {
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <p class="text-calm-text-light mt-4">Loading food items...</p>
+            </div>
+        }
+        else if (FoodImages.Count == 0)
+        {
+            <!-- Empty State -->
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-calm-accent-light" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-calm-text mb-2">
+                    No Food Items Yet
+                </h2>
+                <p class="text-calm-text-light mb-6">
+                    Add pictures of food before you can show choices.
+                </p>
+                <a href="/upload/food" class="empty-action-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add First Food Item
+                </a>
+            </div>
+        }
+        else
+        {
+            <!-- Selection Info Bar -->
+            <div class="selection-info-bar">
+                <div class="selection-count">
+                    <span class="selection-count-number">@SelectedImages.Count</span>
+                    <span class="selection-count-label">selected @(SelectedImages.Count == 1 ? "(need 2-4)" : SelectedImages.Count < 2 ? "(need 2-4)" : "")</span>
+                </div>
+                @if (SelectedImages.Count > 0)
+                {
+                    <button @onclick="ClearSelection" class="clear-button">
+                        Clear All
+                    </button>
+                }
+            </div>
+
+            <!-- Selection Preview -->
+            @if (SelectedImages.Count > 0)
+            {
+                <div class="selection-preview">
+                    @foreach (var image in SelectedImages)
+                    {
+                        <div class="preview-item" @onclick="() => ToggleSelection(image)">
+                            <img src="@GetImageSrc(image)" alt="@(string.IsNullOrEmpty(image.Label) ? "Food" : image.Label)" class="preview-item-image" />
+                            @if (!string.IsNullOrEmpty(image.Label))
+                            {
+                                <div class="preview-item-label">@image.Label</div>
+                            }
+                            <button class="preview-remove-button" @onclick="() => ToggleSelection(image)" @onclick:stopPropagation="true" aria-label="Remove">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- Image Grid -->
+            <div class="image-grid">
+                @foreach (var image in FoodImages)
+                {
+                    var isSelected = SelectedImages.Any(i => i.Id == image.Id);
+
+                    <div class="selectable-tile @(isSelected ? "selected" : "")"
+                         @onclick="() => ToggleSelection(image)">
+                        <!-- Selection Checkmark -->
+                        @if (isSelected)
+                        {
+                            <div class="selection-checkmark">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        }
+
+                        <!-- Image Container -->
+                        <div class="image-container">
+                            <img src="@GetImageSrc(image)" alt="@(string.IsNullOrEmpty(image.Label) ? "Food" : image.Label)" class="tile-image" />
+                        </div>
+
+                        <!-- Label -->
+                        @if (!string.IsNullOrEmpty(image.Label))
+                        {
+                            <div class="tile-label">
+                                @image.Label
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Show Choices Button (Fixed at bottom when 2+ items selected) -->
+    @if (SelectedImages.Count >= 2)
+    {
+        <div class="bottom-action-bar">
+            <button @onclick="ShowChoices" class="show-choices-button">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                Show Choices
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    private List<ImageItem> FoodImages = new();
+    private List<ImageItem> SelectedImages = new();
+    private bool IsLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFoodAsync();
+    }
+
+    private async Task LoadFoodAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            FoodImages = await ImageStorage.GetImagesByCategoryAsync(ImageCategory.Food);
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ToggleSelection(ImageItem image)
+    {
+        var existingIndex = SelectedImages.FindIndex(i => i.Id == image.Id);
+
+        if (existingIndex >= 0)
+        {
+            // Deselect
+            SelectedImages.RemoveAt(existingIndex);
+        }
+        else if (SelectedImages.Count < 4)
+        {
+            // Select (only if we have room - max 4)
+            SelectedImages.Add(image);
+        }
+
+        StateHasChanged();
+    }
+
+    private void ClearSelection()
+    {
+        SelectedImages.Clear();
+        StateHasChanged();
+    }
+
+    private void ShowChoices()
+    {
+        // Pass selected image IDs as comma-separated query string
+        var imageIds = string.Join(",", SelectedImages.Select(i => i.Id));
+        Navigation.NavigateTo($"/food-display?ids={imageIds}");
+    }
+
+    private string GetImageSrc(ImageItem image)
+    {
+        if (image.Base64Data.StartsWith("data:"))
+        {
+            return image.Base64Data;
+        }
+        return $"data:image/jpeg;base64,{image.Base64Data}";
+    }
+
+    private void GoHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
+
+<style>
+    .back-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        background-color: white;
+        color: #7BA893;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+        background-color: #F0EDE8;
+    }
+
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+    }
+
+    .loading-spinner {
+        width: 3rem;
+        height: 3rem;
+        border: 3px solid #E2DFD8;
+        border-top-color: #7BA893;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 4rem 2rem;
+        background-color: white;
+        border-radius: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .empty-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 6rem;
+        height: 6rem;
+        background-color: #F9F7F3;
+        border-radius: 50%;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-action-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 1rem 1.5rem;
+        min-height: 3rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        background-color: #7BA893;
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(123, 168, 147, 0.3);
+        text-decoration: none;
+    }
+
+    .empty-action-button:hover {
+        background-color: #6A9580;
+        box-shadow: 0 4px 12px rgba(123, 168, 147, 0.4);
+    }
+
+    /* Selection Info Bar */
+    .selection-info-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background-color: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1rem;
+    }
+
+    .selection-count {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+    }
+
+    .selection-count-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #7BA893;
+    }
+
+    .selection-count-label {
+        font-size: 1rem;
+        color: #606F7B;
+    }
+
+    .clear-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        background-color: #F0EDE8;
+        color: #606F7B;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .clear-button:hover {
+        background-color: #E2DFD8;
+        color: #3D4852;
+    }
+
+    /* Selection Preview */
+    .selection-preview {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .preview-item {
+        position: relative;
+        flex-shrink: 0;
+        width: 100px;
+        background-color: white;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 2px solid #7BA893;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .preview-item:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .preview-item-image {
+        width: 100%;
+        height: 80px;
+        object-fit: cover;
+    }
+
+    .preview-item-label {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-align: center;
+        color: #3D4852;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background-color: white;
+        border-top: 1px solid #F0EDE8;
+    }
+
+    .preview-remove-button {
+        position: absolute;
+        top: 0.25rem;
+        right: 0.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.5rem;
+        height: 1.5rem;
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #606F7B;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-remove-button:hover {
+        background-color: white;
+        color: #D4A06A;
+    }
+
+    /* Image Grid */
+    .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 1.5rem;
+        padding-bottom: 6rem; /* Space for fixed bottom button */
+    }
+
+    .selectable-tile {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 200px;
+        min-height: 200px;
+        background-color: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 3px solid transparent;
+    }
+
+    .selectable-tile:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+    }
+
+    .selectable-tile.selected {
+        border-color: #7BA893;
+        box-shadow: 0 4px 16px rgba(123, 168, 147, 0.3);
+    }
+
+    /* Selection Checkmark */
+    .selection-checkmark {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        background-color: #7BA893;
+        color: white;
+        border-radius: 50%;
+        z-index: 10;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .image-container {
+        flex: 1;
+        min-height: 160px;
+        background-color: #F0EDE8;
+    }
+
+    .tile-image {
+        width: 100%;
+        height: 100%;
+        min-height: 160px;
+        object-fit: cover;
+    }
+
+    .tile-label {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #3D4852;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        background-color: white;
+        border-top: 1px solid #F0EDE8;
+    }
+
+    /* Bottom Action Bar */
+    .bottom-action-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 1rem;
+        background: linear-gradient(to top, rgba(249, 247, 243, 1), rgba(249, 247, 243, 0.95));
+        display: flex;
+        justify-content: center;
+        z-index: 20;
+    }
+
+    .show-choices-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 1rem 2rem;
+        min-height: 3.5rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        background-color: #7BA893;
+        color: white;
+        border: none;
+        border-radius: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 16px rgba(123, 168, 147, 0.4);
+    }
+
+    .show-choices-button:hover {
+        background-color: #6A9580;
+        box-shadow: 0 6px 20px rgba(123, 168, 147, 0.5);
+        transform: translateY(-2px);
+    }
+
+    @@keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
