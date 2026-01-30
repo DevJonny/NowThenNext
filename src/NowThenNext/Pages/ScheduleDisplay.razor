@@ -39,7 +39,7 @@
                 var item = ScheduleItems[index];
                 var label = GetSlotLabel(index);
 
-                <div class="schedule-item">
+                <div class="schedule-item @(index == 0 ? "now-item" : "")">
                     <!-- Label -->
                     <div class="item-label">
                         @label
@@ -397,6 +397,20 @@
         }
         to {
             transform: rotate(360deg);
+        }
+    }
+
+    /* Gentle pulse animation for Now item - slow and calming */
+    .now-item {
+        animation: gentlePulse 3s ease-in-out infinite;
+    }
+
+    @@keyframes gentlePulse {
+        0%, 100% {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 0 0 0 rgba(91, 154, 154, 0);
+        }
+        50% {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 0 25px 8px rgba(91, 154, 154, 0.3);
         }
     }
 </style>
