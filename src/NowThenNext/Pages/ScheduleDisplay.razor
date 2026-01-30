@@ -1,0 +1,402 @@
+@page "/schedule"
+@using NowThenNext.Models
+@using NowThenNext.Services
+@inject IImageStorageService ImageStorage
+@inject NavigationManager Navigation
+
+<PageTitle>Schedule - NowThenNext</PageTitle>
+
+<div class="schedule-container">
+    <!-- Unobtrusive Back Button -->
+    <button @onclick="GoBack" class="back-button" aria-label="Go back to selection">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+    </button>
+
+    @if (IsLoading)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+        </div>
+    }
+    else if (ScheduleItems.Count == 0)
+    {
+        <div class="empty-state">
+            <p class="text-calm-text-light text-xl">No activities selected</p>
+            <button @onclick="GoBack" class="return-button">
+                Select Activities
+            </button>
+        </div>
+    }
+    else
+    {
+        <!-- Schedule Display - Horizontal Layout -->
+        <div class="schedule-display @GetLayoutClass()">
+            @for (int i = 0; i < ScheduleItems.Count; i++)
+            {
+                var index = i;
+                var item = ScheduleItems[index];
+                var label = GetSlotLabel(index);
+
+                <div class="schedule-item">
+                    <!-- Label -->
+                    <div class="item-label">
+                        @label
+                    </div>
+
+                    <!-- Image Container -->
+                    <div class="item-image-container">
+                        <img src="@GetImageSrc(item)" alt="@(string.IsNullOrEmpty(item.Label) ? label : item.Label)" class="item-image" />
+                    </div>
+
+                    <!-- Optional Activity Name -->
+                    @if (!string.IsNullOrEmpty(item.Label))
+                    {
+                        <div class="item-name">
+                            @item.Label
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<ImageItem> ScheduleItems = new();
+    private bool IsLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadScheduleItemsAsync();
+    }
+
+    private async Task LoadScheduleItemsAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            // Parse image IDs from query string
+            var uri = new Uri(Navigation.Uri);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            var idsParam = query["ids"];
+
+            if (!string.IsNullOrEmpty(idsParam))
+            {
+                var imageIds = idsParam.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+                // Load all images from storage and filter by IDs
+                var allImages = await ImageStorage.GetImagesByCategoryAsync(ImageCategory.Places);
+
+                // Maintain the order from the query string
+                foreach (var id in imageIds)
+                {
+                    var image = allImages.FirstOrDefault(img => img.Id == id);
+                    if (image != null)
+                    {
+                        ScheduleItems.Add(image);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private string GetSlotLabel(int index)
+    {
+        return index switch
+        {
+            0 => "Now",
+            1 => "Then",
+            2 => "Next",
+            _ => ""
+        };
+    }
+
+    private string GetLayoutClass()
+    {
+        return ScheduleItems.Count switch
+        {
+            1 => "single-item",
+            2 => "two-items",
+            3 => "three-items",
+            _ => ""
+        };
+    }
+
+    private string GetImageSrc(ImageItem image)
+    {
+        if (image.Base64Data.StartsWith("data:"))
+        {
+            return image.Base64Data;
+        }
+        return $"data:image/jpeg;base64,{image.Base64Data}";
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/plan");
+    }
+}
+
+<style>
+    .schedule-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        min-height: 100dvh;
+        width: 100%;
+        padding: 1.5rem;
+        background-color: var(--calm-bg, #F9F7F3);
+        box-sizing: border-box;
+    }
+
+    /* Unobtrusive Back Button */
+    .back-button {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #606F7B;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 50;
+        opacity: 0.7;
+    }
+
+    .back-button:hover {
+        opacity: 1;
+        background-color: white;
+        color: #5B9A9A;
+    }
+
+    /* Loading State */
+    .loading-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loading-spinner {
+        width: 3rem;
+        height: 3rem;
+        border: 3px solid #E2DFD8;
+        border-top-color: #5B9A9A;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    /* Empty State */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        text-align: center;
+    }
+
+    .return-button {
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        background-color: #5B9A9A;
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(91, 154, 154, 0.3);
+    }
+
+    .return-button:hover {
+        background-color: #4A8585;
+    }
+
+    /* Schedule Display - Main Container */
+    .schedule-display {
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        gap: 2rem;
+        width: 100%;
+        max-width: 1400px;
+        flex-wrap: wrap;
+    }
+
+    /* Responsive layout adjustments */
+    .schedule-display.single-item {
+        max-width: 500px;
+    }
+
+    .schedule-display.two-items {
+        max-width: 900px;
+    }
+
+    .schedule-display.three-items {
+        max-width: 1400px;
+    }
+
+    /* Schedule Item */
+    .schedule-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        min-width: 200px;
+        max-width: 400px;
+        background-color: white;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Item Label (Now/Then/Next) */
+    .item-label {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        font-size: 1.75rem;
+        font-weight: 700;
+        text-align: center;
+        color: #5B9A9A;
+        background-color: rgba(91, 154, 154, 0.1);
+        letter-spacing: 0.025em;
+    }
+
+    /* Image Container */
+    .item-image-container {
+        width: 100%;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #F0EDE8;
+        min-height: 250px;
+    }
+
+    .item-image {
+        width: 100%;
+        height: 100%;
+        min-height: 250px;
+        max-height: 50vh;
+        object-fit: cover;
+    }
+
+    /* Activity Name */
+    .item-name {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        text-align: center;
+        color: #3D4852;
+        background-color: white;
+        border-top: 1px solid #F0EDE8;
+    }
+
+    /* Tablet/Desktop horizontal layout */
+    @@media (min-width: 768px) {
+        .schedule-container {
+            padding: 2rem;
+        }
+
+        .schedule-display {
+            flex-wrap: nowrap;
+        }
+
+        .item-label {
+            font-size: 2rem;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .item-image-container {
+            min-height: 300px;
+        }
+
+        .item-image {
+            min-height: 300px;
+        }
+
+        .item-name {
+            font-size: 1.5rem;
+        }
+    }
+
+    /* Large screens */
+    @@media (min-width: 1024px) {
+        .item-label {
+            font-size: 2.25rem;
+            padding: 1.5rem 2rem;
+        }
+
+        .item-image-container {
+            min-height: 350px;
+        }
+
+        .item-image {
+            min-height: 350px;
+        }
+
+        .item-name {
+            font-size: 1.75rem;
+            padding: 1.25rem 2rem;
+        }
+    }
+
+    /* Mobile portrait - stack vertically */
+    @@media (max-width: 767px) and (orientation: portrait) {
+        .schedule-display {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .schedule-item {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .item-label {
+            font-size: 1.5rem;
+        }
+
+        .item-image-container {
+            min-height: 150px;
+        }
+
+        .item-image {
+            min-height: 150px;
+            max-height: 30vh;
+        }
+
+        .item-name {
+            font-size: 1.125rem;
+        }
+    }
+
+    @@keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
