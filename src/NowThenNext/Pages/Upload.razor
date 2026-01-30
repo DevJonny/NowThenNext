@@ -2,6 +2,7 @@
 @page "/upload/{CategoryParam}"
 @using NowThenNext.Models
 @using NowThenNext.Services
+@using NowThenNext.Components
 @inject NavigationManager Navigation
 @inject IImageStorageService ImageStorage
 @inject IJSRuntime JSRuntime
@@ -24,6 +25,8 @@
     </header>
 
     <div class="w-full max-w-lg px-4">
+        <!-- Storage Warning Banner -->
+        <StorageWarningBanner @ref="storageWarningBanner" />
         @* Success Message *@
         @if (ShowSuccess)
         {
@@ -136,6 +139,7 @@
     [Parameter]
     public string? CategoryParam { get; set; }
 
+    private StorageWarningBanner? storageWarningBanner;
     private InputFile? fileInput;
     private string? PreviewImage;
     private string? OriginalBase64Data;
@@ -277,6 +281,12 @@
             OriginalBase64Data = null;
             OriginalContentType = null;
             ImageLabel = string.Empty;
+
+            // Re-check storage after successful upload to potentially show warning banner
+            if (storageWarningBanner != null)
+            {
+                await storageWarningBanner.ResetAndCheckAsync();
+            }
         }
         catch (StorageQuotaExceededException)
         {

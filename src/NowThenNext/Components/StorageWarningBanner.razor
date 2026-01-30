@@ -1,0 +1,168 @@
+@using NowThenNext.Services
+@inject IImageStorageService ImageStorage
+
+@if (ShowBanner && !IsDismissed)
+{
+    <div class="storage-warning-banner">
+        <div class="banner-content">
+            <div class="banner-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+            </div>
+            <div class="banner-text">
+                <span class="banner-title">Storage getting full</span>
+                <span class="banner-detail">~@EstimatedRemainingImages more image@(EstimatedRemainingImages != 1 ? "s" : "") can be saved</span>
+            </div>
+        </div>
+        <button @onclick="Dismiss" class="dismiss-button" aria-label="Dismiss warning">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Threshold percentage (0-100) at which to show the warning banner
+    /// </summary>
+    [Parameter]
+    public double WarningThreshold { get; set; } = 80.0;
+
+    /// <summary>
+    /// Event callback when banner is dismissed
+    /// </summary>
+    [Parameter]
+    public EventCallback OnDismissed { get; set; }
+
+    private bool ShowBanner = false;
+    private bool IsDismissed = false;
+    private int EstimatedRemainingImages = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckStorageAsync();
+    }
+
+    /// <summary>
+    /// Check storage and update banner visibility.
+    /// Call this after uploads to re-check storage status.
+    /// </summary>
+    public async Task CheckStorageAsync()
+    {
+        try
+        {
+            var storageInfo = await ImageStorage.GetStorageInfoAsync();
+            ShowBanner = storageInfo.UsagePercentage >= WarningThreshold;
+            EstimatedRemainingImages = storageInfo.EstimatedRemainingImages;
+
+            // Reset dismissed state if we need to show the banner again
+            // (only if storage was previously below threshold and now above)
+            if (ShowBanner)
+            {
+                // Don't auto-reset dismissed state - let the page decide
+                StateHasChanged();
+            }
+        }
+        catch
+        {
+            // Silently fail - don't show banner if we can't get storage info
+            ShowBanner = false;
+        }
+    }
+
+    /// <summary>
+    /// Reset the dismissed state so banner can appear again.
+    /// Call this after an upload to potentially show the banner again.
+    /// </summary>
+    public async Task ResetAndCheckAsync()
+    {
+        IsDismissed = false;
+        await CheckStorageAsync();
+    }
+
+    private async Task Dismiss()
+    {
+        IsDismissed = true;
+        StateHasChanged();
+
+        if (OnDismissed.HasDelegate)
+        {
+            await OnDismissed.InvokeAsync();
+        }
+    }
+}
+
+<style>
+    .storage-warning-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.875rem 1rem;
+        background-color: #FFF8F0;
+        border: 2px solid #D4A06A;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .banner-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .banner-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        background-color: #FFF3E0;
+        border-radius: 0.5rem;
+        color: #D4A06A;
+        flex-shrink: 0;
+    }
+
+    .banner-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    .banner-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #8B6914;
+    }
+
+    .banner-detail {
+        font-size: 0.875rem;
+        color: #A67C00;
+    }
+
+    .dismiss-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.5rem;
+        background-color: transparent;
+        color: #A67C00;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .dismiss-button:hover {
+        background-color: #FFECD1;
+        color: #8B6914;
+    }
+
+    .dismiss-button:focus {
+        outline: 2px solid #D4A06A;
+        outline-offset: 2px;
+    }
+</style>
