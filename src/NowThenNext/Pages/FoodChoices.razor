@@ -21,7 +21,7 @@
                     Food Choices
                 </h1>
                 <p class="text-calm-text-light text-sm mt-1">
-                    Select 2-4 food items to show as choices
+                    Tap food items to select, then show choices
                 </p>
             </div>
         </div>
@@ -65,7 +65,7 @@
             <div class="selection-info-bar">
                 <div class="selection-count">
                     <span class="selection-count-number">@SelectedImages.Count</span>
-                    <span class="selection-count-label">selected @(SelectedImages.Count == 1 ? "(need 2-4)" : SelectedImages.Count < 2 ? "(need 2-4)" : "")</span>
+                    <span class="selection-count-label">@(SelectedImages.Count == 1 ? "item selected (need 2+)" : SelectedImages.Count < 2 ? "items selected" : "items selected")</span>
                 </div>
                 @if (SelectedImages.Count > 0)
                 {
@@ -182,9 +182,9 @@
             // Deselect
             SelectedImages.RemoveAt(existingIndex);
         }
-        else if (SelectedImages.Count < 4)
+        else
         {
-            // Select (only if we have room - max 4)
+            // Select (no maximum limit)
             SelectedImages.Add(image);
         }
 
