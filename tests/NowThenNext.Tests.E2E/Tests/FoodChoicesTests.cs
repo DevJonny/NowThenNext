@@ -169,15 +169,16 @@ public class FoodChoicesTests
     }
 
     [Fact]
-    public async Task TappingFoodItemShowsSelectionFeedback()
+    public async Task TappingFoodItemShowsConfirmationScreen()
     {
         // Arrange
         var page = await _fixture.CreatePageAsync();
 
         try
         {
-            // Upload 2 food images
-            await UploadTestImageAsync(page, $"SelectFeedback1_{Guid.NewGuid().ToString()[..8]}", "Food", clearStorageFirst: true);
+            // Upload 2 food images with known labels
+            var label1 = $"SelectFeedback1_{Guid.NewGuid().ToString()[..8]}";
+            await UploadTestImageAsync(page, label1, "Food", clearStorageFirst: true);
             await UploadTestImageAsync(page, $"SelectFeedback2_{Guid.NewGuid().ToString()[..8]}", "Food", clearStorageFirst: false);
 
             // Navigate to Food Choices page and select items
@@ -194,16 +195,72 @@ public class FoodChoicesTests
             await page.WaitForURLAsync(new System.Text.RegularExpressions.Regex("/food-display"), new PageWaitForURLOptions { Timeout = 10000 });
             await page.WaitForSelectorAsync(".food-choices-grid", new PageWaitForSelectorOptions { Timeout = 60000 });
 
-            // Act - Tap a food item on the display page
+            // Act - Tap the first food item on the display page
             var foodItem = page.Locator(".food-choice-item").First;
             await foodItem.ClickAsync();
 
-            // Assert - The item should have 'selected' class (visual feedback)
-            await Assertions.Expect(foodItem).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("selected"));
+            // Assert - Confirmation screen should appear with checkmark
+            var confirmationCheckmark = page.Locator(".confirmation-checkmark");
+            await Assertions.Expect(confirmationCheckmark).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 5000 });
 
-            // Assert - Selection indicator (checkmark) should be visible
-            var selectionIndicator = page.Locator(".selection-indicator");
-            await Assertions.Expect(selectionIndicator).ToBeVisibleAsync();
+            // Assert - Selected food should be displayed in confirmation
+            var confirmedFoodCard = page.Locator(".confirmed-food-card");
+            await Assertions.Expect(confirmedFoodCard).ToBeVisibleAsync();
+
+            // Assert - Choose Again button should be visible
+            var chooseAgainButton = page.Locator(".choose-again-button");
+            await Assertions.Expect(chooseAgainButton).ToBeVisibleAsync();
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ChooseAgainButtonReturnsToFoodChoices()
+    {
+        // Arrange
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            // Upload 2 food images
+            await UploadTestImageAsync(page, $"ChooseAgain1_{Guid.NewGuid().ToString()[..8]}", "Food", clearStorageFirst: true);
+            await UploadTestImageAsync(page, $"ChooseAgain2_{Guid.NewGuid().ToString()[..8]}", "Food", clearStorageFirst: false);
+
+            // Navigate to Food Choices page and select items
+            await page.GotoAsync($"{_fixture.BaseUrl}/food-choices");
+            await page.WaitForSelectorAsync(".image-grid", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            var tiles = page.Locator(".selectable-tile");
+            await tiles.Nth(0).ClickAsync();
+            await tiles.Nth(1).ClickAsync();
+
+            // Navigate to food display
+            var showChoicesButton = page.Locator(".show-choices-button");
+            await showChoicesButton.ClickAsync();
+            await page.WaitForURLAsync(new System.Text.RegularExpressions.Regex("/food-display"), new PageWaitForURLOptions { Timeout = 10000 });
+            await page.WaitForSelectorAsync(".food-choices-grid", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Tap a food item to get to confirmation screen
+            var foodItem = page.Locator(".food-choice-item").First;
+            await foodItem.ClickAsync();
+
+            // Wait for confirmation screen
+            await page.WaitForSelectorAsync(".confirmation-screen", new PageWaitForSelectorOptions { Timeout = 5000 });
+
+            // Act - Click Choose Again button
+            var chooseAgainButton = page.Locator(".choose-again-button");
+            await chooseAgainButton.ClickAsync();
+
+            // Assert - Should return to the food choices grid (not the food-choices selection page)
+            var foodChoicesGrid = page.Locator(".food-choices-grid");
+            await Assertions.Expect(foodChoicesGrid).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 5000 });
+
+            // Assert - Food items should be visible again for re-selection
+            var foodItems = page.Locator(".food-choice-item");
+            await Assertions.Expect(foodItems).ToHaveCountAsync(2);
         }
         finally
         {

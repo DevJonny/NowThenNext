@@ -20,6 +20,40 @@
             <div class="loading-spinner"></div>
         </div>
     }
+    else if (ShowConfirmation && ConfirmedFood != null)
+    {
+        <!-- Confirmation Screen -->
+        <div class="confirmation-screen">
+            <!-- Large checkmark with animation -->
+            <div class="confirmation-checkmark">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+
+            <!-- Selected food image displayed large -->
+            <div class="confirmed-food-card">
+                <div class="confirmed-food-image-container">
+                    <img src="@GetImageSrc(ConfirmedFood)"
+                         alt="@(string.IsNullOrEmpty(ConfirmedFood.Label) ? "Selected food" : ConfirmedFood.Label)"
+                         class="confirmed-food-image" />
+                </div>
+                @if (!string.IsNullOrEmpty(ConfirmedFood.Label))
+                {
+                    <div class="confirmed-food-name">
+                        @ConfirmedFood.Label
+                    </div>
+                }
+            </div>
+
+            <!-- Action buttons -->
+            <div class="confirmation-actions">
+                <button @onclick="ChooseAgain" class="choose-again-button">
+                    Choose Again
+                </button>
+            </div>
+        </div>
+    }
     else if (FoodItems.Count == 0)
     {
         <div class="empty-state">
@@ -74,6 +108,8 @@
     private List<ImageItem> FoodItems = new();
     private string? SelectedFoodId = null;
     private bool IsLoading = true;
+    private bool ShowConfirmation = false;
+    private ImageItem? ConfirmedFood = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -119,15 +155,19 @@
 
     private void SelectFood(string foodId)
     {
-        // Toggle selection - tap again to deselect
-        if (SelectedFoodId == foodId)
-        {
-            SelectedFoodId = null;
-        }
-        else
-        {
-            SelectedFoodId = foodId;
-        }
+        // Select the food and show confirmation screen
+        SelectedFoodId = foodId;
+        ConfirmedFood = FoodItems.FirstOrDefault(f => f.Id == foodId);
+        ShowConfirmation = true;
+        StateHasChanged();
+    }
+
+    private void ChooseAgain()
+    {
+        // Reset to selection mode
+        ShowConfirmation = false;
+        ConfirmedFood = null;
+        SelectedFoodId = null;
         StateHasChanged();
     }
 
@@ -138,6 +178,9 @@
             2 => "two-items",
             3 => "three-items",
             4 => "four-items",
+            5 => "five-items",
+            6 => "six-items",
+            _ when FoodItems.Count > 6 => "six-items",
             _ => "two-items"
         };
     }
@@ -153,7 +196,15 @@
 
     private void GoBack()
     {
-        Navigation.NavigateTo("/food-choices");
+        if (ShowConfirmation)
+        {
+            // If on confirmation screen, go back to selection
+            ChooseAgain();
+        }
+        else
+        {
+            Navigation.NavigateTo("/food-choices");
+        }
     }
 }
 
@@ -264,6 +315,16 @@
     .food-choices-grid.four-items {
         grid-template-columns: repeat(2, 1fr);
         max-width: 900px;
+    }
+
+    .food-choices-grid.five-items {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1100px;
+    }
+
+    .food-choices-grid.six-items {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1100px;
     }
 
     /* Food Choice Item */
@@ -381,6 +442,133 @@
         }
     }
 
+    @@keyframes confirmationBounce {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        70% {
+            transform: scale(0.9);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes confirmationSlide {
+        0% {
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    /* Confirmation Screen */
+    .confirmation-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        padding: 2rem;
+        width: 100%;
+        max-width: 600px;
+    }
+
+    .confirmation-checkmark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 6rem;
+        height: 6rem;
+        background-color: #7BA893;
+        color: white;
+        border-radius: 50%;
+        box-shadow: 0 8px 32px rgba(123, 168, 147, 0.4);
+        animation: confirmationBounce 0.6s ease-out;
+    }
+
+    .confirmation-checkmark svg {
+        width: 3.5rem;
+        height: 3.5rem;
+    }
+
+    .confirmed-food-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: white;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        border: 4px solid #7BA893;
+        width: 100%;
+        max-width: 400px;
+        animation: confirmationSlide 0.5s ease-out 0.2s both;
+    }
+
+    .confirmed-food-image-container {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #F0EDE8;
+    }
+
+    .confirmed-food-image {
+        width: 100%;
+        height: auto;
+        min-height: 200px;
+        max-height: 50vh;
+        object-fit: cover;
+    }
+
+    .confirmed-food-name {
+        width: 100%;
+        padding: 1.25rem 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-align: center;
+        color: #3D4852;
+        background-color: white;
+        border-top: 1px solid #F0EDE8;
+    }
+
+    .confirmation-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        max-width: 300px;
+        animation: confirmationSlide 0.5s ease-out 0.4s both;
+    }
+
+    .choose-again-button {
+        width: 100%;
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        background-color: white;
+        color: #606F7B;
+        border: 2px solid #E2DFD8;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .choose-again-button:hover {
+        background-color: #F0EDE8;
+        border-color: #7BA893;
+        color: #7BA893;
+    }
+
     /* Tablet responsiveness */
     @@media (min-width: 768px) {
         .food-display-container {
@@ -394,6 +582,12 @@
         .food-choices-grid.four-items {
             grid-template-columns: repeat(2, 1fr);
             max-width: 1000px;
+        }
+
+        .food-choices-grid.five-items,
+        .food-choices-grid.six-items {
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 1200px;
         }
 
         .food-image-container {
@@ -418,6 +612,30 @@
             width: 2.5rem;
             height: 2.5rem;
         }
+
+        /* Confirmation screen tablet */
+        .confirmation-checkmark {
+            width: 8rem;
+            height: 8rem;
+        }
+
+        .confirmation-checkmark svg {
+            width: 4.5rem;
+            height: 4.5rem;
+        }
+
+        .confirmed-food-card {
+            max-width: 500px;
+        }
+
+        .confirmed-food-image {
+            min-height: 280px;
+        }
+
+        .confirmed-food-name {
+            font-size: 1.75rem;
+            padding: 1.5rem 2rem;
+        }
     }
 
     /* Large screens */
@@ -429,6 +647,16 @@
         .food-choices-grid.four-items {
             grid-template-columns: repeat(4, 1fr);
             max-width: 1400px;
+        }
+
+        .food-choices-grid.five-items {
+            grid-template-columns: repeat(5, 1fr);
+            max-width: 1500px;
+        }
+
+        .food-choices-grid.six-items {
+            grid-template-columns: repeat(6, 1fr);
+            max-width: 1600px;
         }
 
         .food-image-container {
@@ -445,7 +673,7 @@
         }
     }
 
-    /* Mobile portrait - stack 2 items per row for 4 items, single column for 2-3 */
+    /* Mobile portrait - stack 2 items per row for 4+ items, single column for 2-3 */
     @@media (max-width: 767px) and (orientation: portrait) {
         .food-display-container {
             padding: 1rem;
@@ -458,7 +686,9 @@
             gap: 1rem;
         }
 
-        .food-choices-grid.four-items {
+        .food-choices-grid.four-items,
+        .food-choices-grid.five-items,
+        .food-choices-grid.six-items {
             grid-template-columns: repeat(2, 1fr);
             gap: 0.75rem;
         }
@@ -492,6 +722,41 @@
             width: 1.5rem;
             height: 1.5rem;
         }
+
+        /* Confirmation screen mobile */
+        .confirmation-screen {
+            padding: 1rem;
+            gap: 1.5rem;
+        }
+
+        .confirmation-checkmark {
+            width: 5rem;
+            height: 5rem;
+        }
+
+        .confirmation-checkmark svg {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .confirmed-food-card {
+            max-width: 100%;
+        }
+
+        .confirmed-food-image {
+            min-height: 150px;
+            max-height: 40vh;
+        }
+
+        .confirmed-food-name {
+            font-size: 1.25rem;
+            padding: 1rem 1.25rem;
+        }
+
+        .choose-again-button {
+            padding: 0.875rem 1.5rem;
+            font-size: 1rem;
+        }
     }
 
     /* Mobile landscape - side by side */
@@ -512,6 +777,14 @@
             grid-template-columns: repeat(4, 1fr);
         }
 
+        .food-choices-grid.five-items {
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        .food-choices-grid.six-items {
+            grid-template-columns: repeat(6, 1fr);
+        }
+
         .food-image-container {
             min-height: 100px;
         }
@@ -524,6 +797,49 @@
         .food-name {
             font-size: 0.875rem;
             padding: 0.5rem 0.75rem;
+        }
+
+        /* Confirmation screen landscape */
+        .confirmation-screen {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 1rem 2rem;
+        }
+
+        .confirmation-checkmark {
+            width: 4rem;
+            height: 4rem;
+        }
+
+        .confirmation-checkmark svg {
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+
+        .confirmed-food-card {
+            flex: 0 1 auto;
+            max-width: 50%;
+        }
+
+        .confirmed-food-image {
+            min-height: 100px;
+            max-height: 50vh;
+        }
+
+        .confirmed-food-name {
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .confirmation-actions {
+            max-width: 200px;
+        }
+
+        .choose-again-button {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.875rem;
         }
     }
 </style>
