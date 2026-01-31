@@ -6,7 +6,8 @@ namespace NowThenNext.Models;
 public enum ImageCategory
 {
     Places,
-    Food
+    Food,
+    Activities
 }
 
 /// <summary>

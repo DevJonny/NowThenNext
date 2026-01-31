@@ -16,7 +16,7 @@ public class BackupData
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// All images (Places and Food) with their full data
+    /// All images (Places, Food, and Activities) with their full data
     /// </summary>
     public List<ImageItem> Images { get; set; } = new();
 }
