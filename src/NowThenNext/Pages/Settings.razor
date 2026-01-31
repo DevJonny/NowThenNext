@@ -1,5 +1,10 @@
 @page "/settings"
+@using System.Text.Json
+@using NowThenNext.Models
+@using NowThenNext.Services
 @inject NavigationManager Navigation
+@inject IImageStorageService ImageStorage
+@inject IJSRuntime JSRuntime
 
 <PageTitle>Settings - NowThenNext</PageTitle>
 
@@ -34,18 +39,50 @@
                 Backup your images and settings, or restore from a previous backup.
             </p>
 
+            <!-- Success/Error Messages -->
+            @if (!string.IsNullOrEmpty(SuccessMessage))
+            {
+                <div class="success-message">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>@SuccessMessage</span>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="error-message">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>@ErrorMessage</span>
+                </div>
+            }
+
             <!-- Action Buttons -->
             <div class="settings-actions">
                 <!-- Backup Button -->
-                <button class="settings-action-button backup-button" @onclick="BackupData">
+                <button class="settings-action-button backup-button" @onclick="BackupData" disabled="@IsBackingUp">
                     <div class="action-icon">
-                        <!-- Download/Export Icon -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
+                        @if (IsBackingUp)
+                        {
+                            <!-- Loading spinner -->
+                            <svg class="w-8 h-8 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        }
+                        else
+                        {
+                            <!-- Download/Export Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                        }
                     </div>
                     <div class="action-content">
-                        <span class="action-title">Backup Data</span>
+                        <span class="action-title">@(IsBackingUp ? "Backing up..." : "Backup Data")</span>
                         <span class="action-description">Save all your images to a file</span>
                     </div>
                 </button>
@@ -69,15 +106,61 @@
 </div>
 
 @code {
+    private bool IsBackingUp { get; set; }
+    private string? SuccessMessage { get; set; }
+    private string? ErrorMessage { get; set; }
+
     private void GoBack()
     {
         Navigation.NavigateTo("/");
     }
 
-    private void BackupData()
+    private async Task BackupData()
     {
-        // Backup functionality will be implemented in US-029
-        // For now, this serves as the UI button
+        try
+        {
+            // Clear any previous messages
+            SuccessMessage = null;
+            ErrorMessage = null;
+            IsBackingUp = true;
+            StateHasChanged();
+
+            // Get all images from storage
+            var images = await ImageStorage.GetAllImagesAsync();
+
+            // Create backup data structure
+            var backup = new BackupData
+            {
+                Version = "1.0",
+                CreatedAt = DateTime.UtcNow,
+                Images = images
+            };
+
+            // Serialize to JSON
+            var json = JsonSerializer.Serialize(backup, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+
+            // Generate filename with timestamp
+            var timestamp = DateTime.Now.ToString("yyyy-MM-dd");
+            var filename = $"nowthenext-backup-{timestamp}.json";
+
+            // Trigger download via JavaScript
+            await JSRuntime.InvokeVoidAsync("downloadJsonFile", filename, json);
+
+            // Show success message
+            SuccessMessage = $"Backup downloaded! ({images.Count} images saved)";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Backup failed: {ex.Message}";
+        }
+        finally
+        {
+            IsBackingUp = false;
+            StateHasChanged();
+        }
     }
 
     private void RestoreData()
@@ -193,6 +276,46 @@
     .action-description {
         font-size: 0.875rem;
         color: #6B7280;
+    }
+
+    .success-message {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background-color: rgba(107, 154, 125, 0.15);
+        border: 1px solid #6B9A7D;
+        border-radius: 0.5rem;
+        color: #6B9A7D;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        width: 100%;
+    }
+
+    .error-message {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background-color: rgba(212, 160, 106, 0.15);
+        border: 1px solid #D4A06A;
+        border-radius: 0.5rem;
+        color: #C08B55;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        width: 100%;
+    }
+
+    .settings-action-button:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .settings-action-button:disabled:hover {
+        transform: none;
+        box-shadow: none;
+        border-color: transparent;
     }
 
     /* Tablet optimization */
