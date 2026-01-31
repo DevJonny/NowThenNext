@@ -1,0 +1,447 @@
+## Codebase Patterns
+- Project structure: Blazor WASM project lives in `src/NowThenNext/`
+- Build command: `dotnet build` from project directory
+- Run command: `dotnet run` from project directory (runs on localhost:5161)
+- .NET 10 RC is installed (preview version)
+- bin/ and obj/ are gitignored - only commit source files
+- Tailwind CSS is configured via CDN in wwwroot/index.html with custom calm theme colors
+- CSS custom properties for theme colors are defined in wwwroot/css/app.css (use var(--calm-*))
+- Custom Tailwind colors: calm-primary, calm-accent, calm-bg, calm-text, calm-warning, etc.
+- Google Fonts Nunito is loaded for rounded, friendly typography
+- Touch-friendly sizing: use min-h-tap (48px) and Tailwind's extended sizing
+- MainLayout is simplified full-width layout (no sidebar) - primary navigation via home screen buttons
+- Use Tailwind classes in .razor files for styling: bg-calm-bg, text-calm-text, etc.
+- Responsive padding pattern: px-6 py-8 for mobile, sm:px-8 sm:py-10 for larger screens
+- Services follow interface + implementation pattern in Services/ folder
+- Use IJSRuntime for browser API access (localStorage, etc.) via JS interop
+- Inject services in .razor files with @inject directive: `@inject IImageStorageService ImageStorage`
+- Storage monitoring: use GetStorageInfoAsync() to check usage before saving images; catch StorageQuotaExceededException on save operations
+- Image compression: use `window.compressImage(dataUrl, maxDimension, quality)` JS function for canvas-based resize/compress
+- CSS @keyframes in Razor: use `@@keyframes` (double @) to escape the @ symbol
+- Reusable components go in src/NowThenNext/Components/ folder
+- Use ImageTile component for image grids: accepts ImageItem, OnFavoriteToggle, OnDelete callbacks
+- Tablet breakpoints: 768px-1023px (md:), 1024px+ (lg:) - use fixed grid columns for consistency
+- Touch targets: use min-width/min-height for 48px (3rem) minimum, can keep visual size smaller with separate width/height
+- Grid items: use `min-width: 0` to allow proper shrinking in CSS Grid
+- E2E tests: tests/NowThenNext.Tests.E2E/ uses xUnit v3 + Playwright for browser testing
+- Run E2E tests: `dotnet test tests/NowThenNext.Tests.E2E/NowThenNext.Tests.E2E.csproj`
+- E2E tests use `[Collection("BlazorApp")]` attribute to share server/browser fixture
+
+---
+
+## 2026-01-29 - US-001
+- What was implemented: Created foundational Blazor WASM project
+- Files changed:
+  - src/NowThenNext/ - New Blazor WASM project
+  - .gitignore - Added .NET build outputs
+- **Learnings for future iterations:**
+  - Project uses .NET 10 RC (preview version)
+  - Default template includes Bootstrap CSS via local files in wwwroot/lib/
+  - Default dev server runs on port 5161 (configured in launchSettings.json)
+  - Project structure includes Pages/, Layout/, wwwroot/ folders
+---
+
+## 2026-01-29 - US-002
+- What was implemented: Configured Tailwind CSS with calm color theme for children with SEN
+- Files changed:
+  - src/NowThenNext/wwwroot/index.html - Added Tailwind CDN, custom config, Google Fonts
+  - src/NowThenNext/wwwroot/css/app.css - Added CSS custom properties, replaced harsh colors
+- **Learnings for future iterations:**
+  - Tailwind CDN approach avoids build complexity - config in index.html script block
+  - Custom colors available via both CSS vars (--calm-*) and Tailwind classes (bg-calm-primary etc.)
+  - Color palette: primary=#5B9A9A (teal), accent=#7BA893 (green), bg=#F9F7F3 (off-white), text=#3D4852 (gray)
+  - Replaced all pure reds with calm-warning (#D4A06A amber) for SEN-friendly design
+  - Text on background contrast is ~8.5:1 (exceeds WCAG AA 4.5:1 requirement)
+  - Font sizing extended: base is 18px (1.125rem), minimum for accessibility
+---
+
+## 2026-01-29 - US-003
+- What was implemented: Created base layout component with calm design system
+- Files changed:
+  - src/NowThenNext/Layout/MainLayout.razor - Simplified to full-width calm layout
+  - src/NowThenNext/Layout/MainLayout.razor.css - Added responsive orientation support
+  - src/NowThenNext/Layout/NavMenu.razor - Removed sidebar navigation (reserved for future)
+  - src/NowThenNext/Layout/NavMenu.razor.css - Cleared sidebar styles
+  - src/NowThenNext/Pages/Home.razor - Updated to use calm theme colors
+- **Learnings for future iterations:**
+  - MainLayout is intentionally minimal - no sidebar for calm, uncluttered experience
+  - Primary navigation will be via large buttons on home screen (US-006)
+  - Use Tailwind utility classes directly in .razor files (bg-calm-bg, text-calm-text, etc.)
+  - Responsive padding: px-6 py-8 mobile, sm:px-8 sm:py-10 larger screens
+  - Content max-width (max-w-5xl = 1024px) prevents overly wide layouts in landscape
+  - Orientation-specific CSS media queries: @media (orientation: landscape)
+  - Touch targets use min-h-tap class (48px) from extended Tailwind config
+---
+
+## 2026-01-29 - US-004
+- What was implemented: Created image data model and localStorage-based storage service
+- Files changed:
+  - src/NowThenNext/Models/ImageItem.cs - New model with Id, Base64Data, Label, Category (enum), IsFavorite, CreatedAt
+  - src/NowThenNext/Services/IImageStorageService.cs - Interface defining storage operations
+  - src/NowThenNext/Services/LocalStorageImageService.cs - Implementation using JS interop for localStorage
+  - src/NowThenNext/Program.cs - Registered IImageStorageService in DI container
+- **Learnings for future iterations:**
+  - Models go in src/NowThenNext/Models/ folder
+  - Services go in src/NowThenNext/Services/ folder with interface + implementation pattern
+  - Use IJSRuntime for localStorage access via JS interop: `_jsRuntime.InvokeAsync<string?>("localStorage.getItem", key)`
+  - Storage key is "nowthenext_images" - all images stored as JSON array in single localStorage key
+  - Service is registered as Scoped: `builder.Services.AddScoped<IImageStorageService, LocalStorageImageService>()`
+  - ImageCategory enum has two values: Places and Food
+---
+
+## 2026-01-29 - US-005
+- What was implemented: Added storage usage monitoring methods to the image storage service
+- Files changed:
+  - src/NowThenNext/Services/IImageStorageService.cs - Added GetStorageUsagePercentageAsync, GetEstimatedRemainingCapacityAsync, GetStorageInfoAsync methods and StorageInfo record
+  - src/NowThenNext/Services/LocalStorageImageService.cs - Implemented storage monitoring with quota tracking, added StorageQuotaExceededException
+- **Learnings for future iterations:**
+  - localStorage quota is typically 5MB (5 * 1024 * 1024 bytes)
+  - localStorage stores strings as UTF-16, so each character = 2 bytes when calculating usage
+  - Average image size estimate of 100KB used for capacity calculations (compressed base64 images)
+  - StorageQuotaExceededException wraps JS "QuotaExceededError" for graceful handling
+  - StorageInfo record provides: UsagePercentage, EstimatedRemainingImages, CurrentUsageBytes, EstimatedQuotaBytes
+  - SaveAllImagesAsync now catches quota errors and throws StorageQuotaExceededException
+---
+
+## 2026-01-29 - US-006
+- What was implemented: Created main menu / home screen with four large navigation buttons
+- Files changed:
+  - src/NowThenNext/Pages/Home.razor - Complete rewrite with main navigation buttons
+- **Learnings for future iterations:**
+  - Menu buttons use inline SVG icons for simplicity (no external icon library dependency)
+  - Button styling uses scoped `<style>` block in .razor file for component-specific CSS
+  - Route links: /plan, /food-choices, /my-pictures, /favorites (pages need to be created)
+  - Button design: white background cards with colored icon container (56x56px), minimum height 64px
+  - Hover effects use CSS transform and box-shadow transitions for subtle feedback
+  - Menu grid is single column on mobile, max-width 448px (max-w-md) for constrained layout
+  - Color coding: Plan=primary teal, Food=accent green, Pictures=primary-light, Favorites=warning amber
+---
+
+## 2026-01-29 - US-007
+- What was implemented: Created image upload component with preview, label input, and category selection
+- Files changed:
+  - src/NowThenNext/Pages/Upload.razor - New page component at routes /upload and /upload/{CategoryParam}
+- **Learnings for future iterations:**
+  - Use InputFile component for file uploads with accept attribute for filtering file types
+  - InputFile's OnChange provides InputFileChangeEventArgs with file access
+  - Read files as base64 using Stream and MemoryStream: `file.OpenReadStream(maxSize)`, then `Convert.ToBase64String(bytes)`
+  - Data URLs format: `data:{contentType};base64,{base64String}` for image preview
+  - EventCallback<T> with tuples works for multi-value callbacks: `EventCallback<(string, string, ImageCategory)>`
+  - Route parameters use [Parameter] attribute with {ParamName} in @page directive
+  - Category buttons toggle selection state with Blazor @onclick and conditional CSS classes
+  - Component is reusable - accepts optional CategoryParam to pre-select category
+  - Actual storage save logic deferred to US-008 (connection to storage service)
+---
+
+## 2026-01-29 - US-008
+- What was implemented: Connected upload component to storage service with image compression
+- Files changed:
+  - src/NowThenNext/Pages/Upload.razor - Added storage service integration, compression, feedback UI
+  - src/NowThenNext/wwwroot/index.html - Added compressImage JavaScript function for canvas-based compression
+- **Learnings for future iterations:**
+  - Image compression uses canvas API via JS interop: `window.compressImage(dataUrl, maxDimension, quality)`
+  - Compression settings: 800px max dimension, 0.7 JPEG quality for good balance of size/quality
+  - Use `@@keyframes` (double @) in Razor files to escape the @ symbol for CSS keyframes
+  - Success/error messages use calm theme colors: success=#6B9A7D, warning=#D4A06A
+  - StorageQuotaExceededException is thrown by service when localStorage is full
+  - Loading state shown during async save operation using IsSaving boolean and StateHasChanged()
+  - Disabled attribute on buttons works with `disabled="@IsSaving"` syntax
+---
+
+## 2026-01-29 - US-009
+- What was implemented: Created reusable ImageTile component for displaying images in grids
+- Files changed:
+  - src/NowThenNext/Components/ImageTile.razor - New reusable tile component with image, label, favorite toggle, and delete button
+- **Learnings for future iterations:**
+  - Components go in src/NowThenNext/Components/ folder
+  - Use [Parameter, EditorRequired] for required component parameters
+  - EventCallback<string> for callbacks that pass IDs (e.g., OnFavoriteToggle, OnDelete)
+  - Use @onclick:stopPropagation="true" to prevent click bubbles on overlay buttons
+  - Image tiles show delete button on hover using CSS opacity transition
+  - Favorite button uses filled vs outline heart to indicate state (calm-warning color when favorited)
+  - Min 200px tile size as per accessibility requirements; image container has min-height 160px
+---
+
+## 2026-01-30 - US-010
+- What was implemented: Created Places library view with image grid, empty state, delete confirmation modal
+- Files changed:
+  - src/NowThenNext/Pages/PlacesLibrary.razor - New page at /my-pictures/places route with image grid display
+- **Learnings for future iterations:**
+  - Use ImageTile component with OnFavoriteToggle and OnDelete callbacks for grid displays
+  - Delete confirmation modal pattern: ShowDeleteConfirmation boolean + ImageToDeleteId string for tracking
+  - Modal uses @onclick:stopPropagation="true" on content div to prevent backdrop clicks from closing
+  - Navigation to upload with category pre-selected: href="/upload/places" uses route parameter
+  - Loading state pattern: IsLoading boolean with spinner while awaiting async data
+  - Empty state provides clear call-to-action button linking to upload page
+---
+
+## 2026-01-30 - US-011
+- What was implemented: Created Food library view following same pattern as Places library
+- Files changed:
+  - src/NowThenNext/Pages/FoodLibrary.razor - New page at /my-pictures/food route with image grid display
+- **Learnings for future iterations:**
+  - Food library follows same pattern as Places library - copy/adapt approach is efficient
+  - Use calm-accent (#7BA893 green) color for Food-related UI elements (title, buttons) vs calm-primary (teal) for Places
+  - Route: /my-pictures/food matches navigation structure for My Pictures section
+  - Empty state icon uses different SVG than Places (food-related vs location pin)
+---
+
+## 2026-01-30 - US-012
+- What was implemented: Created My Pictures page with tab navigation for switching between Places and Food libraries
+- Files changed:
+  - src/NowThenNext/Pages/MyPictures.razor - New page at /my-pictures and /my-pictures/{Tab} routes with tabbed navigation
+- **Learnings for future iterations:**
+  - Tab navigation implemented as URL-based routing (/my-pictures/places, /my-pictures/food) for bookmarkable URLs and browser back button support
+  - CSS sliding indicator technique: position absolute element with transform: translateX() and transition for smooth animation
+  - Tab indicator uses calc() for proper positioning: width: calc(50% - padding), transform: translateX(calc(100% + padding))
+  - Multiple @page directives on same component for route variants: @page "/my-pictures" and @page "/my-pictures/{Tab}"
+  - OnParametersSetAsync needed in addition to OnInitializedAsync to reload data when tab parameter changes
+  - Combined tab + content in one page rather than separate Places/Food library pages for smoother UX (though separate pages still exist at /my-pictures/places and /my-pictures/food)
+---
+
+## 2026-01-30 - US-013
+- What was implemented: Created Favorites view accessible from home screen with categorized display of favorited images
+- Files changed:
+  - src/NowThenNext/Pages/Favorites.razor - New page at /favorites route with sectioned display for Places and Food favorites
+- **Learnings for future iterations:**
+  - Use GetFavoriteImagesAsync() from storage service to retrieve all favorited images, then filter by category
+  - Favorites view groups images by category with section headers (Places, Food) including count badges
+  - When unfavoriting from Favorites view, remove item from list immediately without reload for smooth UX
+  - Section headers use colored icons (teal for Places, green for Food) matching the category color scheme
+  - Empty state directs users to My Pictures for adding favorites (not upload page)
+  - Favorites uses warm amber (#D4A06A) color theme for header icon and loading spinner (matches the Favorites button on home)
+---
+
+## 2026-01-30 - US-014
+- What was implemented: Created StorageWarningBanner component that warns users when storage exceeds 80% capacity
+- Files changed:
+  - src/NowThenNext/Components/StorageWarningBanner.razor - New dismissible warning banner component
+  - src/NowThenNext/Pages/Upload.razor - Integrated banner and re-check after uploads
+  - src/NowThenNext/Pages/MyPictures.razor - Added banner to library view
+  - src/NowThenNext/Pages/Favorites.razor - Added banner to favorites view
+- **Learnings for future iterations:**
+  - StorageWarningBanner component is reusable - just add `<StorageWarningBanner />` to any page
+  - Component uses GetStorageInfoAsync() to check usage percentage and estimated remaining capacity
+  - Dismissible via IsDismissed boolean; use ResetAndCheckAsync() to reset dismissed state after uploads
+  - Warm amber color scheme (#D4A06A) for banner to stay SEN-friendly (no harsh red)
+  - Use @ref to get component reference for calling methods like ResetAndCheckAsync()
+  - Component checks storage on initialization via OnInitializedAsync
+---
+
+## 2026-01-30 - US-015
+- What was implemented: Built schedule selection interface at /plan route for selecting up to 3 places for Now/Then/Next schedule
+- Files changed:
+  - src/NowThenNext/Pages/PlanDay.razor - New page with selectable grid, selection badges, and preview strip
+- **Learnings for future iterations:**
+  - Selection state managed with List<ImageItem> for order preservation (SelectedImages)
+  - Selection badges show slot number (1,2,3) and label (Now/Then/Next) in top-left corner
+  - Visual feedback: teal border on selected tiles, selection-badge overlay with number and label
+  - Preview strip at top shows 3 slots with images or placeholders for visual feedback
+  - Fixed bottom action bar for "Show Schedule" button with gradient fade effect
+  - Navigation to schedule display uses query string: /schedule?ids=id1,id2,id3
+  - Maximum 3 selections enforced in ToggleSelection method
+  - CSS animations use @@keyframes (double @) to escape in Razor files
+---
+
+## 2026-01-30 - US-016
+- What was implemented: Built schedule display carousel showing 1-3 selected images with Now/Then/Next labels
+- Files changed:
+  - src/NowThenNext/Pages/ScheduleDisplay.razor - New page at /schedule route with full-screen display of schedule items
+- **Learnings for future iterations:**
+  - Parse query string using System.Web.HttpUtility.ParseQueryString(uri.Query) to get image IDs
+  - Maintain order from query string when loading images (iterate IDs and find matching images)
+  - Use flex layout with gap for horizontal arrangement on desktop, flex-direction: column on mobile portrait
+  - Label font sizes: 1.5rem mobile, 2rem tablet, 2.25rem desktop (minimum 24px = 1.5rem met)
+  - Back button uses opacity: 0.7 and position: fixed for unobtrusive appearance
+  - GetLayoutClass() helper returns single-item/two-items/three-items for max-width adjustments
+  - Use 100dvh (dynamic viewport height) with fallback to 100vh for full-screen appearance on mobile
+---
+
+## 2026-01-30 - US-017
+- What was implemented: Added gentle pulse animation to the "Now" item in the schedule display
+- Files changed:
+  - src/NowThenNext/Pages/ScheduleDisplay.razor - Added "now-item" CSS class and gentlePulse animation
+- **Learnings for future iterations:**
+  - CSS-only animations via @keyframes are preferred for SEN-friendly apps (no JS timers, smoother performance)
+  - Pulse animation uses box-shadow with rgba values to create a soft glow effect without changing element size
+  - 3-second animation duration is appropriately slow and calming for SEN users
+  - Animation targets only the "Now" item (index == 0) via conditional CSS class application
+  - The pulse effect uses the calm-primary teal color (rgba(91, 154, 154, 0.3)) for visual consistency
+---
+
+## 2026-01-30 - US-018
+- What was implemented: Added auto-advance toggle to schedule display with timer-based cycling through schedule items
+- Files changed:
+  - src/NowThenNext/Pages/ScheduleDisplay.razor - Added toggle button, auto-advance mode UI, progress indicators, and Timer logic
+- **Learnings for future iterations:**
+  - Use System.Threading.Timer for periodic callbacks in Blazor; call InvokeAsync(StateHasChanged) from timer callback
+  - Implement IDisposable and dispose Timer in Dispose() method to prevent memory leaks
+  - Auto-advance shows single large item with clickable progress indicators (Now/Then/Next buttons) for manual navigation
+  - Toggle button positioned top-right, semi-transparent (opacity: 0.7) for unobtrusive appearance
+  - 7 seconds interval (AutoAdvanceIntervalMs = 7000) provides comfortable viewing time within 5-10s range
+  - JumpToItem resets the timer to give full time on manually selected items
+  - Toggle only shown when ScheduleItems.Count > 1 (no point auto-advancing with single item)
+---
+
+## 2026-01-30 - US-019
+- What was implemented: Built food choice selection interface at /food-choices route for selecting 2-4 food items
+- Files changed:
+  - src/NowThenNext/Pages/FoodChoices.razor - New page with selectable grid, selection preview, and Show Choices button
+- **Learnings for future iterations:**
+  - Food selection allows 2-4 items (not 1-3 like schedule selection) - enforced in ToggleSelection method
+  - Uses accent green (#7BA893) color theme to differentiate from schedule/places (teal)
+  - Selection preview shows horizontal scrollable list of selected items with remove buttons
+  - "Show Choices" button only appears when >= 2 items selected (minimum for choices)
+  - Navigation to food display uses query string: /food-display?ids=id1,id2,id3
+  - Checkmark badge instead of numbered badge (food choices have no order like Now/Then/Next)
+---
+
+## 2026-01-30 - US-020
+- What was implemented: Built food choice display page at /food-display route for showing selected food items as big tappable choices
+- Files changed:
+  - src/NowThenNext/Pages/FoodDisplay.razor - New page with large grid of food images, selection animation, and back navigation
+- **Learnings for future iterations:**
+  - Food display uses same query string pattern as schedule display: /food-display?ids=id1,id2,id3
+  - Grid layout varies by item count: 2 items = 2 columns, 3 items = 3 columns, 4 items = 2x2 on mobile, 4 across on desktop
+  - Selection feedback uses popIn animation for checkmark and selectPulse for the card border glow
+  - Tapping toggles selection state (can select and deselect) for child interaction
+  - Uses accent green (#7BA893) color theme consistent with food-related UI elements
+  - Selection indicator (checkmark) positioned top-right with animated pop-in effect for visual feedback
+---
+
+## 2026-01-30 - US-021
+- What was implemented: Added responsive tablet optimization across all main views
+- Files changed:
+  - src/NowThenNext/Pages/Home.razor - 2-column grid on tablets with larger buttons
+  - src/NowThenNext/Pages/MyPictures.razor - Fixed 3-column grid on tablets, 4-column on larger
+  - src/NowThenNext/Pages/Favorites.razor - Fixed 3-column grid on tablets, 4-column on larger
+  - src/NowThenNext/Pages/PlanDay.razor - Responsive grid columns, improved preview slot sizing
+  - src/NowThenNext/Pages/FoodChoices.razor - Responsive grid columns, improved preview item sizing
+  - src/NowThenNext/Pages/Upload.razor - Larger container widths and form elements on tablets
+  - src/NowThenNext/Components/ImageTile.razor - Responsive sizing for images and touch targets
+- **Learnings for future iterations:**
+  - Use `min-width: 0` instead of `min-width: 200px` on grid items to allow proper shrinking in CSS Grid
+  - Tablet breakpoints: 768px-1023px for small tablets, 1024px+ for large tablets/desktop
+  - All touch targets must be minimum 48px (3rem) - use min-width/min-height for visual + touch separation
+  - Fixed grid columns (repeat(3, 1fr) or repeat(4, 1fr)) often work better than auto-fill for consistent layouts
+  - Tailwind responsive classes (md: lg:) can be mixed with scoped CSS @media queries
+---
+
+## 2026-01-30 - US-022
+- What was implemented: Set up Playwright E2E test project with xUnit v3 for browser-based E2E testing
+- Files changed:
+  - tests/NowThenNext.Tests.E2E/NowThenNext.Tests.E2E.csproj - New xUnit v3 test project with Playwright
+  - tests/NowThenNext.Tests.E2E/Fixtures/BlazorAppFixture.cs - Test fixture that starts Blazor server and launches Chromium
+  - tests/NowThenNext.Tests.E2E/Fixtures/BlazorAppCollection.cs - Collection definition for sharing fixture across tests
+  - tests/NowThenNext.Tests.E2E/Helpers/LocalStorageHelper.cs - Extension methods for clearing localStorage in tests
+  - tests/NowThenNext.Tests.E2E/Tests/HomePageTests.cs - Smoke tests verifying home page loads successfully
+  - tests/NowThenNext.Tests.E2E/xunit.runner.json - xUnit configuration
+- **Learnings for future iterations:**
+  - E2E tests use Collection fixture pattern: `[Collection("BlazorApp")]` for sharing server/browser across tests
+  - BlazorAppFixture starts server with `dotnet run` and waits for HTTP 200 before tests run
+  - Blazor WASM requires extra wait time for initialization - use `WaitForSelectorAsync` with 60s timeout
+  - Run E2E tests: `dotnet test tests/NowThenNext.Tests.E2E/NowThenNext.Tests.E2E.csproj`
+  - Kill stray dotnet processes before running tests: `pkill -f "dotnet"` to avoid port conflicts
+  - LocalStorageHelper provides `ClearLocalStorageAsync()` extension method on IPage for test isolation
+  - xUnit v3 uses `xunit.v3` package (not `xunit`) and `IAsyncLifetime` with ValueTask returns
+---
+
+## 2026-01-30 - US-023
+- What was implemented: Added E2E tests for home screen navigation verifying all four main menu buttons navigate correctly
+- Files changed:
+  - tests/NowThenNext.Tests.E2E/Tests/HomePageTests.cs - Added 4 navigation tests (Plan, Food, Pictures, Favorites)
+- **Learnings for future iterations:**
+  - Use `page.WaitForURLAsync()` with explicit timeout to wait for navigation after clicking links
+  - Note: PRD says /plan-day but actual route is /plan - test the actual routes, not the PRD description
+  - Navigation test pattern: GotoAsync(base) → WaitForSelector → Click → WaitForURL → Assert URL EndsWith
+  - Existing test `HomePage_DisplaysAllFourMainButtons` already covers "all four main buttons are visible" criterion
+---
+
+## 2026-01-30 - US-024
+- What was implemented: Added E2E tests for image upload workflow covering file selection, preview, category selection, and storage
+- Files changed:
+  - tests/NowThenNext.Tests.E2E/Tests/UploadTests.cs - New test class with 6 comprehensive upload tests
+- **Learnings for future iterations:**
+  - Use `page.WaitForFileChooserAsync()` before clicking upload area to capture the file chooser dialog
+  - Create test images programmatically with minimal PNG bytes - avoids needing external test fixtures
+  - File picker trigger test: set up file chooser listener first, then click, then await the task
+  - For category selector tests, use regex pattern with `ToHaveClassAsync(new Regex("category-selected"))`
+  - Use unique labels with GUID for images to verify they appear in library view without collision
+  - Pattern for upload test: upload image → fill label → select category → confirm → check success → navigate to library → verify label visible
+---
+
+## 2026-01-30 - US-025
+- What was implemented: Added E2E tests for library views and image management verifying all CRUD operations
+- Files changed:
+  - tests/NowThenNext.Tests.E2E/Tests/LibraryTests.cs - New test class with 8 comprehensive library tests
+- **Learnings for future iterations:**
+  - Call `ClearLocalStorageAsync()` after navigating to a page, not before (localStorage requires page context)
+  - Helper method pattern: create `UploadTestImageAsync(page, label, category, clearStorageFirst)` to reuse upload logic across tests
+  - For Blazor tab navigation testing, direct URL navigation is more reliable than clicking tabs (avoids timing issues with SPA re-renders)
+  - Test selectors: use stable selectors like `h1`, `.image-grid`, `.empty-state` rather than complex CSS classes that may change
+  - Delete confirmation modal: hover over tile first to reveal delete button, then click `.delete-button`, wait for `.modal-overlay`
+  - Favorite toggle test: check `ToHaveClassAsync(new Regex("favorited"))` for presence/absence of favorited class
+  - Cross-view verification: after favoriting an image, navigate to /favorites and verify image label is visible
+---
+
+## 2026-01-30 - US-026
+- What was implemented: Added E2E tests for schedule flow (Plan the Day) verifying selection, badges, and display
+- Files changed:
+  - tests/NowThenNext.Tests.E2E/Tests/ScheduleTests.cs - New test class with 7 comprehensive schedule tests
+- **Learnings for future iterations:**
+  - Schedule selection uses `.selectable-tile` class with `.selected` class added when selected
+  - Selection badges show in `.selection-badge` with `.badge-number` and `.badge-label` children
+  - Max 3 selection limit enforced in ToggleSelection method - 4th click does nothing
+  - Show Schedule button navigates to `/schedule?ids=id1,id2,id3` with comma-separated IDs
+  - Schedule display page has `.schedule-item` elements with `.item-label` showing Now/Then/Next
+  - Back button in schedule display navigates back to `/plan`
+  - Selection count displayed in `.selection-count-number` element
+---
+
+## 2026-01-30 - US-027
+- What was implemented: Added E2E tests for food choices flow verifying selection, display, and navigation
+- Files changed:
+  - tests/NowThenNext.Tests.E2E/Tests/FoodChoicesTests.cs - New test class with 6 comprehensive food choices tests
+- **Learnings for future iterations:**
+  - Food choices selection uses same `.selectable-tile` and `.selected` classes as schedule selection
+  - Food choices uses checkmark badge (`.selection-checkmark`) instead of numbered badges
+  - Minimum 2 items required for Show Choices button (not 1 like schedule)
+  - Show Choices button navigates to `/food-display?ids=id1,id2,id3` with comma-separated IDs
+  - Food display page has `.food-choice-item` elements with `.food-image` children
+  - Selection feedback on food display uses `.selected` class and `.selection-indicator` checkmark
+  - Back button on food display navigates back to `/food-choices`
+---
+
+## 2026-01-31 - US-006
+- What was implemented: Updated main menu / home screen to match new PRD requirements
+- Files changed:
+  - src/NowThenNext/Pages/Home.razor - Rewrote home page with new title format, settings gear, and reordered menu
+  - src/NowThenNext/Pages/PlacesLibrary.razor - Added /places route, updated back navigation to home
+  - src/NowThenNext/Pages/FoodLibrary.razor - Added /food route, updated back navigation to home
+  - src/NowThenNext/Pages/Settings.razor - Created placeholder settings page for backup/restore
+  - tests/NowThenNext.Tests.E2E/Tests/HomePageTests.cs - Updated tests for new menu structure
+- **Learnings for future iterations:**
+  - Title uses arrow characters: "Now → Then → Next" displayed with span elements for styling
+  - Settings gear uses .settings-button class with 48px touch target, positioned absolute top-right
+  - Menu buttons reordered: Places, Food, Plan the Day, Favorites (per PRD update)
+  - Places and Food buttons now link directly to library pages (/places, /food) not /my-pictures tabs
+  - Library pages have dual routes (e.g., /places and /my-pictures/places) for backwards compatibility
+  - Library back buttons navigate to home (/) not /my-pictures since tabs are removed
+---
+
+## 2026-01-31 - US-012
+- What was implemented: Verified navigation structure meets US-012 requirements (already implemented in US-006)
+- Files changed: None - all changes were made in US-006
+- **Verification completed:**
+  - Places and Food are separate buttons on home screen (not tabs) ✓
+  - Places button navigates to /places library ✓
+  - Food button navigates to /food library ✓
+  - Both library views have back buttons returning to home (/) ✓
+  - Both library views have upload buttons (/upload/places, /upload/food) ✓
+  - Typecheck passes (dotnet build successful) ✓
+  - E2E tests verify navigation (PlacesButton_NavigatesToPlacesPage, FoodButton_NavigatesToFoodPage) ✓
+- **Learnings for future iterations:**
+  - US-012 was effectively completed as part of the US-006 update when menu was restructured
+  - When PRD requirements overlap across stories, implementation may satisfy multiple stories at once
+  - Verification-only stories still require confirming typecheck/build passes
+---
