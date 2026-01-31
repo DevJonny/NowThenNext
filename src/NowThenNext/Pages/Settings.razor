@@ -1,0 +1,68 @@
+@page "/settings"
+@inject NavigationManager Navigation
+
+<PageTitle>Settings - NowThenNext</PageTitle>
+
+<div class="flex flex-col min-h-screen">
+    <!-- Header -->
+    <header class="w-full max-w-5xl mx-auto px-4 sm:px-6 mb-6">
+        <div class="flex items-center gap-4">
+            <button @onclick="GoBack" class="back-button" aria-label="Go back">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <h1 class="text-2xl sm:text-3xl font-bold text-calm-primary">
+                Settings
+            </h1>
+        </div>
+    </header>
+
+    <!-- Content -->
+    <div class="w-full max-w-5xl mx-auto px-4 sm:px-6 flex-1">
+        <div class="settings-container">
+            <p class="text-calm-text-light text-center">
+                Backup and restore features coming soon.
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
+
+<style>
+    .back-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        background-color: white;
+        color: #5B9A9A;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+        background-color: #F0EDE8;
+    }
+
+    .settings-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+        background-color: white;
+        border-radius: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+</style>
