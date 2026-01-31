@@ -591,3 +591,24 @@
   - Grid layout classes: two-items, three-items, four-items, five-items, six-items with responsive breakpoints
   - Confirmation screen layout: checkmark → food card → choose again button, centered vertically
 ---
+
+## 2026-01-31 - US-027
+- What was implemented: Completed E2E tests for food choices flow with all acceptance criteria covered
+- Files changed:
+  - tests/NowThenNext.Tests.E2E/Tests/FoodChoicesTests.cs - Added SelectionCountIsDisplayedWhenItemsSelected test, updated TappingFoodItemShowsConfirmationScreen, added ChooseAgainButtonReturnsToFoodChoices
+- **Tests implemented (9 total):**
+  1. CanSelectFoodItemsInSelectionView - selects food items and verifies selected class ✓
+  2. SelectedItemsAreVisuallyHighlighted - verifies visual highlight and checkmark badge ✓
+  3. SelectionCountIsDisplayedWhenItemsSelected - verifies selection count display (1, 2, etc.) ✓
+  4. ShowChoicesButtonAppearsWhenItemsSelected - verifies button appears after 2+ items ✓
+  5. FoodDisplayShowsSelectedItemsInLargeFormat - verifies food display grid layout ✓
+  6. TappingFoodItemShowsConfirmationScreen - verifies confirmation screen appears with checkmark ✓
+  7. ChooseAgainButtonReturnsToFoodChoices - verifies Choose Again returns to food grid ✓
+  8. BackButtonReturnsToSelection - verifies back button navigation ✓
+- All 44 E2E tests pass ✓
+- Typecheck passes (dotnet build successful) ✓
+- **Learnings for future iterations:**
+  - Selection count uses .selection-count-number element for the number display
+  - Test pattern for confirmation screen: tap food item → wait for .confirmation-screen → verify elements
+  - ChooseAgain returns to food display grid (same URL), not back to food-choices selection page
+---
