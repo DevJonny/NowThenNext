@@ -463,3 +463,131 @@
   - PRD says /plan-day but actual route is /plan - tests use actual route
   - Test count: 7 tests covering home screen functionality (more than minimum required)
 ---
+
+## 2026-01-31 - US-028
+- What was implemented: Created settings panel with backup/restore buttons and clean UI
+- Files changed:
+  - src/NowThenNext/Pages/Settings.razor - Updated placeholder to full settings panel with Backup Data and Restore Data buttons
+- **Learnings for future iterations:**
+  - Settings panel uses same button styling pattern as home menu (icon container + text content)
+  - Backup button uses calm-primary teal, Restore button uses calm-accent green for visual distinction
+  - Button handlers (BackupData, RestoreData) are placeholder methods for US-029 and US-030
+  - Settings page accessible from home screen via gear icon (already implemented in US-006)
+  - Back button navigates to home (/) using NavigationManager
+---
+
+## 2026-01-31 - US-029
+- What was implemented: Implemented data backup (export to JSON file) functionality
+- Files changed:
+  - src/NowThenNext/Models/BackupData.cs - New model for backup structure with version and metadata
+  - src/NowThenNext/wwwroot/index.html - Added downloadJsonFile JavaScript function for file downloads
+  - src/NowThenNext/Pages/Settings.razor - Implemented BackupData method with loading state and success/error messages
+- **Learnings for future iterations:**
+  - BackupData model includes version field ("1.0") for future compatibility with format changes
+  - Use `window.downloadJsonFile(filename, jsonContent)` for triggering JSON file downloads via JS interop
+  - Filename format: nowthenext-backup-YYYY-MM-DD.json (e.g., nowthenext-backup-2024-01-15.json)
+  - Success message shows image count: "Backup downloaded! (X images saved)"
+  - Error handling displays calm-warning colored message (amber, not harsh red)
+  - Loading spinner uses animate-spin class from Tailwind and disabled button state
+---
+
+## 2026-01-31 - US-030
+- What was implemented: Implemented data restore (import from JSON file) functionality with replace/merge options
+- Files changed:
+  - src/NowThenNext/Services/IImageStorageService.cs - Added ClearAllImagesAsync and SaveImagesAsync methods
+  - src/NowThenNext/Services/LocalStorageImageService.cs - Implemented new storage methods for bulk operations
+  - src/NowThenNext/Pages/Settings.razor - Added restore functionality with file picker, validation, and replace/merge modal
+- **Learnings for future iterations:**
+  - Use hidden InputFile component with `@onclick` to trigger file picker via JS interop: `window.triggerFileInputClick(id)`
+  - File validation: check JSON parsing, required fields (Id, Base64Data), and null checks on BackupData and Images
+  - Replace mode: call ClearAllImagesAsync() first, then SaveImagesAsync() with backup images
+  - Merge mode: get existing images, filter backup by ID to find new ones, concat and save merged list
+  - Modal pattern: ShowRestoreChoiceModal boolean controls modal visibility, PendingRestoreImages stores parsed data
+  - Success messages differentiate between replace ("imported X images") and merge ("added X new, skipped Y duplicates")
+  - Use StorageQuotaExceededException handling for storage-full scenarios during restore
+  - InputFile accepts .json filter: `accept=".json"`
+  - Max file size for restore: 50MB (50 * 1024 * 1024 bytes)
+---
+
+## 2026-01-31 - US-031
+- What was implemented: Added comprehensive E2E tests for backup/restore functionality
+- Files changed:
+  - tests/NowThenNext.Tests.E2E/Tests/BackupRestoreTests.cs - New test class with 7 comprehensive backup/restore tests
+- **Tests implemented:**
+  1. SettingsGearIcon_VisibleOnHomeScreen - Verifies settings gear is visible on home screen
+  2. SettingsPanel_OpensWhenGearTapped - Verifies clicking gear navigates to settings page with backup/restore buttons
+  3. BackupButton_TriggersFileDownload - Verifies backup button triggers JSON file download with correct filename pattern
+  4. RestoreButton_OpensFilePicker - Verifies restore button opens file picker
+  5. RestoreFile_ShowsReplaceOrMergeChoiceDialog - Verifies modal with replace/merge choice appears after selecting backup file
+  6. RestoreReplaceMode_CorrectlyRestoresData - Verifies replace mode clears existing and imports backup images
+  7. RestoreMergeMode_CorrectlyMergesData - Verifies merge mode adds new images while keeping existing ones
+- **Learnings for future iterations:**
+  - Use `page.WaitForDownloadAsync()` to capture file downloads triggered by JS in Playwright
+  - Create test backup JSON files programmatically with valid structure matching BackupData model
+  - Merge mode success message says "X images added" (not "X new images added") when no duplicates skipped
+  - For backup file creation in tests: use Category = 0 (int) for Places since enum serializes to int
+  - Test file helpers should generate unique GUIDs for image IDs to avoid collision with existing test data
+---
+
+## 2026-01-31 - US-006
+- What was implemented: Added Food Choices as 5th menu button on home screen
+- Files changed:
+  - src/NowThenNext/Pages/Home.razor - Added Food Choices button between Plan the Day and Favorites
+  - tests/NowThenNext.Tests.E2E/Tests/HomePageTests.cs - Updated to test 5 buttons, added FoodChoicesButton_NavigatesToFoodChoicesPage test
+- **Verification completed:**
+  - App title "Now → Then → Next" displayed with arrow characters ✓
+  - Settings gear icon in top corner ✓
+  - Five buttons in order: Places, Food, Plan the Day, Food Choices, Favorites ✓
+  - Each button has icon alongside text ✓
+  - Buttons are minimum 48px tap targets ✓
+  - Typecheck passes (dotnet build successful) ✓
+  - All 8 E2E tests pass ✓
+- **Learnings for future iterations:**
+  - "Food Choices" button uses calm-accent-light color (#9BBFAE) with grid icon
+  - When adding new menu items that share text with existing items (e.g., "Food" vs "Food Choices"), update selectors in E2E tests to be more specific (use href attribute)
+  - Test renamed from HomePage_DisplaysAllFourMainButtons to HomePage_DisplaysAllFiveMainButtons
+---
+
+## 2026-01-31 - US-019
+- What was implemented: Updated Food Choices selection interface to remove max 4 limit and improve selection count display
+- Files changed:
+  - src/NowThenNext/Pages/FoodChoices.razor - Removed max 4 selection limit, updated selection count format to "X items selected"
+- **Verification completed:**
+  - Display all Food images in selectable grid ✓
+  - Tap to select with visual highlight on selected items ✓
+  - No maximum limit on selections ✓ (removed previous max 4 limit)
+  - Tap selected item again to deselect ✓
+  - 'Show Choices' button appears when at least 2 items selected ✓
+  - Selected count displayed (e.g., '3 items selected') ✓
+  - Back button to return to home ✓
+  - Typecheck passes (dotnet build successful) ✓
+  - All 42 E2E tests pass ✓
+- **Learnings for future iterations:**
+  - Previous implementation had max 4 limit which didn't match PRD requirement of "no maximum"
+  - Selection count format uses singular "item" for 1 item, "items" for 0 or 2+
+  - Food choices selection shares similar pattern with schedule selection (PlanDay.razor) but uses checkmarks instead of numbered badges
+---
+
+## 2026-01-31 - US-020
+- What was implemented: Added confirmation screen to food display and extended grid layout to support 5-6 items
+- Files changed:
+  - src/NowThenNext/Pages/FoodDisplay.razor - Added confirmation screen with checkmark animation, Choose Again button, support for 5-6 item layouts
+  - tests/NowThenNext.Tests.E2E/Tests/FoodChoicesTests.cs - Updated TappingFoodItemShowsSelectionFeedback to TappingFoodItemShowsConfirmationScreen, added ChooseAgainButtonReturnsToFoodChoices test
+- **Verification completed:**
+  - Full-screen display mode showing selected Food images ✓
+  - Display shows 2-6 items in large grid format ✓
+  - Each food image is large and clearly tappable ✓
+  - Highlight/animate when tapped (confirmation screen appears) ✓
+  - Confirmation screen shows after child taps their choice ✓
+  - Calm, focused layout with no distractions ✓
+  - Back button returns to selection (or goes back to food-choices page from confirmation) ✓
+  - Typecheck passes (dotnet build successful) ✓
+  - All 43 E2E tests pass ✓
+- **Learnings for future iterations:**
+  - Confirmation screen uses CSS animations: confirmationBounce for checkmark, confirmationSlide for content
+  - When child taps food, SelectFood() immediately shows confirmation screen (no toggle behavior)
+  - ChooseAgain() resets state and returns to food grid without navigating away from /food-display
+  - Back button behavior changes based on current state: if on confirmation screen, goes back to grid; otherwise navigates to /food-choices
+  - Grid layout classes: two-items, three-items, four-items, five-items, six-items with responsive breakpoints
+  - Confirmation screen layout: checkmark → food card → choose again button, centered vertically
+---

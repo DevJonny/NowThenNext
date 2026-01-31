@@ -87,7 +87,7 @@
       "acceptanceCriteria": [
         "App title 'Now -> Then -> Next' displayed at top with arrow characters between words",
         "Settings gear icon in top corner for backup/restore access",
-        "Four large buttons in order: 'Places', 'Food', 'Plan the Day', 'Favorites'",
+        "Five large buttons in order: 'Places', 'Food', 'Plan the Day', 'Food Choices', 'Favorites'",
         "Each button has an icon alongside text",
         "Calm, welcoming design with theme colors",
         "Buttons are minimum 48px tap targets",
@@ -96,7 +96,7 @@
       ],
       "priority": 6,
       "passes": true,
-      "notes": "Updated: Renamed My Pictures to Places, reordered menu, added settings gear, updated title format"
+      "notes": "Implemented: Food Choices added as 5th menu button between Plan the Day and Favorites."
     },
     {
       "id": "US-007",
@@ -310,38 +310,41 @@
     },
     {
       "id": "US-019",
-      "title": "Build food choice selection interface",
-      "description": "As a carer, I want to select food items to show as choices.",
+      "title": "Build Food Choices selection interface",
+      "description": "As a carer, I want to select multiple items from Food to create a set of food choices to display.",
       "acceptanceCriteria": [
         "Display all Food images in selectable grid",
-        "Tap to select/deselect items",
-        "Visual highlight on selected items",
-        "Select 2-4 items for display",
-        "'Show Choices' button when items selected",
+        "Tap to select with visual highlight on selected items",
+        "No maximum limit on selections (practical limit of 2-6 recommended)",
+        "Tap selected item again to deselect",
+        "'Show Choices' button appears when at least 2 items selected",
+        "Selected count displayed (e.g., '3 items selected')",
         "Back button to return to home",
         "Typecheck passes",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 19,
       "passes": true,
-      "notes": ""
+      "notes": "Implemented: No maximum selection limit, shows X items selected format, minimum 2 items for Show Choices button."
     },
     {
       "id": "US-020",
       "title": "Build food choice display",
       "description": "As a child, I want to see food options as big pictures so I can choose.",
       "acceptanceCriteria": [
-        "Large grid showing selected food images (2-4 visible)",
+        "Full-screen or near-full-screen display mode showing selected Food images",
+        "Display shows 2-6 items in large grid format",
         "Each food image is large and clearly tappable",
-        "Highlight/animate when tapped to indicate selection",
+        "Highlight/animate when tapped to confirm selection",
+        "Show confirmation screen after child taps their choice",
         "Calm, focused layout with no distractions",
-        "Back button to return to selection",
+        "Back button to return to selection (positioned unobtrusively)",
         "Typecheck passes",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 20,
       "passes": true,
-      "notes": ""
+      "notes": "Implemented: Confirmation screen with checkmark animation and Choose Again button. Supports 2-6 items in responsive grid."
     },
     {
       "id": "US-021",
@@ -383,10 +386,11 @@
       "title": "E2E tests for home screen navigation",
       "description": "As a developer, I need E2E tests verifying home screen buttons navigate correctly.",
       "acceptanceCriteria": [
-        "Test: All four main buttons are visible on home screen",
+        "Test: All five main buttons are visible on home screen",
         "Test: 'Places' button navigates to /places",
         "Test: 'Food' button navigates to /food",
         "Test: 'Plan the Day' button navigates to /plan-day",
+        "Test: 'Food Choices' button navigates to /food-choices",
         "Test: 'Favorites' button navigates to /favorites",
         "Test: Settings gear icon is visible and clickable",
         "All tests pass in browser",
@@ -394,7 +398,7 @@
       ],
       "priority": 23,
       "passes": true,
-      "notes": "Updated: Reflects new menu structure with Places/Food buttons and settings gear. All tests verified passing."
+      "notes": "All 8 tests implemented and passing: 5 buttons visible, Places/Food/Plan/Food Choices/Favorites navigation, settings gear visible and clickable."
     },
     {
       "id": "US-024",
@@ -458,18 +462,19 @@
       "title": "E2E tests for food choices flow",
       "description": "As a developer, I need E2E tests verifying food choice selection and display.",
       "acceptanceCriteria": [
-        "Test: Can select food items in selection view",
-        "Test: Selected items are visually highlighted",
-        "Test: 'Show Choices' button appears when items selected",
+        "Test: Can select multiple food items from library",
+        "Test: Selection count is displayed",
+        "Test: 'Show Choices' button appears after selecting 2+ items",
         "Test: Food display shows selected items in large format",
         "Test: Tapping food item shows selection feedback",
+        "Test: Confirmation shown after child selects a food item",
         "Test: Back button returns to selection",
         "All tests pass in browser",
         "Typecheck passes"
       ],
       "priority": 27,
-      "passes": true,
-      "notes": ""
+      "passes": false,
+      "notes": "Updated: Added tests for selection count, 2+ item requirement, and confirmation screen"
     },
     {
       "id": "US-028",
@@ -485,7 +490,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 28,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
@@ -501,7 +506,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 29,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
@@ -521,7 +526,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 30,
-      "passes": false,
+      "passes": true,
       "notes": ""
     },
     {
@@ -540,8 +545,8 @@
         "Typecheck passes"
       ],
       "priority": 31,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "All 7 tests implemented and passing: settings gear visible, panel opens, backup triggers download, restore opens file picker, replace/merge choice dialog, replace mode works, merge mode works."
     }
   ]
 }
