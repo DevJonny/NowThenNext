@@ -84,6 +84,44 @@ public class FoodChoicesTests
     }
 
     [Fact]
+    public async Task SelectionCountIsDisplayedWhenItemsSelected()
+    {
+        // Arrange
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            // Upload 2 food images
+            await UploadTestImageAsync(page, $"Count1_{Guid.NewGuid().ToString()[..8]}", "Food", clearStorageFirst: true);
+            await UploadTestImageAsync(page, $"Count2_{Guid.NewGuid().ToString()[..8]}", "Food", clearStorageFirst: false);
+
+            // Navigate to Food Choices page
+            await page.GotoAsync($"{_fixture.BaseUrl}/food-choices");
+            await page.WaitForSelectorAsync(".image-grid", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Act - Select one item
+            var tiles = page.Locator(".selectable-tile");
+            await tiles.Nth(0).ClickAsync();
+
+            // Assert - Selection count should show "1" and text about needing 2+
+            var selectionCount = page.Locator(".selection-count");
+            await Assertions.Expect(selectionCount).ToBeVisibleAsync();
+            var countNumber = page.Locator(".selection-count-number");
+            await Assertions.Expect(countNumber).ToContainTextAsync("1");
+
+            // Act - Select another item
+            await tiles.Nth(1).ClickAsync();
+
+            // Assert - Selection count should show "2"
+            await Assertions.Expect(countNumber).ToContainTextAsync("2");
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
     public async Task ShowChoicesButtonAppearsWhenItemsSelected()
     {
         // Arrange
