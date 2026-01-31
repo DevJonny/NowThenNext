@@ -88,25 +88,83 @@
                 </button>
 
                 <!-- Restore Button -->
-                <button class="settings-action-button restore-button" @onclick="RestoreData">
+                <button class="settings-action-button restore-button" @onclick="TriggerRestoreFilePicker" disabled="@IsRestoring">
                     <div class="action-icon restore-icon">
-                        <!-- Upload/Import Icon -->
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                        </svg>
+                        @if (IsRestoring)
+                        {
+                            <!-- Loading spinner -->
+                            <svg class="w-8 h-8 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        }
+                        else
+                        {
+                            <!-- Upload/Import Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                        }
                     </div>
                     <div class="action-content">
-                        <span class="action-title">Restore Data</span>
+                        <span class="action-title">@(IsRestoring ? "Restoring..." : "Restore Data")</span>
                         <span class="action-description">Load images from a backup file</span>
                     </div>
                 </button>
+
+                <!-- Hidden file input for restore -->
+                <InputFile id="restore-file-input" OnChange="OnRestoreFileSelected" accept=".json" style="display: none;" />
             </div>
         </div>
     </div>
 </div>
 
+<!-- Replace/Merge Choice Modal -->
+@if (ShowRestoreChoiceModal)
+{
+    <div class="modal-overlay" @onclick="CancelRestore">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <h3 class="modal-title">How would you like to restore?</h3>
+            <p class="modal-description">
+                This backup contains <strong>@PendingRestoreImages?.Count images</strong>.
+            </p>
+
+            <div class="restore-options">
+                <button class="restore-option-button replace-button" @onclick="PerformReplace">
+                    <div class="option-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                    </div>
+                    <div class="option-content">
+                        <span class="option-title">Replace All Data</span>
+                        <span class="option-description">Clear existing images and import backup</span>
+                    </div>
+                </button>
+
+                <button class="restore-option-button merge-button" @onclick="PerformMerge">
+                    <div class="option-icon merge-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div class="option-content">
+                        <span class="option-title">Merge with Existing</span>
+                        <span class="option-description">Add new images, skip duplicates</span>
+                    </div>
+                </button>
+            </div>
+
+            <button class="cancel-button" @onclick="CancelRestore">Cancel</button>
+        </div>
+    </div>
+}
+
 @code {
     private bool IsBackingUp { get; set; }
+    private bool IsRestoring { get; set; }
+    private bool ShowRestoreChoiceModal { get; set; }
+    private List<ImageItem>? PendingRestoreImages { get; set; }
     private string? SuccessMessage { get; set; }
     private string? ErrorMessage { get; set; }
 
@@ -163,10 +221,183 @@
         }
     }
 
-    private void RestoreData()
+    private async Task TriggerRestoreFilePicker()
     {
-        // Restore functionality will be implemented in US-030
-        // For now, this serves as the UI button
+        // Clear any previous messages
+        SuccessMessage = null;
+        ErrorMessage = null;
+        StateHasChanged();
+
+        // Trigger the hidden file input
+        await JSRuntime.InvokeVoidAsync("triggerFileInputClick", "restore-file-input");
+    }
+
+    private async Task OnRestoreFileSelected(InputFileChangeEventArgs e)
+    {
+        try
+        {
+            SuccessMessage = null;
+            ErrorMessage = null;
+
+            var file = e.File;
+            if (file == null)
+            {
+                return;
+            }
+
+            // Read the file content
+            using var stream = file.OpenReadStream(maxAllowedSize: 50 * 1024 * 1024); // 50MB max
+            using var reader = new StreamReader(stream);
+            var json = await reader.ReadToEndAsync();
+
+            // Try to parse and validate the backup file
+            BackupData? backup;
+            try
+            {
+                backup = JsonSerializer.Deserialize<BackupData>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+            }
+            catch (JsonException)
+            {
+                ErrorMessage = "Invalid backup file: The file is not valid JSON.";
+                StateHasChanged();
+                return;
+            }
+
+            // Validate backup structure
+            if (backup == null)
+            {
+                ErrorMessage = "Invalid backup file: Could not parse backup data.";
+                StateHasChanged();
+                return;
+            }
+
+            if (backup.Images == null)
+            {
+                ErrorMessage = "Invalid backup file: No images found in backup.";
+                StateHasChanged();
+                return;
+            }
+
+            // Validate each image has required fields
+            foreach (var image in backup.Images)
+            {
+                if (string.IsNullOrEmpty(image.Id) || string.IsNullOrEmpty(image.Base64Data))
+                {
+                    ErrorMessage = "Invalid backup file: Some images are missing required data.";
+                    StateHasChanged();
+                    return;
+                }
+            }
+
+            // Store pending images and show choice modal
+            PendingRestoreImages = backup.Images;
+            ShowRestoreChoiceModal = true;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to read backup file: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private void CancelRestore()
+    {
+        ShowRestoreChoiceModal = false;
+        PendingRestoreImages = null;
+        StateHasChanged();
+    }
+
+    private async Task PerformReplace()
+    {
+        if (PendingRestoreImages == null)
+        {
+            return;
+        }
+
+        try
+        {
+            ShowRestoreChoiceModal = false;
+            IsRestoring = true;
+            StateHasChanged();
+
+            // Clear all existing images
+            await ImageStorage.ClearAllImagesAsync();
+
+            // Save all images from backup
+            await ImageStorage.SaveImagesAsync(PendingRestoreImages);
+
+            SuccessMessage = $"Restore complete! {PendingRestoreImages.Count} images imported (replaced all data).";
+        }
+        catch (StorageQuotaExceededException)
+        {
+            ErrorMessage = "Restore failed: Storage quota exceeded. The backup is too large for available storage.";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Restore failed: {ex.Message}";
+        }
+        finally
+        {
+            IsRestoring = false;
+            PendingRestoreImages = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task PerformMerge()
+    {
+        if (PendingRestoreImages == null)
+        {
+            return;
+        }
+
+        try
+        {
+            ShowRestoreChoiceModal = false;
+            IsRestoring = true;
+            StateHasChanged();
+
+            // Get existing images
+            var existingImages = await ImageStorage.GetAllImagesAsync();
+            var existingIds = new HashSet<string>(existingImages.Select(i => i.Id));
+
+            // Find new images (not already in storage)
+            var newImages = PendingRestoreImages.Where(i => !existingIds.Contains(i.Id)).ToList();
+
+            // Merge: add new images to existing
+            var mergedImages = existingImages.Concat(newImages).ToList();
+
+            // Save merged list
+            await ImageStorage.SaveImagesAsync(mergedImages);
+
+            var skippedCount = PendingRestoreImages.Count - newImages.Count;
+            if (skippedCount > 0)
+            {
+                SuccessMessage = $"Restore complete! {newImages.Count} new images added, {skippedCount} duplicates skipped.";
+            }
+            else
+            {
+                SuccessMessage = $"Restore complete! {newImages.Count} images added.";
+            }
+        }
+        catch (StorageQuotaExceededException)
+        {
+            ErrorMessage = "Restore failed: Storage quota exceeded. Not enough space for the merged data.";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Restore failed: {ex.Message}";
+        }
+        finally
+        {
+            IsRestoring = false;
+            PendingRestoreImages = null;
+            StateHasChanged();
+        }
     }
 }
 
@@ -318,6 +549,128 @@
         border-color: transparent;
     }
 
+    /* Modal styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        padding: 1rem;
+    }
+
+    .modal-content {
+        background-color: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        max-width: 28rem;
+        width: 100%;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #3D4852;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .modal-description {
+        font-size: 0.95rem;
+        color: #606F7B;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .restore-options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .restore-option-button {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1rem;
+        background-color: #F9F7F3;
+        border: 2px solid transparent;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: left;
+        width: 100%;
+    }
+
+    .restore-option-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .replace-button:hover {
+        border-color: #D4A06A;
+    }
+
+    .merge-button:hover {
+        border-color: #7BA893;
+    }
+
+    .option-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        background-color: #D4A06A;
+        color: white;
+        border-radius: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .merge-icon {
+        background-color: #7BA893;
+    }
+
+    .option-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+    }
+
+    .option-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #3D4852;
+    }
+
+    .option-description {
+        font-size: 0.8125rem;
+        color: #606F7B;
+    }
+
+    .cancel-button {
+        width: 100%;
+        padding: 0.75rem;
+        background-color: transparent;
+        border: 1px solid #E2DFD8;
+        border-radius: 0.5rem;
+        color: #606F7B;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .cancel-button:hover {
+        background-color: #F0EDE8;
+    }
+
     /* Tablet optimization */
     @@media (min-width: 768px) {
         .settings-container {
@@ -340,6 +693,14 @@
 
         .action-description {
             font-size: 1rem;
+        }
+
+        .modal-content {
+            padding: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.375rem;
         }
     }
 </style>

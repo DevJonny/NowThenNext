@@ -153,6 +153,16 @@ public class LocalStorageImageService : IImageStorageService
             return 0;
         }
     }
+
+    public async Task ClearAllImagesAsync()
+    {
+        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", StorageKey);
+    }
+
+    public async Task SaveImagesAsync(List<ImageItem> images)
+    {
+        await SaveAllImagesAsync(images);
+    }
 }
 
 /// <summary>

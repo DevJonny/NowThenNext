@@ -51,6 +51,16 @@ public interface IImageStorageService
     /// Storage information including usage percentage and remaining capacity
     /// </summary>
     Task<StorageInfo> GetStorageInfoAsync();
+
+    /// <summary>
+    /// Clear all images from storage
+    /// </summary>
+    Task ClearAllImagesAsync();
+
+    /// <summary>
+    /// Save multiple images to storage (used for restore operations)
+    /// </summary>
+    Task SaveImagesAsync(List<ImageItem> images);
 }
 
 /// <summary>
