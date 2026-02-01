@@ -1,104 +1,223 @@
-# Ralph Agent Instructions
+# NowThenNext - Claude Code Context
 
-You are an autonomous coding agent working on a software project.
+## Project Overview
+Visual schedule, food choice, and activity choice app for children with SEN (Special Educational Needs). Displays pictures in Now/Then/Next format to communicate daily plans and offers visual choice boards for food and activities.
 
-## Your Task
+## Tech Stack
+- **Framework**: Blazor WebAssembly (WASM) - .NET 10 RC (preview)
+- **Language**: C# / .NET
+- **Styling**: Tailwind CSS CDN with custom SEN-friendly theme
+- **Storage**: Browser localStorage (base64 encoded images, ~5MB quota)
+- **Testing**: Playwright E2E tests with xUnit v3
+- **Font**: Nunito (Google Fonts) - rounded, friendly typography
 
-1. Read the PRD at `prd.json` (in the same directory as this file)
-2. Read the progress log at `progress.txt` (check Codebase Patterns section first)
-3. Check you're on the correct branch from PRD `branchName`. If not, check it out or create from main.
-4. Pick the **highest priority** user story where `passes: false`
-5. Implement that single user story
-6. Run quality checks (e.g., typecheck, lint, test - use whatever your project requires)
-7. Update CLAUDE.md files if you discover reusable patterns (see below)
-8. If checks pass, commit ALL changes with message: `feat: [Story ID] - [Story Title]`
-9. Update the PRD to set `passes: true` for the completed story
-10. Append your progress to `progress.txt`
+## Key Design Principles
+1. **Calm & Clear**: Soft colors (teal primary #5B9A9A, muted green accent #7BA893, off-white bg #F9F7F3), generous spacing, minimum 48px touch targets
+2. **No Harsh Colors**: Avoid pure red/bright yellow - use calm amber #D4A06A for warnings
+3. **Accessibility**: WCAG AA contrast (~8.5:1 ratio), large fonts (18px base, 24px+ labels), rounded sans-serif
+4. **Simplicity**: Minimal UI, no distractions, straightforward navigation
+5. **Visual-First**: Large images, clear icons, visual feedback on interactions
+6. **Slow Animations**: Calming, gentle transitions (3s pulse, 7s auto-advance)
 
-## Progress Report Format
-
-APPEND to progress.txt (never replace, always append):
+## Project Structure
 ```
-## [Date/Time] - [Story ID]
-- What was implemented
-- Files changed
-- **Learnings for future iterations:**
-  - Patterns discovered (e.g., "this codebase uses X for Y")
-  - Gotchas encountered (e.g., "don't forget to update Z when changing W")
-  - Useful context (e.g., "the evaluation panel is in component X")
----
-```
+src/NowThenNext/           # Main Blazor WASM application
+├── Pages/                 # Razor pages for each view
+├── Components/            # Reusable Blazor components
+├── Models/                # Data models (ImageItem, etc.)
+├── Services/              # Business logic (ImageStorageService)
+└── wwwroot/               # Static assets
 
-The learnings section is critical - it helps future iterations avoid repeating mistakes and understand the codebase better.
-
-## Consolidate Patterns
-
-If you discover a **reusable pattern** that future iterations should know, add it to the `## Codebase Patterns` section at the TOP of progress.txt (create it if it doesn't exist). This section should consolidate the most important learnings:
-
-```
-## Codebase Patterns
-- Example: Use `sql<number>` template for aggregations
-- Example: Always use `IF NOT EXISTS` for migrations
-- Example: Export types from actions.ts for UI components
+tests/NowThenNext.Tests.E2E/  # E2E tests with Playwright
 ```
 
-Only add patterns that are **general and reusable**, not story-specific details.
+## Core Features
+1. **Image Libraries**: Places, Food, Activities
+2. **Schedule Builder**: Select up to 3 places for Now/Then/Next display
+3. **Choice Boards**: Food Choices and Activity Choices (2-6 items)
+4. **Favorites**: Cross-category favorites view
+5. **Backup/Restore**: Export/import data as JSON
 
-## Update CLAUDE.md Files
+## Current Status
+- Branch: `ralph/nowthenext-mvp`
+- Completed: US-001 through US-032 (32/37 user stories)
+- **In Progress**: US-033 through US-037 (Activities category feature)
 
-Before committing, check if any edited files have learnings worth preserving in nearby CLAUDE.md files:
+## Next Steps (Pending)
+- [ ] US-033: Add Activities & Activity Choices buttons to home screen
+- [ ] US-034: Create Activities library view
+- [ ] US-035: Build Activity Choices selection interface
+- [ ] US-036: Build activity choice display with confirmation
+- [ ] US-037: E2E tests for activity choices flow
 
-1. **Identify directories with edited files** - Look at which directories you modified
-2. **Check for existing CLAUDE.md** - Look for CLAUDE.md in those directories or parent directories
-3. **Add valuable learnings** - If you discovered something future developers/agents should know:
-   - API patterns or conventions specific to that module
-   - Gotchas or non-obvious requirements
-   - Dependencies between files
-   - Testing approaches for that area
-   - Configuration or environment requirements
+## Important Files
+- [`prd.json`](fleet-file://3j4f3alj5183smoqcslr/Users/jonnyolliff-lee/code/NowThenNext/prd.json?type=file&root=%252F) - Full PRD with all 37 user stories
+- [`progress.txt`](fleet-file://3j4f3alj5183smoqcslr/Users/jonnyolliff-lee/code/NowThenNext/progress.txt?type=file&root=%252F) - Detailed implementation history and learnings
+- [`src/NowThenNext/Pages/Home.razor`](fleet-file://3j4f3alj5183smoqcslr/Users/jonnyolliff-lee/code/NowThenNext/src/NowThenNext/Pages/Home.razor?type=file&root=%252F) - Main menu/navigation
+- [`src/NowThenNext/Services/LocalStorageImageService.cs`](fleet-file://3j4f3alj5183smoqcslr/Users/jonnyolliff-lee/code/NowThenNext/src/NowThenNext/Services/LocalStorageImageService.cs?type=file&root=%252F) - Data persistence layer
+- [`src/NowThenNext/wwwroot/index.html`](fleet-file://3j4f3alj5183smoqcslr/Users/jonnyolliff-lee/code/NowThenNext/src/NowThenNext/wwwroot/index.html?type=file&root=%252F) - Tailwind config & JS interop functions
+- [`tests/NowThenNext.Tests.E2E/`](fleet-file://3j4f3alj5183smoqcslr/Users/jonnyolliff-lee/code/NowThenNext/tests/NowThenNext.Tests.E2E?type=file&root=%252F) - E2E test suite (44 tests)
 
-**Examples of good CLAUDE.md additions:**
-- "When modifying X, also update Y to keep them in sync"
-- "This module uses pattern Z for all API calls"
-- "Tests require the dev server running on PORT 3000"
-- "Field names must match the template exactly"
+## Development Commands
+```bash
+# Run application
+dotnet run --project src/NowThenNext
 
-**Do NOT add:**
-- Story-specific implementation details
-- Temporary debugging notes
-- Information already in progress.txt
+# Run E2E tests
+dotnet test tests/NowThenNext.Tests.E2E
 
-Only update CLAUDE.md if you have **genuinely reusable knowledge** that would help future work in that directory.
+# Build project
+dotnet build
+```
 
-## Quality Requirements
+## Design Patterns
+- **Category-based architecture**: All images categorized as Places, Food, or Activities
+- **localStorage JSON storage**: Images stored as base64 with metadata
+- **Reusable components**: ImageTile component shared across all libraries
+- **Parallel workflows**: Food Choices and Activity Choices follow same pattern as templates
 
-- ALL commits must pass your project's quality checks (typecheck, lint, test)
-- Do NOT commit broken code
-- Keep changes focused and minimal
-- Follow existing code patterns
+## Routing Map
+| Route | Page | Description |
+|-------|------|-------------|
+| `/` | Home.razor | Main menu: Places, Food, Activities, Plan the Day, Food Choices, Activity Choices, Favorites |
+| `/places` | PlacesLibrary.razor | Places image library |
+| `/food` | FoodLibrary.razor | Food image library |
+| `/activities` | ActivitiesLibrary.razor | Activities image library (to be implemented) |
+| `/upload` | Upload.razor | Image upload (optional category param) |
+| `/upload/{category}` | Upload.razor | Image upload with pre-selected category |
+| `/plan` | PlanDay.razor | Schedule selection (Now/Then/Next) |
+| `/schedule` | ScheduleDisplay.razor | Schedule display (`?ids=id1,id2,id3`) |
+| `/food-choices` | FoodChoices.razor | Food choice selection |
+| `/food-display` | FoodDisplay.razor | Food display (`?ids=id1,id2,...`) |
+| `/activity-choices` | ActivityChoices.razor | Activity choice selection (to be implemented) |
+| `/activity-display` | ActivityDisplay.razor | Activity display (to be implemented) |
+| `/favorites` | Favorites.razor | Favorited images from all categories |
+| `/settings` | Settings.razor | Backup/restore data |
 
-## Browser Testing (If Available)
+## Data Model
 
-For any story that changes UI, verify it works in the browser if you have browser testing tools configured (e.g., via MCP):
+### ImageItem
+```csharp
+public class ImageItem
+{
+    public string Id { get; set; }           // GUID
+    public string Base64Data { get; set; }   // Base64 image data
+    public string Label { get; set; }        // Optional label
+    public ImageCategory Category { get; set; } // Places/Food/Activities
+    public bool IsFavorite { get; set; }     // Favorited flag
+    public DateTime CreatedAt { get; set; }  // Creation timestamp
+}
+```
 
-1. Navigate to the relevant page
-2. Verify the UI changes work as expected
-3. Take a screenshot if helpful for the progress log
+### ImageCategory Enum
+```csharp
+public enum ImageCategory
+{
+    Places = 0,
+    Food = 1,
+    Activities = 2  // Added in US-032
+}
+```
 
-If no browser tools are available, note in your progress report that manual browser verification is needed.
+## Common Code Patterns
 
-## Stop Condition
+### Service Injection
+```razor
+@inject IImageStorageService ImageStorage
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+```
 
-After completing a user story, check if ALL stories have `passes: true`.
+### Tailwind + Custom Colors
+```razor
+<!-- Use calm-* classes defined in Tailwind config (in wwwroot/index.html) -->
+<div class="bg-calm-bg text-calm-text">
+  <button class="bg-calm-primary hover:bg-calm-primary-dark">
+```
 
-If ALL stories are complete and passing, reply with:
-<promise>COMPLETE</promise>
+### Image Compression (JS Interop)
+```csharp
+// Compress to max 800px, 0.7 quality
+var compressed = await JSRuntime.InvokeAsync<string>(
+    "compressImage", dataUrl, 800, 0.7);
+```
 
-If there are still stories with `passes: false`, end your response normally (another iteration will pick up the next story).
+### Storage Operations
+```csharp
+// Get by category
+var images = await ImageStorage.GetImagesByCategoryAsync(ImageCategory.Places);
 
-## Important
+// Save image
+await ImageStorage.SaveImageAsync(new ImageItem { ... });
 
-- Work on ONE story per iteration
-- Commit frequently
-- Keep CI green
-- Read the Codebase Patterns section in progress.txt before starting
+// Delete image
+await ImageStorage.DeleteImageAsync(imageId);
+
+// Toggle favorite
+await ImageStorage.ToggleFavoriteAsync(imageId);
+
+// Check storage usage
+var info = await ImageStorage.GetStorageInfoAsync();
+// Returns: UsagePercentage, EstimatedRemainingImages, CurrentUsageBytes, EstimatedQuotaBytes
+```
+
+### E2E Test Pattern
+```csharp
+[Collection("BlazorApp")]
+public class MyTests(BlazorAppFixture fixture)
+{
+    [Fact]
+    public async Task MyTest()
+    {
+        var page = fixture.Page;
+        await page.GotoAsync(fixture.BaseUrl);
+        await page.ClearLocalStorageAsync(); // Clear AFTER navigating
+        // ... test logic
+    }
+}
+```
+
+## Important Implementation Details
+
+### Escape Characters in Razor
+- Use `@@keyframes` (double @) for CSS animations in `<style>` blocks
+- Arrow in title uses Unicode: `→` (displayed as "Now → Then → Next")
+
+### Grid Layouts
+- Use `min-width: 0` on grid items to allow proper shrinking in CSS Grid
+- Fixed columns (`repeat(3, 1fr)`) often better than `auto-fill` for consistency
+- Tablet breakpoints: 768px (md:) and 1024px (lg:)
+
+### Modal Pattern
+- Boolean flag for visibility (e.g., `ShowDeleteConfirmation`)
+- `@onclick:stopPropagation="true"` on modal content to prevent backdrop clicks
+
+### File Uploads
+- Use `InputFile` component with `accept` attribute
+- `OpenReadStream(maxSize)` to read files (50MB max for restore)
+- Convert to base64 via `MemoryStream` and `Convert.ToBase64String`
+
+### Selection Patterns
+- **Schedule (PlanDay)**: Max 3 items, numbered badges (1=Now, 2=Then, 3=Next)
+- **Food Choices**: Min 2 items, no max limit, checkmark badges
+- **Activity Choices**: Min 2 items, no max limit, checkmark badges (to be implemented)
+
+### E2E Test Timing
+- Blazor WASM needs extra init time - use 60s timeout on `WaitForSelectorAsync`
+- Use `WaitForURLAsync()` for navigation assertions
+- Clear localStorage AFTER navigating to page (requires page context)
+
+## Test Status
+- **Total E2E Tests**: 44 passing
+- **Test Files**: HomePageTests, UploadTests, LibraryTests, ScheduleTests, FoodChoicesTests, BackupRestoreTests
+- **Coverage**: All completed user stories (US-001 to US-032)
+
+## Notes for Development
+- Always maintain calm visual design - avoid bright/harsh colors
+- Keep touch targets ≥48px for accessibility
+- Test in browser for visual verification
+- E2E tests required for all user-facing features
+- Storage quota warnings at 80% capacity
+- Dev server runs on **localhost:5161**
+- Use `pkill -f "dotnet"` to kill stray processes before E2E tests
+- Responsive padding pattern: `px-6 py-8` mobile, `sm:px-8 sm:py-10` larger screens

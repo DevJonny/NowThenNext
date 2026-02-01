@@ -47,7 +47,7 @@ public class HomePageTests
     }
 
     [Fact]
-    public async Task HomePage_DisplaysAllFiveMainButtons()
+    public async Task HomePage_DisplaysAllSevenMainButtons()
     {
         // Arrange
         var page = await _fixture.CreatePageAsync();
@@ -61,18 +61,22 @@ public class HomePageTests
             await page.WaitForSelectorAsync("nav a", new PageWaitForSelectorOptions { Timeout = 60000 });
             await page.ClearLocalStorageAsync();
 
-            // Assert - verify all five buttons are visible by their text content
-            // Button order per US-006: Places, Food, Plan the Day, Food Choices, Favorites
-            var placesButton = page.Locator("a:has-text('Places')");
+            // Assert - verify all seven buttons are visible by their text content
+            // Button order per US-006/US-033: Places, Food, Activities, Plan the Day, Food Choices, Activity Choices, Favorites
+            var placesButton = page.Locator("a[href='/places']:has-text('Places')");
             var foodButton = page.Locator("a[href='/food']:has-text('Food')");
+            var activitiesButton = page.Locator("a[href='/activities']:has-text('Activities')");
             var planButton = page.Locator("a:has-text('Plan the Day')");
-            var foodChoicesButton = page.Locator("a:has-text('Food Choices')");
+            var foodChoicesButton = page.Locator("a[href='/food-choices']:has-text('Food Choices')");
+            var activityChoicesButton = page.Locator("a[href='/activity-choices']:has-text('Activity Choices')");
             var favoritesButton = page.Locator("a:has-text('Favorites')");
 
             await Assertions.Expect(placesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
             await Assertions.Expect(foodButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+            await Assertions.Expect(activitiesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
             await Assertions.Expect(planButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
             await Assertions.Expect(foodChoicesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+            await Assertions.Expect(activityChoicesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
             await Assertions.Expect(favoritesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
         }
         finally
@@ -207,7 +211,7 @@ public class HomePageTests
             await page.ClearLocalStorageAsync();
 
             // Act - click the Food Choices button
-            var foodChoicesButton = page.Locator("a:has-text('Food Choices')");
+            var foodChoicesButton = page.Locator("a[href='/food-choices']:has-text('Food Choices')");
             await foodChoicesButton.ClickAsync();
 
             // Wait for navigation
@@ -215,6 +219,62 @@ public class HomePageTests
 
             // Assert - verify we're on the food choices page
             Assert.EndsWith("/food-choices", page.Url);
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ActivitiesButton_NavigatesToActivitiesPage()
+    {
+        // Arrange
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync(_fixture.BaseUrl);
+            await page.WaitForSelectorAsync("nav a", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+
+            // Act - click the Activities button
+            var activitiesButton = page.Locator("a[href='/activities']:has-text('Activities')");
+            await activitiesButton.ClickAsync();
+
+            // Wait for navigation
+            await page.WaitForURLAsync($"{_fixture.BaseUrl}/activities", new PageWaitForURLOptions { Timeout = 10000 });
+
+            // Assert - verify we're on the activities page
+            Assert.EndsWith("/activities", page.Url);
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ActivityChoicesButton_NavigatesToActivityChoicesPage()
+    {
+        // Arrange
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync(_fixture.BaseUrl);
+            await page.WaitForSelectorAsync("nav a", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+
+            // Act - click the Activity Choices button
+            var activityChoicesButton = page.Locator("a[href='/activity-choices']:has-text('Activity Choices')");
+            await activityChoicesButton.ClickAsync();
+
+            // Wait for navigation
+            await page.WaitForURLAsync($"{_fixture.BaseUrl}/activity-choices", new PageWaitForURLOptions { Timeout = 10000 });
+
+            // Assert - verify we're on the activity choices page
+            Assert.EndsWith("/activity-choices", page.Url);
         }
         finally
         {
