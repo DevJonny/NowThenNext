@@ -1,0 +1,845 @@
+@page "/activity-display"
+@using NowThenNext.Models
+@using NowThenNext.Services
+@inject IImageStorageService ImageStorage
+@inject NavigationManager Navigation
+
+<PageTitle>Activity Choices - NowThenNext</PageTitle>
+
+<div class="activity-display-container">
+    <!-- Unobtrusive Back Button -->
+    <button @onclick="GoBack" class="back-button" aria-label="Go back to selection">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+    </button>
+
+    @if (IsLoading)
+    {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+        </div>
+    }
+    else if (ShowConfirmation && ConfirmedActivity != null)
+    {
+        <!-- Confirmation Screen -->
+        <div class="confirmation-screen">
+            <!-- Large checkmark with animation -->
+            <div class="confirmation-checkmark">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+
+            <!-- Selected activity image displayed large -->
+            <div class="confirmed-activity-card">
+                <div class="confirmed-activity-image-container">
+                    <img src="@GetImageSrc(ConfirmedActivity)"
+                         alt="@(string.IsNullOrEmpty(ConfirmedActivity.Label) ? "Selected activity" : ConfirmedActivity.Label)"
+                         class="confirmed-activity-image" />
+                </div>
+                @if (!string.IsNullOrEmpty(ConfirmedActivity.Label))
+                {
+                    <div class="confirmed-activity-name">
+                        @ConfirmedActivity.Label
+                    </div>
+                }
+            </div>
+
+            <!-- Action buttons -->
+            <div class="confirmation-actions">
+                <button @onclick="ChooseAgain" class="choose-again-button">
+                    Choose Again
+                </button>
+            </div>
+        </div>
+    }
+    else if (ActivityItems.Count == 0)
+    {
+        <div class="empty-state">
+            <p class="text-calm-text-light text-xl">No activities selected</p>
+            <button @onclick="GoBack" class="return-button">
+                Select Activities
+            </button>
+        </div>
+    }
+    else
+    {
+        <!-- Activity Choices Grid -->
+        <div class="activity-choices-grid @GetLayoutClass()">
+            @foreach (var item in ActivityItems)
+            {
+                var isSelected = SelectedActivityId == item.Id;
+
+                <button class="activity-choice-item @(isSelected ? "selected" : "")"
+                        @onclick="() => SelectActivity(item.Id)"
+                        aria-label="@(string.IsNullOrEmpty(item.Label) ? "Activity choice" : item.Label)">
+                    <!-- Image Container -->
+                    <div class="activity-image-container">
+                        <img src="@GetImageSrc(item)"
+                             alt="@(string.IsNullOrEmpty(item.Label) ? "Activity" : item.Label)"
+                             class="activity-image" />
+                    </div>
+
+                    <!-- Optional Activity Name -->
+                    @if (!string.IsNullOrEmpty(item.Label))
+                    {
+                        <div class="activity-name">
+                            @item.Label
+                        </div>
+                    }
+
+                    <!-- Selection Indicator -->
+                    @if (isSelected)
+                    {
+                        <div class="selection-indicator">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
+                    }
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<ImageItem> ActivityItems = new();
+    private string? SelectedActivityId = null;
+    private bool IsLoading = true;
+    private bool ShowConfirmation = false;
+    private ImageItem? ConfirmedActivity = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadActivityItemsAsync();
+    }
+
+    private async Task LoadActivityItemsAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            // Parse image IDs from query string
+            var uri = new Uri(Navigation.Uri);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            var idsParam = query["ids"];
+
+            if (!string.IsNullOrEmpty(idsParam))
+            {
+                var imageIds = idsParam.Split(',', StringSplitOptions.RemoveEmptyEntries);
+
+                // Load all activity images from storage and filter by IDs
+                var allImages = await ImageStorage.GetImagesByCategoryAsync(ImageCategory.Activities);
+
+                // Maintain the order from the query string
+                foreach (var id in imageIds)
+                {
+                    var image = allImages.FirstOrDefault(img => img.Id == id);
+                    if (image != null)
+                    {
+                        ActivityItems.Add(image);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void SelectActivity(string activityId)
+    {
+        // Select the activity and show confirmation screen
+        SelectedActivityId = activityId;
+        ConfirmedActivity = ActivityItems.FirstOrDefault(a => a.Id == activityId);
+        ShowConfirmation = true;
+        StateHasChanged();
+    }
+
+    private void ChooseAgain()
+    {
+        // Reset to selection mode
+        ShowConfirmation = false;
+        ConfirmedActivity = null;
+        SelectedActivityId = null;
+        StateHasChanged();
+    }
+
+    private string GetLayoutClass()
+    {
+        return ActivityItems.Count switch
+        {
+            2 => "two-items",
+            3 => "three-items",
+            4 => "four-items",
+            5 => "five-items",
+            6 => "six-items",
+            _ when ActivityItems.Count > 6 => "six-items",
+            _ => "two-items"
+        };
+    }
+
+    private string GetImageSrc(ImageItem image)
+    {
+        if (image.Base64Data.StartsWith("data:"))
+        {
+            return image.Base64Data;
+        }
+        return $"data:image/jpeg;base64,{image.Base64Data}";
+    }
+
+    private void GoBack()
+    {
+        if (ShowConfirmation)
+        {
+            // If on confirmation screen, go back to selection
+            ChooseAgain();
+        }
+        else
+        {
+            Navigation.NavigateTo("/activity-choices");
+        }
+    }
+}
+
+<style>
+    .activity-display-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        min-height: 100dvh;
+        width: 100%;
+        padding: 1.5rem;
+        background-color: var(--calm-bg, #F9F7F3);
+        box-sizing: border-box;
+    }
+
+    /* Unobtrusive Back Button */
+    .back-button {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.9);
+        color: #606F7B;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 50;
+        opacity: 0.7;
+    }
+
+    .back-button:hover {
+        opacity: 1;
+        background-color: white;
+        color: #9B8AA8;
+    }
+
+    /* Loading State */
+    .loading-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .loading-spinner {
+        width: 3rem;
+        height: 3rem;
+        border: 3px solid #E2DFD8;
+        border-top-color: #9B8AA8;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    /* Empty State */
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        text-align: center;
+    }
+
+    .return-button {
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        background-color: #9B8AA8;
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(155, 138, 168, 0.3);
+    }
+
+    .return-button:hover {
+        background-color: #857495;
+    }
+
+    /* Activity Choices Grid */
+    .activity-choices-grid {
+        display: grid;
+        gap: 1.5rem;
+        width: 100%;
+        max-width: 1200px;
+    }
+
+    /* Layout variations based on item count */
+    .activity-choices-grid.two-items {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 900px;
+    }
+
+    .activity-choices-grid.three-items {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1100px;
+    }
+
+    .activity-choices-grid.four-items {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 900px;
+    }
+
+    .activity-choices-grid.five-items {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1100px;
+    }
+
+    .activity-choices-grid.six-items {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1100px;
+    }
+
+    /* Activity Choice Item */
+    .activity-choice-item {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: white;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        border: 4px solid transparent;
+        transition: all 0.3s ease;
+        min-height: 200px;
+        padding: 0;
+    }
+
+    .activity-choice-item:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+
+    .activity-choice-item:active {
+        transform: scale(0.98);
+    }
+
+    .activity-choice-item.selected {
+        border-color: #9B8AA8;
+        box-shadow: 0 8px 30px rgba(155, 138, 168, 0.35);
+        animation: selectPulse 0.5s ease-out;
+    }
+
+    /* Image Container */
+    .activity-image-container {
+        width: 100%;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #F0EDE8;
+        min-height: 180px;
+    }
+
+    .activity-image {
+        width: 100%;
+        height: 100%;
+        min-height: 180px;
+        object-fit: cover;
+    }
+
+    /* Activity Name */
+    .activity-name {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        text-align: center;
+        color: #3D4852;
+        background-color: white;
+        border-top: 1px solid #F0EDE8;
+    }
+
+    /* Selection Indicator */
+    .selection-indicator {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 3.5rem;
+        height: 3.5rem;
+        background-color: #9B8AA8;
+        color: white;
+        border-radius: 50%;
+        box-shadow: 0 4px 16px rgba(155, 138, 168, 0.4);
+        animation: popIn 0.3s ease-out;
+    }
+
+    /* Animations */
+    @@keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @@keyframes selectPulse {
+        0% {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 0 0 0 rgba(155, 138, 168, 0.5);
+        }
+        50% {
+            box-shadow: 0 8px 30px rgba(155, 138, 168, 0.35), 0 0 30px 10px rgba(155, 138, 168, 0.3);
+        }
+        100% {
+            box-shadow: 0 8px 30px rgba(155, 138, 168, 0.35);
+        }
+    }
+
+    @@keyframes popIn {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        70% {
+            transform: scale(1.15);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes confirmationBounce {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        70% {
+            transform: scale(0.9);
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @@keyframes confirmationSlide {
+        0% {
+            transform: translateY(30px);
+            opacity: 0;
+        }
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    /* Confirmation Screen */
+    .confirmation-screen {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        padding: 2rem;
+        width: 100%;
+        max-width: 600px;
+    }
+
+    .confirmation-checkmark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 6rem;
+        height: 6rem;
+        background-color: #9B8AA8;
+        color: white;
+        border-radius: 50%;
+        box-shadow: 0 8px 32px rgba(155, 138, 168, 0.4);
+        animation: confirmationBounce 0.6s ease-out;
+    }
+
+    .confirmation-checkmark svg {
+        width: 3.5rem;
+        height: 3.5rem;
+    }
+
+    .confirmed-activity-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: white;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        border: 4px solid #9B8AA8;
+        width: 100%;
+        max-width: 400px;
+        animation: confirmationSlide 0.5s ease-out 0.2s both;
+    }
+
+    .confirmed-activity-image-container {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #F0EDE8;
+    }
+
+    .confirmed-activity-image {
+        width: 100%;
+        height: auto;
+        min-height: 200px;
+        max-height: 50vh;
+        object-fit: cover;
+    }
+
+    .confirmed-activity-name {
+        width: 100%;
+        padding: 1.25rem 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-align: center;
+        color: #3D4852;
+        background-color: white;
+        border-top: 1px solid #F0EDE8;
+    }
+
+    .confirmation-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        max-width: 300px;
+        animation: confirmationSlide 0.5s ease-out 0.4s both;
+    }
+
+    .choose-again-button {
+        width: 100%;
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        background-color: white;
+        color: #606F7B;
+        border: 2px solid #E2DFD8;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .choose-again-button:hover {
+        background-color: #F0EDE8;
+        border-color: #9B8AA8;
+        color: #9B8AA8;
+    }
+
+    /* Tablet responsiveness */
+    @@media (min-width: 768px) {
+        .activity-display-container {
+            padding: 2rem;
+        }
+
+        .activity-choices-grid {
+            gap: 2rem;
+        }
+
+        .activity-choices-grid.four-items {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 1000px;
+        }
+
+        .activity-choices-grid.five-items,
+        .activity-choices-grid.six-items {
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 1200px;
+        }
+
+        .activity-image-container {
+            min-height: 250px;
+        }
+
+        .activity-image {
+            min-height: 250px;
+        }
+
+        .activity-name {
+            font-size: 1.5rem;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .selection-indicator {
+            width: 4rem;
+            height: 4rem;
+        }
+
+        .selection-indicator svg {
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+
+        /* Confirmation screen tablet */
+        .confirmation-checkmark {
+            width: 8rem;
+            height: 8rem;
+        }
+
+        .confirmation-checkmark svg {
+            width: 4.5rem;
+            height: 4.5rem;
+        }
+
+        .confirmed-activity-card {
+            max-width: 500px;
+        }
+
+        .confirmed-activity-image {
+            min-height: 280px;
+        }
+
+        .confirmed-activity-name {
+            font-size: 1.75rem;
+            padding: 1.5rem 2rem;
+        }
+    }
+
+    /* Large screens */
+    @@media (min-width: 1024px) {
+        .activity-choices-grid.three-items {
+            max-width: 1200px;
+        }
+
+        .activity-choices-grid.four-items {
+            grid-template-columns: repeat(4, 1fr);
+            max-width: 1400px;
+        }
+
+        .activity-choices-grid.five-items {
+            grid-template-columns: repeat(5, 1fr);
+            max-width: 1500px;
+        }
+
+        .activity-choices-grid.six-items {
+            grid-template-columns: repeat(6, 1fr);
+            max-width: 1600px;
+        }
+
+        .activity-image-container {
+            min-height: 300px;
+        }
+
+        .activity-image {
+            min-height: 300px;
+        }
+
+        .activity-name {
+            font-size: 1.75rem;
+            padding: 1.5rem 2rem;
+        }
+    }
+
+    /* Mobile portrait - stack 2 items per row for 4+ items, single column for 2-3 */
+    @@media (max-width: 767px) and (orientation: portrait) {
+        .activity-display-container {
+            padding: 1rem;
+            padding-top: 4rem;
+        }
+
+        .activity-choices-grid.two-items,
+        .activity-choices-grid.three-items {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .activity-choices-grid.four-items,
+        .activity-choices-grid.five-items,
+        .activity-choices-grid.six-items {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .activity-choice-item {
+            min-height: 150px;
+            border-radius: 1rem;
+        }
+
+        .activity-image-container {
+            min-height: 120px;
+        }
+
+        .activity-image {
+            min-height: 120px;
+        }
+
+        .activity-name {
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .selection-indicator {
+            width: 2.5rem;
+            height: 2.5rem;
+            top: 0.5rem;
+            right: 0.5rem;
+        }
+
+        .selection-indicator svg {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        /* Confirmation screen mobile */
+        .confirmation-screen {
+            padding: 1rem;
+            gap: 1.5rem;
+        }
+
+        .confirmation-checkmark {
+            width: 5rem;
+            height: 5rem;
+        }
+
+        .confirmation-checkmark svg {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .confirmed-activity-card {
+            max-width: 100%;
+        }
+
+        .confirmed-activity-image {
+            min-height: 150px;
+            max-height: 40vh;
+        }
+
+        .confirmed-activity-name {
+            font-size: 1.25rem;
+            padding: 1rem 1.25rem;
+        }
+
+        .choose-again-button {
+            padding: 0.875rem 1.5rem;
+            font-size: 1rem;
+        }
+    }
+
+    /* Mobile landscape - side by side */
+    @@media (max-width: 896px) and (orientation: landscape) {
+        .activity-display-container {
+            padding: 1rem 2rem;
+        }
+
+        .activity-choices-grid.two-items {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .activity-choices-grid.three-items {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .activity-choices-grid.four-items {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .activity-choices-grid.five-items {
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        .activity-choices-grid.six-items {
+            grid-template-columns: repeat(6, 1fr);
+        }
+
+        .activity-image-container {
+            min-height: 100px;
+        }
+
+        .activity-image {
+            min-height: 100px;
+            max-height: 40vh;
+        }
+
+        .activity-name {
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+        }
+
+        /* Confirmation screen landscape */
+        .confirmation-screen {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 1rem 2rem;
+        }
+
+        .confirmation-checkmark {
+            width: 4rem;
+            height: 4rem;
+        }
+
+        .confirmation-checkmark svg {
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+
+        .confirmed-activity-card {
+            flex: 0 1 auto;
+            max-width: 50%;
+        }
+
+        .confirmed-activity-image {
+            min-height: 100px;
+            max-height: 50vh;
+        }
+
+        .confirmed-activity-name {
+            font-size: 1rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .confirmation-actions {
+            max-width: 200px;
+        }
+
+        .choose-again-button {
+            padding: 0.75rem 1.25rem;
+            font-size: 0.875rem;
+        }
+    }
+</style>
