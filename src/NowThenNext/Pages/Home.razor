@@ -3,13 +3,23 @@
 <PageTitle>Now Then Next</PageTitle>
 
 <div class="flex flex-col items-center min-h-screen relative">
-    <!-- Settings Gear Icon - Top Corner -->
-    <a href="/settings" class="settings-button" title="Settings">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
-        </svg>
-    </a>
+    <!-- Header Icons - Top Corners -->
+    <div class="header-icons">
+        <!-- Favorites Heart Icon - Top Left -->
+        <a href="/favorites" class="header-button favorites-button" title="Favorites">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+        </a>
+
+        <!-- Settings Gear Icon - Top Right -->
+        <a href="/settings" class="header-button settings-button" title="Settings">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
+                <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" />
+            </svg>
+        </a>
+    </div>
 
     <!-- App Title with Arrows -->
     <header class="text-center mb-8 sm:mb-12">
@@ -21,125 +31,157 @@
         </p>
     </header>
 
-    <!-- Main Navigation Buttons -->
+    <!-- Main Navigation Buttons - Grouped in Pairs -->
     <nav class="w-full max-w-md md:max-w-2xl lg:max-w-3xl px-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-            <!-- Places Button -->
-            <a href="/places" class="menu-button group">
-                <div class="menu-icon bg-calm-primary group-hover:bg-calm-primary-dark">
-                    <!-- Location/Map Pin Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-                        <circle cx="12" cy="9" r="2.5" fill="currentColor" />
-                    </svg>
-                </div>
-                <span class="menu-text">Places</span>
-            </a>
+        <div class="menu-groups">
+            <!-- Group 1: Places + Plan the Day -->
+            <div class="menu-group">
+                <div class="group-label">Schedule</div>
+                <div class="group-buttons">
+                    <!-- Places Button -->
+                    <a href="/places" class="menu-button group">
+                        <div class="menu-icon bg-calm-primary group-hover:bg-calm-primary-dark">
+                            <!-- Location/Map Pin Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                                <circle cx="12" cy="9" r="2.5" fill="currentColor" />
+                            </svg>
+                        </div>
+                        <span class="menu-text">Places</span>
+                    </a>
 
-            <!-- Food Button -->
-            <a href="/food" class="menu-button group">
-                <div class="menu-icon bg-calm-accent group-hover:bg-calm-accent-dark">
-                    <!-- Food/Apple Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2c1 0 2 1 2 2s-1 2-2 2" />
-                        <path d="M12 6c-4 0-7 3-7 8s3 8 7 8 7-3 7-8-3-8-7-8z" />
-                        <path d="M12 6v3" />
-                    </svg>
+                    <!-- Plan the Day Button -->
+                    <a href="/plan" class="menu-button group">
+                        <div class="menu-icon bg-calm-primary-light group-hover:bg-calm-primary">
+                            <!-- Calendar/Schedule Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" />
+                                <path d="M3 10h18" />
+                                <path d="M8 2v4" />
+                                <path d="M16 2v4" />
+                                <circle cx="8" cy="15" r="1" fill="currentColor" />
+                                <circle cx="12" cy="15" r="1" fill="currentColor" />
+                                <circle cx="16" cy="15" r="1" fill="currentColor" />
+                            </svg>
+                        </div>
+                        <span class="menu-text">Plan the Day</span>
+                    </a>
                 </div>
-                <span class="menu-text">Food</span>
-            </a>
+            </div>
 
-            <!-- Activities Button -->
-            <a href="/activities" class="menu-button group">
-                <div class="menu-icon bg-calm-activity group-hover:bg-calm-activity-dark">
-                    <!-- Activities/Play Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 8v4l3 2" />
-                        <circle cx="12" cy="12" r="3" fill="currentColor" />
-                    </svg>
-                </div>
-                <span class="menu-text">Activities</span>
-            </a>
+            <!-- Group 2: Food + Food Choices -->
+            <div class="menu-group">
+                <div class="group-label">Food</div>
+                <div class="group-buttons">
+                    <!-- Food Button -->
+                    <a href="/food" class="menu-button group">
+                        <div class="menu-icon bg-calm-accent group-hover:bg-calm-accent-dark">
+                            <!-- Food/Apple Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2c1 0 2 1 2 2s-1 2-2 2" />
+                                <path d="M12 6c-4 0-7 3-7 8s3 8 7 8 7-3 7-8-3-8-7-8z" />
+                                <path d="M12 6v3" />
+                            </svg>
+                        </div>
+                        <span class="menu-text">Food</span>
+                    </a>
 
-            <!-- Plan the Day Button -->
-            <a href="/plan" class="menu-button group">
-                <div class="menu-icon bg-calm-primary-light group-hover:bg-calm-primary">
-                    <!-- Calendar/Schedule Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" />
-                        <path d="M3 10h18" />
-                        <path d="M8 2v4" />
-                        <path d="M16 2v4" />
-                        <circle cx="8" cy="15" r="1" fill="currentColor" />
-                        <circle cx="12" cy="15" r="1" fill="currentColor" />
-                        <circle cx="16" cy="15" r="1" fill="currentColor" />
-                    </svg>
+                    <!-- Food Choices Button -->
+                    <a href="/food-choices" class="menu-button group">
+                        <div class="menu-icon bg-calm-accent-light group-hover:bg-calm-accent">
+                            <!-- Food Grid/Choices Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="1" />
+                                <rect x="14" y="3" width="7" height="7" rx="1" />
+                                <rect x="3" y="14" width="7" height="7" rx="1" />
+                                <rect x="14" y="14" width="7" height="7" rx="1" />
+                            </svg>
+                        </div>
+                        <span class="menu-text">Food Choices</span>
+                    </a>
                 </div>
-                <span class="menu-text">Plan the Day</span>
-            </a>
+            </div>
 
-            <!-- Food Choices Button -->
-            <a href="/food-choices" class="menu-button group">
-                <div class="menu-icon bg-calm-accent-light group-hover:bg-calm-accent">
-                    <!-- Food Grid/Choices Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="7" height="7" rx="1" />
-                        <rect x="14" y="3" width="7" height="7" rx="1" />
-                        <rect x="3" y="14" width="7" height="7" rx="1" />
-                        <rect x="14" y="14" width="7" height="7" rx="1" />
-                    </svg>
-                </div>
-                <span class="menu-text">Food Choices</span>
-            </a>
+            <!-- Group 3: Activities + Activity Choices -->
+            <div class="menu-group">
+                <div class="group-label">Activities</div>
+                <div class="group-buttons">
+                    <!-- Activities Button -->
+                    <a href="/activities" class="menu-button group">
+                        <div class="menu-icon bg-calm-activity group-hover:bg-calm-activity-dark">
+                            <!-- Activities/Play Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 8v4l3 2" />
+                                <circle cx="12" cy="12" r="3" fill="currentColor" />
+                            </svg>
+                        </div>
+                        <span class="menu-text">Activities</span>
+                    </a>
 
-            <!-- Activity Choices Button -->
-            <a href="/activity-choices" class="menu-button group">
-                <div class="menu-icon bg-calm-activity-light group-hover:bg-calm-activity">
-                    <!-- Activity Grid/Choices Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="7" height="7" rx="2" />
-                        <rect x="14" y="3" width="7" height="7" rx="2" />
-                        <rect x="3" y="14" width="7" height="7" rx="2" />
-                        <rect x="14" y="14" width="7" height="7" rx="2" />
-                        <circle cx="6.5" cy="6.5" r="1.5" fill="currentColor" />
-                        <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" />
-                        <circle cx="6.5" cy="17.5" r="1.5" fill="currentColor" />
-                        <circle cx="17.5" cy="17.5" r="1.5" fill="currentColor" />
-                    </svg>
+                    <!-- Activity Choices Button -->
+                    <a href="/activity-choices" class="menu-button group">
+                        <div class="menu-icon bg-calm-activity-light group-hover:bg-calm-activity">
+                            <!-- Activity Grid/Choices Icon -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" rx="2" />
+                                <rect x="14" y="3" width="7" height="7" rx="2" />
+                                <rect x="3" y="14" width="7" height="7" rx="2" />
+                                <rect x="14" y="14" width="7" height="7" rx="2" />
+                                <circle cx="6.5" cy="6.5" r="1.5" fill="currentColor" />
+                                <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" />
+                                <circle cx="6.5" cy="17.5" r="1.5" fill="currentColor" />
+                                <circle cx="17.5" cy="17.5" r="1.5" fill="currentColor" />
+                            </svg>
+                        </div>
+                        <span class="menu-text">Activity Choices</span>
+                    </a>
                 </div>
-                <span class="menu-text">Activity Choices</span>
-            </a>
-
-            <!-- Favorites Button -->
-            <a href="/favorites" class="menu-button group">
-                <div class="menu-icon bg-calm-warning group-hover:bg-calm-warning-dark">
-                    <!-- Heart/Star Icon -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                    </svg>
-                </div>
-                <span class="menu-text">Favorites</span>
-            </a>
+            </div>
         </div>
     </nav>
 </div>
 
 <style>
-    .settings-button {
+    /* Header Icons Container */
+    .header-icons {
         position: absolute;
         top: 1rem;
+        left: 1rem;
         right: 1rem;
+        display: flex;
+        justify-content: space-between;
+        pointer-events: none;
+    }
+
+    .header-button {
         display: flex;
         align-items: center;
         justify-content: center;
         width: 3rem; /* 48px touch target */
         height: 3rem;
         border-radius: 0.5rem;
-        color: #5B9A9A; /* calm-primary */
         background-color: transparent;
         transition: all 0.2s ease;
         text-decoration: none;
+        pointer-events: auto;
+    }
+
+    .favorites-button {
+        color: #D4A06A; /* calm-warning */
+    }
+
+    .favorites-button:hover {
+        background-color: rgba(212, 160, 106, 0.1);
+        color: #B8864A; /* calm-warning-dark */
+    }
+
+    .favorites-button:active {
+        background-color: rgba(212, 160, 106, 0.2);
+    }
+
+    .settings-button {
+        color: #5B9A9A; /* calm-primary */
     }
 
     .settings-button:hover {
@@ -149,6 +191,36 @@
 
     .settings-button:active {
         background-color: rgba(91, 154, 154, 0.2);
+    }
+
+    /* Menu Groups Layout */
+    .menu-groups {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .menu-group {
+        background-color: rgba(255, 255, 255, 0.5);
+        border-radius: 1rem;
+        padding: 1rem;
+        border: 1px solid rgba(61, 72, 82, 0.08);
+    }
+
+    .group-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6B7B8A; /* calm-text-light */
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+        padding-left: 0.25rem;
+    }
+
+    .group-buttons {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
     }
 
     .menu-button {
@@ -190,8 +262,21 @@
         color: #3D4852; /* calm-text */
     }
 
-    /* Tablet optimization - larger buttons in 2-column grid */
+    /* Tablet optimization - 2 columns per group */
     @@media (min-width: 768px) {
+        .menu-groups {
+            gap: 2rem;
+        }
+
+        .menu-group {
+            padding: 1.25rem;
+        }
+
+        .group-buttons {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
         .menu-button {
             padding: 1.25rem 1.75rem;
             min-height: 5rem; /* 80px for better touch targets on tablet */
@@ -212,8 +297,12 @@
         }
     }
 
-    /* Large tablet / small desktop - maintain 2 columns but larger */
+    /* Large tablet / small desktop */
     @@media (min-width: 1024px) {
+        .menu-group {
+            padding: 1.5rem;
+        }
+
         .menu-button {
             padding: 1.5rem 2rem;
         }

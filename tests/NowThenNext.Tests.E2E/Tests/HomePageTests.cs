@@ -47,7 +47,7 @@ public class HomePageTests
     }
 
     [Fact]
-    public async Task HomePage_DisplaysAllSevenMainButtons()
+    public async Task HomePage_DisplaysAllSixMainButtons()
     {
         // Arrange
         var page = await _fixture.CreatePageAsync();
@@ -61,23 +61,52 @@ public class HomePageTests
             await page.WaitForSelectorAsync("nav a", new PageWaitForSelectorOptions { Timeout = 60000 });
             await page.ClearLocalStorageAsync();
 
-            // Assert - verify all seven buttons are visible by their text content
-            // Button order per US-006/US-033: Places, Food, Activities, Plan the Day, Food Choices, Activity Choices, Favorites
+            // Assert - verify all six buttons are visible by their text content
+            // Button order per US-006: Places + Plan the Day (pair), Food + Food Choices (pair), Activities + Activity Choices (pair)
+            // Favorites is now a header icon, not a menu button
             var placesButton = page.Locator("a[href='/places']:has-text('Places')");
-            var foodButton = page.Locator("a[href='/food']:has-text('Food')");
-            var activitiesButton = page.Locator("a[href='/activities']:has-text('Activities')");
             var planButton = page.Locator("a:has-text('Plan the Day')");
+            var foodButton = page.Locator("a[href='/food']:has-text('Food')");
             var foodChoicesButton = page.Locator("a[href='/food-choices']:has-text('Food Choices')");
+            var activitiesButton = page.Locator("a[href='/activities']:has-text('Activities')");
             var activityChoicesButton = page.Locator("a[href='/activity-choices']:has-text('Activity Choices')");
-            var favoritesButton = page.Locator("a:has-text('Favorites')");
 
             await Assertions.Expect(placesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
-            await Assertions.Expect(foodButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
-            await Assertions.Expect(activitiesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
             await Assertions.Expect(planButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+            await Assertions.Expect(foodButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
             await Assertions.Expect(foodChoicesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+            await Assertions.Expect(activitiesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
             await Assertions.Expect(activityChoicesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
-            await Assertions.Expect(favoritesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task HomePage_MenuButtonsAreGroupedInPairs()
+    {
+        // Arrange
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            // Act
+            await page.GotoAsync(_fixture.BaseUrl);
+            await page.WaitForSelectorAsync("nav a", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+
+            // Assert - verify that buttons are grouped in three pairs with group containers
+            var menuGroups = page.Locator(".menu-group");
+            await Assertions.Expect(menuGroups).ToHaveCountAsync(3, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
+
+            // Verify each group has exactly 2 buttons
+            for (int i = 0; i < 3; i++)
+            {
+                var groupButtons = menuGroups.Nth(i).Locator(".menu-button");
+                await Assertions.Expect(groupButtons).ToHaveCountAsync(2);
+            }
         }
         finally
         {
@@ -171,7 +200,7 @@ public class HomePageTests
     }
 
     [Fact]
-    public async Task FavoritesButton_NavigatesToFavoritesPage()
+    public async Task FavoritesHeartIcon_IsVisibleAndNavigatesToFavoritesPage()
     {
         // Arrange
         var page = await _fixture.CreatePageAsync();
@@ -179,17 +208,20 @@ public class HomePageTests
         try
         {
             await page.GotoAsync(_fixture.BaseUrl);
-            await page.WaitForSelectorAsync("nav a", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.WaitForSelectorAsync("h1", new PageWaitForSelectorOptions { Timeout = 60000 });
             await page.ClearLocalStorageAsync();
 
-            // Act - click the Favorites button
-            var favoritesButton = page.Locator("a:has-text('Favorites')");
+            // Assert - verify the favorites heart icon is visible in header
+            var favoritesButton = page.Locator("a.favorites-button");
+            await Assertions.Expect(favoritesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+
+            // Act - click the favorites button
             await favoritesButton.ClickAsync();
 
-            // Wait for navigation
+            // Wait for navigation to favorites page
             await page.WaitForURLAsync($"{_fixture.BaseUrl}/favorites", new PageWaitForURLOptions { Timeout = 10000 });
 
-            // Assert - verify we're on the favorites page
+            // Assert - verify we navigated to favorites
             Assert.EndsWith("/favorites", page.Url);
         }
         finally
