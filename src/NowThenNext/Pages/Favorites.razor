@@ -41,7 +41,7 @@
                 <p class="text-calm-text-light mt-4">Loading favorites...</p>
             </div>
         }
-        else if (PlacesFavorites.Count == 0 && FoodFavorites.Count == 0)
+        else if (PlacesFavorites.Count == 0 && FoodFavorites.Count == 0 && ActivitiesFavorites.Count == 0)
         {
             <!-- Empty State -->
             <div class="empty-state">
@@ -114,6 +114,30 @@
                     </div>
                 </section>
             }
+
+            <!-- Activities Favorites Section -->
+            @if (ActivitiesFavorites.Count > 0)
+            {
+                <section class="favorites-section">
+                    <div class="section-header">
+                        <span class="section-icon section-icon-activities">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </span>
+                        <h2 class="section-title">Activities</h2>
+                        <span class="section-count">@ActivitiesFavorites.Count</span>
+                    </div>
+                    <div class="image-grid">
+                        @foreach (var image in ActivitiesFavorites)
+                        {
+                            <ImageTile Image="@image"
+                                       OnFavoriteToggle="HandleFavoriteToggle"
+                                       OnDelete="HandleDeleteRequest" />
+                        }
+                    </div>
+                </section>
+            }
         }
     </div>
 
@@ -140,6 +164,7 @@
 @code {
     private List<ImageItem> PlacesFavorites = new();
     private List<ImageItem> FoodFavorites = new();
+    private List<ImageItem> ActivitiesFavorites = new();
     private bool IsLoading = true;
     private bool ShowDeleteConfirmation = false;
     private string? ImageToDeleteId = null;
@@ -159,6 +184,7 @@
             var allFavorites = await ImageStorage.GetFavoriteImagesAsync();
             PlacesFavorites = allFavorites.Where(i => i.Category == ImageCategory.Places).ToList();
             FoodFavorites = allFavorites.Where(i => i.Category == ImageCategory.Food).ToList();
+            ActivitiesFavorites = allFavorites.Where(i => i.Category == ImageCategory.Activities).ToList();
         }
         finally
         {
@@ -174,6 +200,7 @@
         // Remove from the appropriate list since we're toggling off favorites
         PlacesFavorites.RemoveAll(i => i.Id == imageId);
         FoodFavorites.RemoveAll(i => i.Id == imageId);
+        ActivitiesFavorites.RemoveAll(i => i.Id == imageId);
         StateHasChanged();
     }
 
@@ -198,6 +225,7 @@
             await ImageStorage.DeleteImageAsync(ImageToDeleteId);
             PlacesFavorites.RemoveAll(i => i.Id == ImageToDeleteId);
             FoodFavorites.RemoveAll(i => i.Id == ImageToDeleteId);
+            ActivitiesFavorites.RemoveAll(i => i.Id == ImageToDeleteId);
         }
 
         ShowDeleteConfirmation = false;
@@ -332,6 +360,11 @@
     .section-icon-food {
         background-color: rgba(123, 168, 147, 0.15);
         color: #7BA893;
+    }
+
+    .section-icon-activities {
+        background-color: rgba(155, 138, 168, 0.15);
+        color: #9B8AA8;
     }
 
     .section-title {
