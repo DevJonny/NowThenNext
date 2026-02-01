@@ -612,3 +612,126 @@
   - Test pattern for confirmation screen: tap food item → wait for .confirmation-screen → verify elements
   - ChooseAgain returns to food display grid (same URL), not back to food-choices selection page
 ---
+
+## 2026-01-31 - US-032
+- What was implemented: Added Activities category support to the data model
+- Files changed:
+  - src/NowThenNext/Models/ImageItem.cs - Added 'Activities' to ImageCategory enum
+  - src/NowThenNext/Models/BackupData.cs - Updated comment to include Activities category
+- **Verification completed:**
+  - Add 'Activities' to the Category enum/type ✓
+  - Storage service can save and retrieve images with Activities category ✓ (uses category parameter, works automatically)
+  - Existing Places and Food functionality unchanged ✓ (all 44 E2E tests pass)
+  - Backup/restore includes Activities images ✓ (BackupData stores all images including Activities)
+  - Typecheck passes (dotnet build successful) ✓
+- **Learnings for future iterations:**
+  - ImageCategory enum serializes to integers in JSON (Places=0, Food=1, Activities=2)
+  - Storage service uses `GetImagesByCategoryAsync(ImageCategory category)` which works with any enum value automatically
+  - No changes needed to storage service implementation - just add new enum value
+  - Backup/restore works automatically since it stores List<ImageItem> which includes the Category property
+---
+
+## 2026-02-01 - US-033
+- What was implemented: Added Activities and Activity Choices buttons to home screen with new calm-activity color palette
+- Files changed:
+  - src/NowThenNext/Pages/Home.razor - Added Activities button (between Food and Plan the Day), Activity Choices button (after Food Choices), updated subtitle
+  - src/NowThenNext/wwwroot/index.html - Added calm-activity color palette (lavender/purple: #9B8AA8, #857495, #B5A7C0)
+  - tests/NowThenNext.Tests.E2E/Tests/HomePageTests.cs - Updated to DisplaysAllSevenMainButtons, added ActivitiesButton_NavigatesToActivitiesPage and ActivityChoicesButton_NavigatesToActivityChoicesPage tests
+- **Verification completed:**
+  - Add 'Activities' button to home screen (between Food and Plan the Day) ✓
+  - Add 'Activity Choices' button to home screen (after Food Choices) ✓
+  - Activities button has appropriate icon (clock/activity icon) ✓
+  - Activity Choices button has appropriate icon (grid with dots) ✓
+  - Both buttons are minimum 48px tap targets (64px min-height) ✓
+  - Buttons navigate to /activities and /activity-choices respectively ✓
+  - Typecheck passes (dotnet build successful) ✓
+  - All 46 E2E tests pass ✓
+- **Learnings for future iterations:**
+  - Added new calm-activity color palette for Activities: primary #9B8AA8 (soft lavender), dark #857495, light #B5A7C0
+  - Activities uses lavender/purple to distinguish from Places (teal), Food (green), Favorites (amber)
+  - Navigation tests work even without destination page existing - Blazor changes URL regardless
+  - When adding new menu buttons, update the DisplaysAllXMainButtons test and add individual navigation tests
+---
+
+## 2026-02-01 - US-034
+- What was implemented: Created Activities library view at /activities route
+- Files changed:
+  - src/NowThenNext/Pages/ActivitiesLibrary.razor - New library page for Activities category with grid, empty state, delete modal, and favorite toggle
+  - src/NowThenNext/Pages/Upload.razor - Added Activities as third category option with category-specific color styling
+- **Verification completed:**
+  - Grid display of all Activities images using image tile component ✓
+  - Empty state message when no images uploaded ✓
+  - Delete button on each tile shows confirmation before deleting ✓
+  - Favorite toggle updates storage and UI ✓
+  - Navigation to upload component with Activities pre-selected (/upload/activities) ✓
+  - Calm, uncluttered layout with lavender/purple color scheme ✓
+  - Back button to return to home ✓
+  - Typecheck passes (dotnet build successful) ✓
+- **Learnings for future iterations:**
+  - Activities library follows same pattern as PlacesLibrary and FoodLibrary
+  - Uses calm-activity color (#9B8AA8 lavender) from Tailwind config added in US-033
+  - Upload page now has 3 category buttons with category-specific colors when selected
+  - Category buttons layout uses flex-wrap for responsive 3-column layout
+  - File chooser tests can be flaky due to Playwright/Blazor InputFile interaction issues
+---
+
+## 2026-02-01 - US-035
+- What was implemented: Built Activity Choices selection interface at /activity-choices route
+- Files changed:
+  - src/NowThenNext/Pages/ActivityChoices.razor - New selection interface for Activities category
+- **Verification completed:**
+  - Display all Activities images in selectable grid ✓
+  - Tap to select with visual highlight on selected items (checkmark badge) ✓
+  - No maximum limit on selections ✓
+  - Tap selected item again to deselect ✓
+  - 'Show Choices' button appears when at least 2 items selected ✓
+  - Selected count displayed (e.g., '3 items selected') ✓
+  - Back button to return to home ✓
+  - Typecheck passes (dotnet build successful) ✓
+- **Learnings for future iterations:**
+  - Activity Choices follows exact same pattern as FoodChoices
+  - Uses calm-activity color palette (#9B8AA8 lavender, #857495 dark, #B5A7C0 light)
+  - Navigates to /activity-display?ids= when Show Choices is clicked
+---
+
+## 2026-02-01 - US-036
+- What was implemented: Built activity choice display with confirmation at /activity-display route
+- Files changed:
+  - src/NowThenNext/Pages/ActivityDisplay.razor - New display page for activity choices with confirmation screen
+- **Verification completed:**
+  - Full-screen or near-full-screen display mode showing selected Activities images ✓
+  - Display shows 2-6 items in large grid format ✓
+  - Each activity image is large and clearly tappable ✓
+  - Highlight/animate when tapped to confirm selection (selectPulse animation) ✓
+  - Show confirmation screen after child taps their choice ✓
+  - Confirmation shows selected activity with checkmark animation (confirmationBounce) ✓
+  - 'Choose Again' button to return to choices ✓
+  - Calm, focused layout with no distractions ✓
+  - Back button to return to selection (positioned unobtrusively, fixed top-left) ✓
+  - Typecheck passes (dotnet build successful) ✓
+- **Learnings for future iterations:**
+  - Activity Display follows exact same pattern as FoodDisplay
+  - Uses calm-activity color palette for borders, checkmarks, and animations
+  - Responsive grid layouts adapt based on item count (2-6 items supported)
+  - Confirmation screen uses confirmationBounce and confirmationSlide CSS animations
+---
+
+## 2026-02-01 - US-037
+- What was implemented: Added comprehensive E2E tests for activity choices flow
+- Files changed:
+  - tests/NowThenNext.Tests.E2E/Tests/ActivityChoicesTests.cs - New test class with 8 tests
+- **Tests implemented:**
+  1. ActivitiesLibrary_DisplaysUploadedActivityImages - verifies library displays uploaded images ✓
+  2. CanSelectActivityItemsInSelectionView - verifies selection with visual highlight ✓
+  3. SelectionCountIsDisplayedWhenItemsSelected - verifies selection count display ✓
+  4. ShowChoicesButtonAppearsWhenItemsSelected - verifies button appears after 2+ items ✓
+  5. ActivityDisplayShowsSelectedItemsInLargeFormat - verifies activity display grid ✓
+  6. TappingActivityItemShowsConfirmationScreen - verifies confirmation screen with checkmark ✓
+  7. ChooseAgainButtonReturnsToActivityChoices - verifies Choose Again returns to activity grid ✓
+  8. BackButtonReturnsToSelection - verifies back button navigation ✓
+- Typecheck passes (dotnet build successful) ✓
+- **Learnings for future iterations:**
+  - Activity Choices tests follow same pattern as FoodChoicesTests
+  - Tests use Activities category for image uploads via UploadTestImageAsync helper
+  - Note: FileChooser tests may be flaky in some environments due to Playwright/Blazor InputFile interaction
+---

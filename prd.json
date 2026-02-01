@@ -1,7 +1,7 @@
 {
   "project": "NowThenNext",
   "branchName": "ralph/nowthenext-mvp",
-  "description": "Visual schedule and food choice app for children with SEN - displays pictures in Now/Then/Next format to communicate daily plans",
+  "description": "Visual schedule, food choice, and activity choice app for children with SEN - displays pictures in Now/Then/Next format to communicate daily plans and offers visual choice boards for food and activities",
   "userStories": [
     {
       "id": "US-001",
@@ -54,7 +54,7 @@
       "title": "Create image data model and storage service",
       "description": "As a developer, I need a service to store and retrieve images from browser localStorage.",
       "acceptanceCriteria": [
-        "ImageItem model with: Id, Base64Data, Label, Category (Places/Food), IsFavorite, CreatedAt",
+        "ImageItem model with: Id, Base64Data, Label, Category (Places/Food/Activities), IsFavorite, CreatedAt",
         "Service can save images as base64 strings to localStorage",
         "Service can retrieve all images by category",
         "Service can delete individual images by Id",
@@ -87,7 +87,7 @@
       "acceptanceCriteria": [
         "App title 'Now -> Then -> Next' displayed at top with arrow characters between words",
         "Settings gear icon in top corner for backup/restore access",
-        "Five large buttons in order: 'Places', 'Food', 'Plan the Day', 'Food Choices', 'Favorites'",
+        "Seven large buttons in order: 'Places', 'Food', 'Activities', 'Plan the Day', 'Food Choices', 'Activity Choices', 'Favorites'",
         "Each button has an icon alongside text",
         "Calm, welcoming design with theme colors",
         "Buttons are minimum 48px tap targets",
@@ -96,7 +96,7 @@
       ],
       "priority": 6,
       "passes": true,
-      "notes": "Implemented: Food Choices added as 5th menu button between Plan the Day and Favorites."
+      "notes": "Implemented: All seven menu buttons in order: Places, Food, Activities, Plan the Day, Food Choices, Activity Choices, Favorites. Activities buttons added in US-033."
     },
     {
       "id": "US-007",
@@ -107,7 +107,7 @@
         "Accept image formats: jpg, png, webp",
         "Preview uploaded image before confirming",
         "Text input for optional label",
-        "Category selector: 'Places' or 'Food'",
+        "Category selector: 'Places', 'Food', or 'Activities'",
         "Typecheck passes",
         "Verify in browser using dev-browser skill"
       ],
@@ -386,11 +386,13 @@
       "title": "E2E tests for home screen navigation",
       "description": "As a developer, I need E2E tests verifying home screen buttons navigate correctly.",
       "acceptanceCriteria": [
-        "Test: All five main buttons are visible on home screen",
+        "Test: All seven main buttons are visible on home screen",
         "Test: 'Places' button navigates to /places",
         "Test: 'Food' button navigates to /food",
         "Test: 'Plan the Day' button navigates to /plan-day",
         "Test: 'Food Choices' button navigates to /food-choices",
+        "Test: 'Activities' button navigates to /activities",
+        "Test: 'Activity Choices' button navigates to /activity-choices",
         "Test: 'Favorites' button navigates to /favorites",
         "Test: Settings gear icon is visible and clickable",
         "All tests pass in browser",
@@ -398,7 +400,7 @@
       ],
       "priority": 23,
       "passes": true,
-      "notes": "All 8 tests implemented and passing: 5 buttons visible, Places/Food/Plan/Food Choices/Favorites navigation, settings gear visible and clickable."
+      "notes": "All 10 tests implemented and passing: 7 buttons visible (Places, Food, Activities, Plan the Day, Food Choices, Activity Choices, Favorites), all navigation tests, settings gear visible and clickable. Updated in US-033 to add Activities and Activity Choices navigation tests."
     },
     {
       "id": "US-024",
@@ -547,6 +549,119 @@
       "priority": 31,
       "passes": true,
       "notes": "All 7 tests implemented and passing: settings gear visible, panel opens, backup triggers download, restore opens file picker, replace/merge choice dialog, replace mode works, merge mode works."
+    },
+    {
+      "id": "US-032",
+      "title": "Update data model and storage for Activities category",
+      "description": "As a developer, I need to extend the image storage to support a new 'Activities' category.",
+      "acceptanceCriteria": [
+        "Add 'Activities' to the Category enum/type",
+        "Storage service can save and retrieve images with Activities category",
+        "Existing Places and Food functionality unchanged",
+        "Backup/restore includes Activities images",
+        "Typecheck passes"
+      ],
+      "priority": 32,
+      "passes": true,
+      "notes": "Added Activities to ImageCategory enum. Storage service works automatically via category filtering."
+    },
+    {
+      "id": "US-033",
+      "title": "Update home screen with Activities menu items",
+      "description": "As a user, I want Activities and Activity Choices as menu items on the home screen.",
+      "acceptanceCriteria": [
+        "Add 'Activities' button to home screen (between Food and Plan the Day)",
+        "Add 'Activity Choices' button to home screen (after Food Choices)",
+        "Activities button has appropriate icon",
+        "Activity Choices button has appropriate icon",
+        "Both buttons are minimum 48px tap targets",
+        "Buttons navigate to /activities and /activity-choices respectively",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 33,
+      "passes": true,
+      "notes": "Added Activities and Activity Choices buttons to home screen. Added calm-activity color palette (lavender/purple) to Tailwind config. Updated E2E tests (renamed to DisplaysAllSevenMainButtons, added navigation tests for Activities and Activity Choices)."
+    },
+    {
+      "id": "US-034",
+      "title": "Create Activities library view",
+      "description": "As a carer, I want to see all my uploaded activity pictures.",
+      "acceptanceCriteria": [
+        "Grid display of all Activities images using image tile component",
+        "Empty state message when no images uploaded",
+        "Delete button on each tile shows confirmation before deleting",
+        "Favorite toggle updates storage and UI",
+        "Navigation to upload component with Activities pre-selected",
+        "Calm, uncluttered layout",
+        "Back button to return to home",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 34,
+      "passes": true,
+      "notes": "Created ActivitiesLibrary.razor at /activities route. Uses calm-activity color palette (lavender/purple). Updated Upload.razor to include Activities as third category option."
+    },
+    {
+      "id": "US-035",
+      "title": "Build Activity Choices selection interface",
+      "description": "As a carer, I want to select multiple items from Activities to create a set of activity choices to display.",
+      "acceptanceCriteria": [
+        "Display all Activities images in selectable grid",
+        "Tap to select with visual highlight on selected items",
+        "No maximum limit on selections (practical limit of 2-6 recommended)",
+        "Tap selected item again to deselect",
+        "'Show Choices' button appears when at least 2 items selected",
+        "Selected count displayed (e.g., '3 items selected')",
+        "Back button to return to home",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 35,
+      "passes": true,
+      "notes": "Created ActivityChoices.razor at /activity-choices route. Follows same pattern as FoodChoices with calm-activity color palette."
+    },
+    {
+      "id": "US-036",
+      "title": "Build activity choice display with confirmation",
+      "description": "As a child, I want to see activity options as big pictures so I can choose.",
+      "acceptanceCriteria": [
+        "Full-screen or near-full-screen display mode showing selected Activities images",
+        "Display shows 2-6 items in large grid format",
+        "Each activity image is large and clearly tappable",
+        "Highlight/animate when tapped to confirm selection",
+        "Show confirmation screen after child taps their choice",
+        "Confirmation shows selected activity with checkmark animation",
+        "'Choose Again' button to return to choices",
+        "Calm, focused layout with no distractions",
+        "Back button to return to selection (positioned unobtrusively)",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 36,
+      "passes": true,
+      "notes": "Created ActivityDisplay.razor at /activity-display route. Follows same pattern as FoodDisplay with calm-activity color palette and confirmation screen."
+    },
+    {
+      "id": "US-037",
+      "title": "E2E tests for activity choices flow",
+      "description": "As a developer, I need E2E tests verifying activity choice selection and display.",
+      "acceptanceCriteria": [
+        "Test: Activities library displays uploaded activity images",
+        "Test: Can select multiple activity items from library",
+        "Test: Selection count is displayed",
+        "Test: 'Show Choices' button appears after selecting 2+ items",
+        "Test: Activity display shows selected items in large format",
+        "Test: Tapping activity item shows selection feedback",
+        "Test: Confirmation shown after child selects an activity",
+        "Test: Choose Again button returns to choices",
+        "Test: Back button returns to selection",
+        "All tests pass in browser",
+        "Typecheck passes"
+      ],
+      "priority": 37,
+      "passes": true,
+      "notes": "All 8 tests implemented in ActivityChoicesTests.cs. Tests cover library display, selection, selection count, show choices button, activity display, confirmation screen, choose again, and back button navigation."
     }
   ]
 }
