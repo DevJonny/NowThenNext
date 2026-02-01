@@ -87,8 +87,9 @@
       "acceptanceCriteria": [
         "App title 'Now -> Then -> Next' displayed at top with arrow characters between words",
         "Header area with Settings gear icon and Favorites heart icon in top corners",
-        "Six large menu buttons grouped in three pairs: 'Places' + 'Plan the Day', 'Food' + 'Food Choices', 'Activities' + 'Activity Choices'",
-        "Each pair visually grouped together (e.g., shared container or reduced spacing)",
+        "Six menu buttons grouped in three pairs: 'Places' + 'Plan the Day', 'Food' + 'Food Choices', 'Activities' + 'Activity Choices'",
+        "Pairs indicated by subtle visual grouping (thin border or light background) with minimal internal padding",
+        "Compact layout - reduced spacing between buttons and groups, similar density to original single-column menu",
         "Each button has an icon alongside text",
         "Calm, welcoming design with theme colors",
         "Buttons are minimum 48px tap targets",
@@ -97,7 +98,7 @@
       ],
       "priority": 6,
       "passes": true,
-      "notes": "Implemented: Menu reorganized into 3 visual pairs (Places+Plan, Food+Food Choices, Activities+Activity Choices). Favorites heart icon in header alongside Settings gear. All E2E tests pass."
+      "notes": "Updated layout to be more compact: reduced gap between groups (0.75rem), minimal padding inside groups (0.5rem), smaller icons (40px), lighter border (0.05 opacity), and smaller group labels."
     },
     {
       "id": "US-007",
@@ -219,8 +220,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 13,
-      "passes": false,
-      "notes": "US-006 complete: Access via header heart icon implemented. Remaining work: Add Activities section to Favorites view."
+      "passes": true,
+      "notes": "Complete: All three categories (Places, Food, Activities) displayed with section headers. Activities section uses lavender/purple color scheme."
     },
     {
       "id": "US-014",
