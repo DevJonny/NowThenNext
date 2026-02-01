@@ -40,15 +40,8 @@ tests/NowThenNext.Tests.E2E/  # E2E tests with Playwright
 
 ## Current Status
 - Branch: `ralph/nowthenext-mvp`
-- Completed: US-001 through US-032 (32/37 user stories)
-- **In Progress**: US-033 through US-037 (Activities category feature)
-
-## Next Steps (Pending)
-- [ ] US-033: Add Activities & Activity Choices buttons to home screen
-- [ ] US-034: Create Activities library view
-- [ ] US-035: Build Activity Choices selection interface
-- [ ] US-036: Build activity choice display with confirmation
-- [ ] US-037: E2E tests for activity choices flow
+- Completed: US-001 through US-037 (37/37 user stories - **MVP COMPLETE**)
+- Activities category fully implemented with library, choices selection, display, and E2E tests
 
 ## Important Files
 - [`prd.json`](fleet-file://3j4f3alj5183smoqcslr/Users/jonnyolliff-lee/code/NowThenNext/prd.json?type=file&root=%252F) - Full PRD with all 37 user stories
@@ -56,7 +49,7 @@ tests/NowThenNext.Tests.E2E/  # E2E tests with Playwright
 - [`src/NowThenNext/Pages/Home.razor`](fleet-file://3j4f3alj5183smoqcslr/Users/jonnyolliff-lee/code/NowThenNext/src/NowThenNext/Pages/Home.razor?type=file&root=%252F) - Main menu/navigation
 - [`src/NowThenNext/Services/LocalStorageImageService.cs`](fleet-file://3j4f3alj5183smoqcslr/Users/jonnyolliff-lee/code/NowThenNext/src/NowThenNext/Services/LocalStorageImageService.cs?type=file&root=%252F) - Data persistence layer
 - [`src/NowThenNext/wwwroot/index.html`](fleet-file://3j4f3alj5183smoqcslr/Users/jonnyolliff-lee/code/NowThenNext/src/NowThenNext/wwwroot/index.html?type=file&root=%252F) - Tailwind config & JS interop functions
-- [`tests/NowThenNext.Tests.E2E/`](fleet-file://3j4f3alj5183smoqcslr/Users/jonnyolliff-lee/code/NowThenNext/tests/NowThenNext.Tests.E2E?type=file&root=%252F) - E2E test suite (44 tests)
+- [`tests/NowThenNext.Tests.E2E/`](fleet-file://3j4f3alj5183smoqcslr/Users/jonnyolliff-lee/code/NowThenNext/tests/NowThenNext.Tests.E2E?type=file&root=%252F) - E2E test suite (54 tests)
 
 ## Development Commands
 ```bash
@@ -82,15 +75,15 @@ dotnet build
 | `/` | Home.razor | Main menu: Places, Food, Activities, Plan the Day, Food Choices, Activity Choices, Favorites |
 | `/places` | PlacesLibrary.razor | Places image library |
 | `/food` | FoodLibrary.razor | Food image library |
-| `/activities` | ActivitiesLibrary.razor | Activities image library (to be implemented) |
+| `/activities` | ActivitiesLibrary.razor | Activities image library |
 | `/upload` | Upload.razor | Image upload (optional category param) |
 | `/upload/{category}` | Upload.razor | Image upload with pre-selected category |
 | `/plan` | PlanDay.razor | Schedule selection (Now/Then/Next) |
 | `/schedule` | ScheduleDisplay.razor | Schedule display (`?ids=id1,id2,id3`) |
 | `/food-choices` | FoodChoices.razor | Food choice selection |
 | `/food-display` | FoodDisplay.razor | Food display (`?ids=id1,id2,...`) |
-| `/activity-choices` | ActivityChoices.razor | Activity choice selection (to be implemented) |
-| `/activity-display` | ActivityDisplay.razor | Activity display (to be implemented) |
+| `/activity-choices` | ActivityChoices.razor | Activity choice selection |
+| `/activity-display` | ActivityDisplay.razor | Activity display (`?ids=id1,id2,...`) |
 | `/favorites` | Favorites.razor | Favorited images from all categories |
 | `/settings` | Settings.razor | Backup/restore data |
 
@@ -200,17 +193,18 @@ public class MyTests(BlazorAppFixture fixture)
 ### Selection Patterns
 - **Schedule (PlanDay)**: Max 3 items, numbered badges (1=Now, 2=Then, 3=Next)
 - **Food Choices**: Min 2 items, no max limit, checkmark badges
-- **Activity Choices**: Min 2 items, no max limit, checkmark badges (to be implemented)
+- **Activity Choices**: Min 2 items, no max limit, checkmark badges
 
 ### E2E Test Timing
 - Blazor WASM needs extra init time - use 60s timeout on `WaitForSelectorAsync`
 - Use `WaitForURLAsync()` for navigation assertions
 - Clear localStorage AFTER navigating to page (requires page context)
+- Note: FileChooser tests can be flaky due to Playwright/Blazor InputFile interaction
 
 ## Test Status
-- **Total E2E Tests**: 44 passing
-- **Test Files**: HomePageTests, UploadTests, LibraryTests, ScheduleTests, FoodChoicesTests, BackupRestoreTests
-- **Coverage**: All completed user stories (US-001 to US-032)
+- **Total E2E Tests**: 54 passing
+- **Test Files**: HomePageTests, UploadTests, LibraryTests, ScheduleTests, FoodChoicesTests, ActivityChoicesTests, BackupRestoreTests
+- **Coverage**: All user stories (US-001 to US-037)
 
 ## Notes for Development
 - Always maintain calm visual design - avoid bright/harsh colors
