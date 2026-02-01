@@ -735,3 +735,22 @@
   - Tests use Activities category for image uploads via UploadTestImageAsync helper
   - Note: FileChooser tests may be flaky in some environments due to Playwright/Blazor InputFile interaction
 ---
+
+## 2026-02-01 - US-006 (Final Update)
+- What was implemented: Reorganized home menu into grouped pairs with Favorites moved to header
+- Files changed:
+  - src/NowThenNext/Pages/Home.razor - Complete menu restructure with 3 visual pairs, header icons
+  - tests/NowThenNext.Tests.E2E/Tests/HomePageTests.cs - Updated tests for new layout
+- **Implementation details:**
+  - Six menu buttons grouped into 3 pairs: Places+Plan the Day, Food+Food Choices, Activities+Activity Choices
+  - Each pair has a visual container (.menu-group) with group label (Schedule, Food, Activities)
+  - Favorites heart icon moved to header alongside Settings gear (both visible in top corners)
+  - Header icons use .header-icons container with space-between layout
+  - E2E tests updated: DisplaysAllSixMainButtons, MenuButtonsAreGroupedInPairs, FavoritesHeartIcon_IsVisibleAndNavigatesToFavoritesPage
+- **Learnings for future iterations:**
+  - Menu grouping uses CSS grid within each group-buttons container (1 column mobile, 2 columns tablet)
+  - Group containers use semi-transparent white background with subtle border for visual grouping
+  - Favorites uses warm amber color (#D4A06A), Settings uses calm-primary teal (#5B9A9A)
+  - This change also satisfies US-023 (E2E tests) and US-033 (Activities grouped pair)
+  - US-013 still needs Activities section added to Favorites view
+---

@@ -86,8 +86,9 @@
       "description": "As a user, I want a simple home screen to navigate to different app sections.",
       "acceptanceCriteria": [
         "App title 'Now -> Then -> Next' displayed at top with arrow characters between words",
-        "Settings gear icon in top corner for backup/restore access",
-        "Seven large buttons in order: 'Places', 'Food', 'Activities', 'Plan the Day', 'Food Choices', 'Activity Choices', 'Favorites'",
+        "Header area with Settings gear icon and Favorites heart icon in top corners",
+        "Six large menu buttons grouped in three pairs: 'Places' + 'Plan the Day', 'Food' + 'Food Choices', 'Activities' + 'Activity Choices'",
+        "Each pair visually grouped together (e.g., shared container or reduced spacing)",
         "Each button has an icon alongside text",
         "Calm, welcoming design with theme colors",
         "Buttons are minimum 48px tap targets",
@@ -96,7 +97,7 @@
       ],
       "priority": 6,
       "passes": true,
-      "notes": "Implemented: All seven menu buttons in order: Places, Food, Activities, Plan the Day, Food Choices, Activity Choices, Favorites. Activities buttons added in US-033."
+      "notes": "Implemented: Menu reorganized into 3 visual pairs (Places+Plan, Food+Food Choices, Activities+Activity Choices). Favorites heart icon in header alongside Settings gear. All E2E tests pass."
     },
     {
       "id": "US-007",
@@ -207,9 +208,9 @@
       "title": "Create Favorites view",
       "description": "As a carer, I want a dedicated Favorites section for quick access to frequently used images.",
       "acceptanceCriteria": [
-        "Favorites view accessible from home screen",
-        "Shows all favorited images from both categories",
-        "Section headers or labels distinguish Places vs Food items",
+        "Favorites view accessible from heart icon in header",
+        "Shows all favorited images from all three categories",
+        "Section headers or labels distinguish Places vs Food vs Activities items",
         "Grid display using image tile component",
         "Empty state message when no favorites",
         "Can unfavorite from this view (removes from view)",
@@ -218,8 +219,8 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 13,
-      "passes": true,
-      "notes": ""
+      "passes": false,
+      "notes": "US-006 complete: Access via header heart icon implemented. Remaining work: Add Activities section to Favorites view."
     },
     {
       "id": "US-014",
@@ -386,21 +387,22 @@
       "title": "E2E tests for home screen navigation",
       "description": "As a developer, I need E2E tests verifying home screen buttons navigate correctly.",
       "acceptanceCriteria": [
-        "Test: All seven main buttons are visible on home screen",
+        "Test: All six main menu buttons are visible on home screen",
+        "Test: Menu buttons are grouped in pairs (Places+Plan, Food+Food Choices, Activities+Activity Choices)",
         "Test: 'Places' button navigates to /places",
         "Test: 'Food' button navigates to /food",
         "Test: 'Plan the Day' button navigates to /plan-day",
         "Test: 'Food Choices' button navigates to /food-choices",
         "Test: 'Activities' button navigates to /activities",
         "Test: 'Activity Choices' button navigates to /activity-choices",
-        "Test: 'Favorites' button navigates to /favorites",
-        "Test: Settings gear icon is visible and clickable",
+        "Test: Settings gear icon is visible and navigates to settings",
+        "Test: Favorites heart icon is visible and navigates to /favorites",
         "All tests pass in browser",
         "Typecheck passes"
       ],
       "priority": 23,
       "passes": true,
-      "notes": "All 10 tests implemented and passing: 7 buttons visible (Places, Food, Activities, Plan the Day, Food Choices, Activity Choices, Favorites), all navigation tests, settings gear visible and clickable. Updated in US-033 to add Activities and Activity Choices navigation tests."
+      "notes": "All tests updated and passing: DisplaysAllSixMainButtons, MenuButtonsAreGroupedInPairs, FavoritesHeartIcon_IsVisibleAndNavigatesToFavoritesPage. Navigation tests for all 6 menu buttons pass."
     },
     {
       "id": "US-024",
@@ -568,10 +570,10 @@
     {
       "id": "US-033",
       "title": "Update home screen with Activities menu items",
-      "description": "As a user, I want Activities and Activity Choices as menu items on the home screen.",
+      "description": "As a user, I want Activities and Activity Choices as menu items on the home screen, grouped as a pair.",
       "acceptanceCriteria": [
-        "Add 'Activities' button to home screen (between Food and Plan the Day)",
-        "Add 'Activity Choices' button to home screen (after Food Choices)",
+        "Add 'Activities' button to home screen as third group (with Activity Choices)",
+        "Add 'Activity Choices' button paired with Activities",
         "Activities button has appropriate icon",
         "Activity Choices button has appropriate icon",
         "Both buttons are minimum 48px tap targets",
@@ -581,7 +583,7 @@
       ],
       "priority": 33,
       "passes": true,
-      "notes": "Added Activities and Activity Choices buttons to home screen. Added calm-activity color palette (lavender/purple) to Tailwind config. Updated E2E tests (renamed to DisplaysAllSevenMainButtons, added navigation tests for Activities and Activity Choices)."
+      "notes": "Implemented as part of US-006: Activities and Activity Choices grouped as a pair with calm-activity color palette. Both buttons navigate correctly. All E2E tests pass."
     },
     {
       "id": "US-034",
