@@ -2,6 +2,10 @@
 
 A visual schedule and choice board app designed for children with Special Educational Needs (SEN).
 
+**[Try it now at devjonny.github.io/NowThenNext](https://devjonny.github.io/NowThenNext/)**
+
+---
+
 ## Purpose
 
 NowThenNext helps carers communicate daily plans and offer choices to children using clear, familiar pictures. The app uses a calm, distraction-free design with soft colors and large touch targets suitable for tablet use.
