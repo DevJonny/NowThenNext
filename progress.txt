@@ -754,3 +754,43 @@
   - This change also satisfies US-023 (E2E tests) and US-033 (Activities grouped pair)
   - US-013 still needs Activities section added to Favorites view
 ---
+
+## 2026-02-01 - US-013
+- What was implemented: Added Activities section to Favorites view
+- Files changed:
+  - src/NowThenNext/Pages/Favorites.razor - Added ActivitiesFavorites list, updated empty state check, added Activities section UI with styling
+- **Verification completed:**
+  - Favorites view accessible from heart icon in header ✓
+  - Shows all favorited images from all three categories (Places, Food, Activities) ✓
+  - Section headers distinguish Places vs Food vs Activities items ✓
+  - Grid display using image tile component ✓
+  - Empty state message when no favorites ✓
+  - Can unfavorite from this view (removes from view) ✓
+  - Back button to return to home ✓
+  - Typecheck passes (dotnet build successful) ✓
+- **Learnings for future iterations:**
+  - Activities section follows same pattern as Places and Food sections
+  - Uses calm-activity color (#9B8AA8 lavender) consistent with Activities elsewhere in the app
+  - Empty state check updated to include all three category lists
+  - HandleFavoriteToggle and ConfirmDelete both updated to handle Activities list
+---
+
+## 2026-02-01 - US-006 (Compact Layout Update)
+- What was implemented: Made home menu more compact with subtle visual grouping per PRD requirements
+- Files changed:
+  - src/NowThenNext/Pages/Home.razor - Reduced spacing, padding, icon sizes, and made visual grouping subtler
+  - prd.json - Marked US-006 as passes: true
+- **Implementation details:**
+  - Reduced gap between menu groups: 1.5rem → 0.75rem
+  - Reduced internal padding: 1rem → 0.5rem
+  - Made group borders subtler: 0.08 opacity → 0.05 opacity
+  - Reduced icon size: 56px → 40px (SVG size controlled via CSS)
+  - Button min-height: 64px → 48px (still meets 48px touch target requirement)
+  - Group labels: 0.875rem → 0.75rem, lighter color for subtlety
+  - Tablet breakpoints also updated with proportionally reduced sizes
+- **Learnings for future iterations:**
+  - When PRD says "compact" and "subtle", focus on reducing padding, margins, and making visual indicators lighter
+  - 48px min-height is sufficient for touch targets - no need for extra padding
+  - Group labels should be subtle (smaller, lighter color) to not distract from main content
+  - SVG icon sizes are better controlled via CSS (.menu-icon svg { width/height }) than inline Tailwind classes
+---
