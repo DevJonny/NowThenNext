@@ -43,3 +43,18 @@ Install NowThenNext to your device's home screen for a full-screen, app-like exp
 ## Technology
 
 Built with Blazor WebAssembly and Tailwind CSS. All data is stored locally in the browser using localStorage - no account or internet connection required after initial load.
+
+## License
+
+This project is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE).
+
+**You are free to:**
+- Use the app for personal, educational, or charitable purposes
+- Modify and share the code
+- Contribute improvements back to the project
+
+**You may not:**
+- Use this software for commercial purposes
+- Sell or monetize the software or derivatives
+
+This ensures NowThenNext remains a free resource for families and carers of children with SEN.
