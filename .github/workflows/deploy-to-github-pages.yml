@@ -17,7 +17,7 @@ jobs:
           dotnet-version: '9.0.x'
 
       - name: Publish .NET Project
-        run: dotnet publish src/NowThenNext.Web/NowThenNext.Web.csproj -c Release -o release --nologo
+        run: dotnet publish src/NowThenNext/NowThenNext.csproj -c Release -o release --nologo
 
       - name: Change base-tag in index.html
         run: |
