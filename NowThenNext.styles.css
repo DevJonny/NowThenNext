@@ -1,0 +1,39 @@
+/* /Layout/MainLayout.razor.rz.scp.css */
+/* MainLayout - Base layout styles for NowThenNext
+   The layout provides a calm, uncluttered appearance suitable for children with SEN.
+
+   Key characteristics:
+   - Full-width calm background
+   - Generous padding and margins (px-6 py-8 on mobile, px-8 py-10 on larger screens)
+   - Maximum content width for readability (max-w-5xl = 1024px)
+   - Flexible height to fill screen (min-h-screen, flex-1)
+   - Touch-friendly sizing via Tailwind's extended min-h-tap (48px)
+
+   Portrait/Landscape adaptation:
+   - Responsive padding adjusts for different orientations
+   - Content max-width prevents overly wide layouts in landscape
+   - Flexbox ensures content fills available space appropriately
+*/
+
+/* Landscape-specific adjustments for tablets */
+@media (orientation: landscape) and (max-height: 600px) {
+    main[b-x1xim318od] {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+}
+
+/* Ensure touch targets meet 48px minimum */
+:global(.min-h-tap)[b-x1xim318od] {
+    min-height: 3rem; /* 48px */
+}
+
+/* Portrait tablet optimization */
+@media (min-width: 768px) and (orientation: portrait) {
+    main[b-x1xim318od] {
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+    }
+}
+/* /Layout/NavMenu.razor.rz.scp.css */
+/* NavMenu styles - Reserved for future navigation needs */

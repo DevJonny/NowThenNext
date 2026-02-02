@@ -4,15 +4,104 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BlazorApp1</title>
+    <title>NowThenNext</title>
     <base href="/NowThenNext/" />
+    <link href="_framework/dotnet.or5rubznfv.js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous" integrity="sha256-9C+LdgPeta1YrS+dtl/yFwysJUm12I5xXYikXM7HKb8=" />
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Calm color palette for children with SEN
+                        'calm': {
+                            // Soft teal primary - soothing and calming
+                            'primary': '#5B9A9A',
+                            'primary-dark': '#4A8585',
+                            'primary-light': '#7FB5B5',
+                            // Muted green accent - gentle and natural
+                            'accent': '#7BA893',
+                            'accent-dark': '#6A9480',
+                            'accent-light': '#9BBFAE',
+                            // Warm off-white background - soft and welcoming
+                            'bg': '#F9F7F3',
+                            'bg-alt': '#F0EDE8',
+                            // Dark gray text - readable but not harsh
+                            'text': '#3D4852',
+                            'text-light': '#606F7B',
+                            // Calm warning color - muted amber (not harsh red/yellow)
+                            'warning': '#D4A06A',
+                            'warning-dark': '#C08B55',
+                            // Calm activity color - soft lavender/purple (calming for activities)
+                            'activity': '#9B8AA8',
+                            'activity-dark': '#857495',
+                            'activity-light': '#B5A7C0',
+                            // Success - muted green
+                            'success': '#6B9A7D',
+                            // Border/divider - subtle gray
+                            'border': '#E2DFD8'
+                        }
+                    },
+                    fontFamily: {
+                        // Rounded, friendly sans-serif fonts
+                        'sans': ['Nunito', 'Quicksand', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    fontSize: {
+                        // Minimum 18px body text for accessibility
+                        'base': ['1.125rem', { lineHeight: '1.75rem' }], // 18px
+                        'lg': ['1.25rem', { lineHeight: '1.875rem' }],   // 20px
+                        'xl': ['1.5rem', { lineHeight: '2rem' }],        // 24px
+                        '2xl': ['1.875rem', { lineHeight: '2.25rem' }],  // 30px
+                        '3xl': ['2.25rem', { lineHeight: '2.5rem' }]     // 36px
+                    },
+                    spacing: {
+                        // Touch-friendly minimum tap target size
+                        'tap': '3rem' // 48px
+                    },
+                    minHeight: {
+                        'tap': '3rem' // 48px minimum tap target
+                    },
+                    minWidth: {
+                        'tap': '3rem' // 48px minimum tap target
+                    },
+                    borderRadius: {
+                        'calm': '0.75rem' // Soft, rounded corners
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts - Nunito (rounded, friendly) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="NowThenNext.Web.styles.css" rel="stylesheet" />
-    <link href="manifest.webmanifest" rel="manifest" />
-    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
-    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icon-512.png" />
+    <meta name="theme-color" content="#5B9A9A" />
+    <link href="NowThenNext.styles.css" rel="stylesheet" />
+    <script type="importmap">{
+  "imports": {
+    "./_framework/blazor.webassembly.js": "./_framework/blazor.webassembly.0o6sltz4v8.js",
+    "./_framework/dotnet.native.js": "./_framework/dotnet.native.87vtjjdetb.js",
+    "./_framework/dotnet.js": "./_framework/dotnet.or5rubznfv.js",
+    "./_framework/dotnet.runtime.js": "./_framework/dotnet.runtime.2tx45g8lli.js"
+  },
+  "scopes": {},
+  "integrity": {
+    "./_framework/blazor.webassembly.0o6sltz4v8.js": "sha256-QPblb0B3n+m0u11HG4nhpAiOn39aNT2Jm/OQ+6wpU4s=",
+    "./_framework/blazor.webassembly.js": "sha256-QPblb0B3n+m0u11HG4nhpAiOn39aNT2Jm/OQ+6wpU4s=",
+    "./_framework/dotnet.js": "sha256-9C+LdgPeta1YrS+dtl/yFwysJUm12I5xXYikXM7HKb8=",
+    "./_framework/dotnet.native.87vtjjdetb.js": "sha256-zE11fbcG2CeLl1Zi+NJgMOfWpdjuUWNte+icrtAO58I=",
+    "./_framework/dotnet.native.js": "sha256-zE11fbcG2CeLl1Zi+NJgMOfWpdjuUWNte+icrtAO58I=",
+    "./_framework/dotnet.or5rubznfv.js": "sha256-9C+LdgPeta1YrS+dtl/yFwysJUm12I5xXYikXM7HKb8=",
+    "./_framework/dotnet.runtime.2tx45g8lli.js": "sha256-2lZh9yO0fnzm3Xt7yV+Kox3DH3nK7L8hDhm84VT1xco=",
+    "./_framework/dotnet.runtime.js": "sha256-2lZh9yO0fnzm3Xt7yV+Kox3DH3nK7L8hDhm84VT1xco="
+  }
+}</script>
 </head>
 
 <body>
@@ -29,9 +118,102 @@
         <a href="." class="reload">Reload</a>
         <span class="dismiss">🗙</span>
     </div>
-    <script src="_framework/blazor.webassembly.js"></script>
-    <script src="js/app.js"></script>
-    <script>navigator.serviceWorker.register('service-worker.js');</script>
+    <script src="_framework/blazor.webassembly.0o6sltz4v8.js"></script>
+    <script>
+        // Trigger file input click for Blazor
+        window.triggerFileInputClick = function(inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.click();
+            }
+        };
+
+        // Download JSON file utility for backup
+        window.downloadJsonFile = function(filename, jsonContent) {
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        };
+
+        // Image compression utility for NowThenNext
+        window.compressImage = function(dataUrl, maxDimension, quality) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = function() {
+                    // Calculate new dimensions maintaining aspect ratio
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxDimension || height > maxDimension) {
+                        if (width > height) {
+                            height = Math.round((height * maxDimension) / width);
+                            width = maxDimension;
+                        } else {
+                            width = Math.round((width * maxDimension) / height);
+                            height = maxDimension;
+                        }
+                    }
+
+                    // Create canvas and draw resized image
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Convert to JPEG with specified quality
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                    resolve(compressedDataUrl);
+                };
+                img.onerror = function() {
+                    reject(new Error('Failed to load image for compression'));
+                };
+                img.src = dataUrl;
+            });
+        };
+
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+
+                    // Check for updates periodically
+                    setInterval(() => {
+                        registration.update();
+                    }, 60 * 60 * 1000); // Check every hour
+
+                    // Handle updates
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // New version available - will activate on next page load
+                                console.log('New version available. Refresh to update.');
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.log('Service Worker registration failed:', error);
+                });
+
+            // Auto-refresh when new service worker takes control
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>
