@@ -53,7 +53,7 @@ public partial class MyPictures
 
     private void SwitchTab(string tab)
     {
-        Navigation.NavigateTo($"/my-pictures/{tab}");
+        Navigation.NavigateTo($"my-pictures/{tab}");
     }
 
     private async Task HandleFavoriteToggle(string imageId)
@@ -97,6 +97,6 @@ public partial class MyPictures
 
     private void GoHome()
     {
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("");
     }
 }

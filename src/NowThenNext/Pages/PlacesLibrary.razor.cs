@@ -80,6 +80,6 @@ public partial class PlacesLibrary
 
     private void GoBack()
     {
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("");
     }
 }

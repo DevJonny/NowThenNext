@@ -80,6 +80,6 @@ public partial class FoodLibrary
 
     private void GoBack()
     {
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("");
     }
 }

@@ -110,7 +110,7 @@ public partial class ActivityDisplay
         }
         else
         {
-            Navigation.NavigateTo("/activity-choices");
+            Navigation.NavigateTo("activity-choices");
         }
     }
 }

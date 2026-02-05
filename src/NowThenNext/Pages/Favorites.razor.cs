@@ -85,6 +85,6 @@ public partial class Favorites
 
     private void GoHome()
     {
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("");
     }
 }

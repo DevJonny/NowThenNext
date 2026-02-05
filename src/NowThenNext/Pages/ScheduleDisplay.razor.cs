@@ -143,7 +143,7 @@ public partial class ScheduleDisplay : IDisposable
 
     private void GoBack()
     {
-        Navigation.NavigateTo("/plan");
+        Navigation.NavigateTo("plan");
     }
 
     public void Dispose()

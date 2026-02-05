@@ -110,7 +110,7 @@ public partial class FoodDisplay
         }
         else
         {
-            Navigation.NavigateTo("/food-choices");
+            Navigation.NavigateTo("food-choices");
         }
     }
 }

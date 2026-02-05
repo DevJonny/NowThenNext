@@ -27,7 +27,7 @@ public partial class Settings
 
     private void GoBack()
     {
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("");
     }
 
     private async Task BackupData()

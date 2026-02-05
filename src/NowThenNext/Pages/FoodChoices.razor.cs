@@ -65,7 +65,7 @@ public partial class FoodChoices
     {
         // Pass selected image IDs as comma-separated query string
         var imageIds = string.Join(",", SelectedImages.Select(i => i.Id));
-        Navigation.NavigateTo($"/food-display?ids={imageIds}");
+        Navigation.NavigateTo($"food-display?ids={imageIds}");
     }
 
     private string GetImageSrc(ImageItem image)
@@ -79,6 +79,6 @@ public partial class FoodChoices
 
     private void GoHome()
     {
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("");
     }
 }

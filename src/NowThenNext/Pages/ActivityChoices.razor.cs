@@ -65,7 +65,7 @@ public partial class ActivityChoices
     {
         // Pass selected image IDs as comma-separated query string
         var imageIds = string.Join(",", SelectedImages.Select(i => i.Id));
-        Navigation.NavigateTo($"/activity-display?ids={imageIds}");
+        Navigation.NavigateTo($"activity-display?ids={imageIds}");
     }
 
     private string GetImageSrc(ImageItem image)
@@ -79,6 +79,6 @@ public partial class ActivityChoices
 
     private void GoHome()
     {
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("");
     }
 }
