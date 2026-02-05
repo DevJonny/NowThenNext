@@ -1,0 +1,154 @@
+@page "/phonics/{PhaseId:int}/card/{GraphemeId}"
+@using NowThenNext.Models
+@inject NowThenNext.Services.IPhonicsDataService PhonicsData
+@inject NavigationManager Navigation
+
+<PageTitle>@(Card?.Grapheme ?? "Phonics") - NowThenNext</PageTitle>
+
+<div class="flex flex-col min-h-screen">
+    <!-- Header -->
+    <header class="w-full max-w-5xl mx-auto px-4 sm:px-6 mb-4">
+        <div class="flex items-center">
+            <button @onclick="GoBack" class="back-button" aria-label="Go back">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    @if (Card != null)
+    {
+        <!-- Flashcard -->
+        <div class="flashcard-container">
+            <div class="flashcard">
+                <!-- Large Grapheme -->
+                <div class="grapheme-display">@Card.Grapheme</div>
+
+                <!-- Example Word with highlighted grapheme -->
+                <div class="example-word">@((MarkupString)HighlightGrapheme(Card.ExampleWord, Card.Grapheme))</div>
+
+                <!-- Keyword Hint -->
+                <div class="keyword-hint">@Card.KeywordHint</div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .back-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        background-color: white;
+        color: #7BA3C4;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+        background-color: #F0EDE8;
+    }
+
+    .flashcard-container {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .flashcard {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 28rem;
+        padding: 3rem 2rem;
+        background-color: white;
+        border-radius: 1.5rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .grapheme-display {
+        font-size: 5rem;
+        font-weight: 800;
+        color: #3D4852;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+    }
+
+    .example-word {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #3D4852;
+        margin-bottom: 1rem;
+    }
+
+    .grapheme-highlight {
+        color: #7BA3C4;
+    }
+
+    .keyword-hint {
+        font-size: 1.125rem;
+        color: #606F7B;
+        font-style: italic;
+    }
+
+    @@media (min-width: 768px) {
+        .grapheme-display {
+            font-size: 7rem;
+        }
+
+        .example-word {
+            font-size: 2.5rem;
+        }
+
+        .keyword-hint {
+            font-size: 1.25rem;
+        }
+
+        .flashcard {
+            padding: 4rem 3rem;
+        }
+    }
+</style>
+
+@code {
+    [Parameter]
+    public int PhaseId { get; set; }
+
+    [Parameter]
+    public string GraphemeId { get; set; } = string.Empty;
+
+    private GraphemeCard? Card;
+
+    protected override void OnInitialized()
+    {
+        Card = PhonicsData.GetGraphemeCard(GraphemeId);
+    }
+
+    private string HighlightGrapheme(string word, string grapheme)
+    {
+        var index = word.IndexOf(grapheme, StringComparison.OrdinalIgnoreCase);
+        if (index < 0)
+            return System.Net.WebUtility.HtmlEncode(word);
+
+        var before = System.Net.WebUtility.HtmlEncode(word[..index]);
+        var match = System.Net.WebUtility.HtmlEncode(word[index..(index + grapheme.Length)]);
+        var after = System.Net.WebUtility.HtmlEncode(word[(index + grapheme.Length)..]);
+
+        return $"{before}<span class=\"grapheme-highlight\">{match}</span>{after}";
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo($"phonics/{PhaseId}");
+    }
+}
