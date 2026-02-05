@@ -94,6 +94,19 @@ Started: 2026-02-05
   - Route parameter GraphemeId is string type since card IDs are formatted strings like "p2-w1-s"
 ---
 
+## 2026-02-05 - US-045
+- What was implemented: Reset progress buttons with confirmation modals on both phonics pages
+- Files changed:
+  - `src/NowThenNext/Pages/PhonicsPhases.razor` (modified) - added Reset All Progress button and confirmation modal
+  - `src/NowThenNext/Pages/PhonicsSoundList.razor` (modified) - added Reset Phase Progress button and confirmation modal
+- **Learnings for future iterations:**
+  - Modal pattern: modal-overlay with @onclick to cancel, modal-content with @onclick:stopPropagation to prevent backdrop clicks
+  - Reset button uses subtle style (transparent bg, border) with hover state changing to calm-warning colour
+  - After reset, both pages call LoadState/LoadProgress to refresh the UI
+  - Modal confirm button uses calm-warning colour (#D4A06A) to indicate destructive action without harsh red
+  - Modal styles are duplicated between pages - could be extracted to shared CSS if more modals are needed
+---
+
 ## 2026-02-05 - US-044
 - What was implemented: Flashcard navigation with Got it! button, prev/next arrows, and phase complete message
 - Files changed:
