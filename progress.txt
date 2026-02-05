@@ -94,6 +94,20 @@ Started: 2026-02-05
   - Route parameter GraphemeId is string type since card IDs are formatted strings like "p2-w1-s"
 ---
 
+## 2026-02-05 - US-044
+- What was implemented: Flashcard navigation with Got it! button, prev/next arrows, and phase complete message
+- Files changed:
+  - `src/NowThenNext/Pages/PhonicsCard.razor` (modified) - added navigation bar, Got it! completion, phase complete state
+- **Learnings for future iterations:**
+  - Got it! button only shows for the current unlocked card (IsCurrentUnlocked flag)
+  - Next arrow is disabled unless next card is completed or is the current unlocked (prevents skipping ahead)
+  - Previous arrow always available except on first card
+  - HandleGotIt marks complete then checks GetNextUnlockedGraphemeIdAsync - null means phase complete
+  - Phase complete shows celebration message with back button, uses ShowPhaseComplete flag
+  - Nav bar uses justify-content: space-between with prev/got-it/next layout; empty div placeholder when Got it! isn't shown
+  - Blazor WASM same-page navigation (NavigateTo) re-renders the component but doesn't re-run OnInitializedAsync for same route template
+---
+
 ## 2026-02-05 - US-039
 - What was implemented: IPhonicsProgressService interface and PhonicsProgressService with localStorage persistence
 - Files changed:
