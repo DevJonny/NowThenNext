@@ -70,6 +70,18 @@ Started: 2026-02-05
   - Responsive: single column on mobile, 2 columns on tablet (768px+)
 ---
 
+## 2026-02-05 - US-042
+- What was implemented: Sound list page at /phonics/{PhaseId} with graphemes grouped by week, three visual states
+- Files changed:
+  - `src/NowThenNext/Pages/PhonicsSoundList.razor` (new) - sound list with completed/current/locked tiles
+- **Learnings for future iterations:**
+  - Three card states: Completed (muted bg, checkmark), Current (white bg, phonics-blue border + shadow), Locked (grey bg, lock icon, not tappable)
+  - Locked tiles use `<div>` (not `<a>`) to prevent navigation
+  - Completed and current tiles use `<a href>` for navigation to flashcard
+  - CompletedIds built as HashSet for O(1) lookups in GetCardState()
+  - Sound grid uses auto-fill with minmax(4rem, 1fr) for responsive columns
+---
+
 ## 2026-02-05 - US-039
 - What was implemented: IPhonicsProgressService interface and PhonicsProgressService with localStorage persistence
 - Files changed:
