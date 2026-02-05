@@ -82,6 +82,18 @@ Started: 2026-02-05
   - Sound grid uses auto-fill with minmax(4rem, 1fr) for responsive columns
 ---
 
+## 2026-02-05 - US-043
+- What was implemented: Flashcard display page at /phonics/{PhaseId}/card/{GraphemeId}
+- Files changed:
+  - `src/NowThenNext/Pages/PhonicsCard.razor` (new) - large grapheme display, highlighted example word, keyword hint
+- **Learnings for future iterations:**
+  - HighlightGrapheme uses case-insensitive IndexOf to find grapheme within word, wraps in span with grapheme-highlight class
+  - Must use HtmlEncode on all parts before building markup to prevent XSS, then cast to MarkupString
+  - Grapheme font size: 5rem mobile, 7rem tablet (well above 72px minimum)
+  - Split digraphs like "a_e" won't highlight in "cake" since "a_e" doesn't appear as substring - acceptable for now
+  - Route parameter GraphemeId is string type since card IDs are formatted strings like "p2-w1-s"
+---
+
 ## 2026-02-05 - US-039
 - What was implemented: IPhonicsProgressService interface and PhonicsProgressService with localStorage persistence
 - Files changed:
