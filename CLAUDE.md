@@ -206,6 +206,20 @@ public class MyTests(BlazorAppFixture fixture)
 - **Test Files**: HomePageTests, UploadTests, LibraryTests, ScheduleTests, FoodChoicesTests, ActivityChoicesTests, BackupRestoreTests
 - **Coverage**: All user stories (US-001 to US-037)
 
+## Debugging Priorities
+When debugging 404s, routing errors, or broken assets in this app, check causes in this order:
+1. **Base path / relative URLs** - Are all URLs relative or respecting `<base href>`? This is the #1 cause of issues on GitHub Pages subdirectory deployments.
+2. **Case sensitivity** - File/path case mismatches between code and filesystem.
+3. **Build output** - Is the expected file actually in the publish output?
+4. Only after ruling out the above, investigate deeper causes (service workers, framework internals, server config).
+
+## GitHub Pages Deployment
+This app deploys to GitHub Pages at a subdirectory path (`/NowThenNext/`).
+- All asset references, navigation links, and API calls must use relative paths or respect `<base href>`
+- Never use absolute paths starting with `/` in HTML, Razor, or JS - they will 404 on GitHub Pages
+- The `<base href>` is set to `/` for dev and rewritten to `/NowThenNext/` during CI publish
+- After any bulk path changes, grep the entire project for remaining absolute paths: `href="/` and `src="/`
+
 ## Notes for Development
 - Always maintain calm visual design - avoid bright/harsh colors
 - Keep touch targets ≥48px for accessibility
@@ -215,3 +229,4 @@ public class MyTests(BlazorAppFixture fixture)
 - Dev server runs on **localhost:5161**
 - Use `pkill -f "dotnet"` to kill stray processes before E2E tests
 - Responsive padding pattern: `px-6 py-8` mobile, `sm:px-8 sm:py-10` larger screens
+- After bulk edits across multiple files, always verify with grep that no stale instances of the old pattern remain
