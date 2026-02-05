@@ -58,6 +58,18 @@ Started: 2026-02-05
   - No browser verification available - manual testing needed
 ---
 
+## 2026-02-05 - US-041
+- What was implemented: Phase selection screen at /phonics with 4 phase cards showing progress bars
+- Files changed:
+  - `src/NowThenNext/Pages/PhonicsPhases.razor` (new) - page with back button, 4 phase cards, progress bars
+- **Learnings for future iterations:**
+  - Used inline @code block instead of code-behind .razor.cs since the logic is simple (no complex state management)
+  - Back button uses calm-phonics colour (#7BA3C4) instead of calm-primary to match the phonics section theme
+  - Progress percentage uses `.ToString("F0")` for clean integer display in CSS width
+  - Phase cards link to /phonics/{phaseId} and show description + "X/Y sounds" count
+  - Responsive: single column on mobile, 2 columns on tablet (768px+)
+---
+
 ## 2026-02-05 - US-039
 - What was implemented: IPhonicsProgressService interface and PhonicsProgressService with localStorage persistence
 - Files changed:
