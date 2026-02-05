@@ -45,3 +45,17 @@ Started: 2026-02-05
   - Split digraph graphemes use underscore format: `a_e`, `e_e`, `i_e`, `o_e`, `u_e`
   - Alternative pronunciation KeywordHint uses "X can say Y" format instead of "X is for Y" to distinguish from primary pronunciation cards
 ---
+
+## 2026-02-05 - US-039
+- What was implemented: IPhonicsProgressService interface and PhonicsProgressService with localStorage persistence
+- Files changed:
+  - `src/NowThenNext/Services/IPhonicsProgressService.cs` (new) - interface with MarkCompleted, IsCompleted, GetNextUnlocked, GetPhaseProgress, ResetPhase, ResetAll
+  - `src/NowThenNext/Services/PhonicsProgressService.cs` (new) - implementation using localStorage key "phonics-progress", stores a HashSet<string> of completed grapheme IDs
+  - `src/NowThenNext/Program.cs` (modified) - registered IPhonicsProgressService as scoped service
+- **Learnings for future iterations:**
+  - Progress is stored as a simple JSON HashSet<string> of completed card IDs - much simpler than the image storage
+  - PhonicsProgressService depends on IPhonicsDataService to look up phase data for GetNextUnlocked and GetPhaseProgress
+  - Registered as Scoped (not Singleton) because it depends on IJSRuntime which is scoped in Blazor WASM
+  - GetNextUnlockedGraphemeIdAsync returns null when all cards in a phase are completed
+  - ResetPhaseAsync uses HashSet.ExceptWith to remove only the target phase's card IDs
+---

@@ -71,7 +71,7 @@
         "Build passes"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": "Reuse existing localStorage JS interop pattern from LocalStorageImageService"
     },
     {
