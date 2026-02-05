@@ -43,7 +43,29 @@
                 </a>
             }
         </div>
+
+        <!-- Reset All Button -->
+        <div class="reset-container">
+            <button @onclick="ShowResetAllModal" class="reset-button">
+                Reset All Progress
+            </button>
+        </div>
     </div>
+
+    <!-- Reset Confirmation Modal -->
+    @if (ShowResetConfirmation)
+    {
+        <div class="modal-overlay" @onclick="CancelReset">
+            <div class="modal-content" @onclick:stopPropagation="true">
+                <h3 class="modal-title">Reset All Progress?</h3>
+                <p class="modal-message">This will reset progress for all phases. All sounds will be locked again except the first in each phase.</p>
+                <div class="modal-buttons">
+                    <button @onclick="CancelReset" class="modal-cancel-button">Cancel</button>
+                    <button @onclick="ConfirmReset" class="modal-confirm-button">Reset All</button>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 <style>
@@ -136,6 +158,106 @@
         transition: width 0.3s ease;
     }
 
+    .reset-container {
+        display: flex;
+        justify-content: center;
+        padding: 1rem 0 2rem;
+    }
+
+    .reset-button {
+        padding: 0.625rem 1.25rem;
+        min-height: 3rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        background-color: transparent;
+        color: #606F7B;
+        border: 1px solid #E2DFD8;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .reset-button:hover {
+        background-color: #F0EDE8;
+        border-color: #D4A06A;
+        color: #D4A06A;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(61, 72, 82, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        z-index: 50;
+    }
+
+    .modal-content {
+        background-color: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        max-width: 400px;
+        width: 100%;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #3D4852;
+        margin-bottom: 0.75rem;
+    }
+
+    .modal-message {
+        font-size: 1rem;
+        color: #606F7B;
+        margin-bottom: 1.5rem;
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .modal-cancel-button {
+        flex: 1;
+        padding: 0.875rem 1rem;
+        min-height: 3rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background-color: #F0EDE8;
+        color: #3D4852;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .modal-cancel-button:hover {
+        background-color: #E2DFD8;
+    }
+
+    .modal-confirm-button {
+        flex: 1;
+        padding: 0.875rem 1rem;
+        min-height: 3rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background-color: #D4A06A;
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .modal-confirm-button:hover {
+        background-color: #C4905A;
+    }
+
     @@media (min-width: 768px) {
         .phase-grid {
             grid-template-columns: repeat(2, 1fr);
@@ -155,8 +277,14 @@
 @code {
     private List<PhonicsPhase> Phases = new();
     private Dictionary<int, (int Completed, int Total)> PhaseProgress = new();
+    private bool ShowResetConfirmation;
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadProgress();
+    }
+
+    private async Task LoadProgress()
     {
         Phases = PhonicsData.GetAllPhases();
 
@@ -164,6 +292,23 @@
         {
             PhaseProgress[phase.Id] = await PhonicsProgress.GetPhaseProgressAsync(phase.Id);
         }
+    }
+
+    private void ShowResetAllModal()
+    {
+        ShowResetConfirmation = true;
+    }
+
+    private void CancelReset()
+    {
+        ShowResetConfirmation = false;
+    }
+
+    private async Task ConfirmReset()
+    {
+        await PhonicsProgress.ResetAllAsync();
+        ShowResetConfirmation = false;
+        await LoadProgress();
     }
 
     private void GoBack()
