@@ -33,3 +33,15 @@ Started: 2026-02-05
   - The BuildWeek helper method uses `ref int orderIndex` to maintain sequential ordering across weeks within a phase
   - Service is registered as Singleton since it holds only static data
 ---
+
+## 2026-02-05 - US-038c
+- What was implemented: Phase 4 (consonant clusters) and Phase 5 (alternative spellings, split digraphs, alternative pronunciations, silent letters) data added to PhonicsDataService
+- Files changed:
+  - `src/NowThenNext/Services/PhonicsDataService.cs` (modified) - added BuildPhase4() and BuildPhase5(), updated BuildAllPhases()
+- **Learnings for future iterations:**
+  - Phase 4 uses "weeks" to group initial clusters (Week 1, 21 cards) and final clusters (Week 2, 12 cards). Some clusters appear in both (sk, st) but have unique IDs due to different week numbers
+  - Phase 5 uses 4 weeks: Week 1 (new spellings, 13 cards), Week 2 (split digraphs, 5 cards), Week 3 (alternative pronunciations, 20 manual cards), Week 4 (silent letters, 4 cards)
+  - Alternative pronunciations need manual card construction (like Phase 3 oo_long/oo_short) because multiple cards share the same grapheme. IDs use suffixed format: `p5-w3-ow_snow`, `p5-w3-ch_chef` etc.
+  - Split digraph graphemes use underscore format: `a_e`, `e_e`, `i_e`, `o_e`, `u_e`
+  - Alternative pronunciation KeywordHint uses "X can say Y" format instead of "X is for Y" to distinguish from primary pronunciation cards
+---
