@@ -46,6 +46,18 @@ Started: 2026-02-05
   - Alternative pronunciation KeywordHint uses "X can say Y" format instead of "X is for Y" to distinguish from primary pronunciation cards
 ---
 
+## 2026-02-05 - US-040
+- What was implemented: Phonics button group on home page with calm-phonics colour scheme
+- Files changed:
+  - `src/NowThenNext/Pages/Home.razor` (modified) - added Group 4: Phonics with "Aa" SVG text icon, navigates to /phonics
+  - `src/NowThenNext/wwwroot/index.html` (modified) - added calm-phonics (#7BA3C4), calm-phonics-dark (#6890B0), calm-phonics-light (#9BBDD6) to Tailwind config
+- **Learnings for future iterations:**
+  - The home page uses a consistent group pattern: menu-group > group-label + group-buttons > menu-button with menu-icon + menu-text
+  - SVG text elements work well for letter-based icons (used `<text>` element for "Aa")
+  - Tailwind color classes follow pattern: bg-calm-{name} and group-hover:bg-calm-{name}-dark
+  - No browser verification available - manual testing needed
+---
+
 ## 2026-02-05 - US-039
 - What was implemented: IPhonicsProgressService interface and PhonicsProgressService with localStorage persistence
 - Files changed:
