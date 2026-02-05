@@ -1,33 +1,43 @@
-name: Deploy to GitHub Pages
+name: Build, Test & Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  deploy:
+  build-test-deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
-      - name: Publish .NET Project
+      - name: Build application
+        run: dotnet build src/NowThenNext/NowThenNext.csproj
+
+      - name: Build tests
+        run: dotnet build tests/NowThenNext.Tests.E2E/NowThenNext.Tests.E2E.csproj
+
+      - name: Install Playwright browsers
+        run: pwsh tests/NowThenNext.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Run E2E tests
+        run: dotnet test tests/NowThenNext.Tests.E2E/NowThenNext.Tests.E2E.csproj --no-build
+
+      - name: Publish
         run: dotnet publish src/NowThenNext/NowThenNext.csproj -c Release -o release --nologo
 
-      - name: Change base-tag in index.html
+      - name: Prepare GitHub Pages
         run: |
-          find release/wwwroot -name "index.html" -exec sed -i 's/<base href="\/" \/>/<base href="\/NowThenNext\/" \/>/g' {} \;          
-
-      - name: Add .nojekyll file
-        run: touch release/wwwroot/.nojekyll
-
-      - name: Copy index.html to 404.html
-        run: cp release/wwwroot/index.html release/wwwroot/404.html
+          touch release/wwwroot/.nojekyll
+          cp release/wwwroot/index.html release/wwwroot/404.html
 
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
