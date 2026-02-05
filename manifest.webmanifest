@@ -2,7 +2,7 @@
   "name": "NowThenNext",
   "short_name": "NowThenNext",
   "description": "Visual schedule and choice board app for children with SEN",
-  "start_url": "./",
+  "start_url": "/NowThenNext/",
   "display": "standalone",
   "background_color": "#F9F7F3",
   "theme_color": "#5B9A9A",
