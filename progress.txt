@@ -1,0 +1,35 @@
+# Ralph Progress Log - Phonics Flashcards
+
+Branch: ralph/phonics-flashcards
+Started: 2026-02-05
+
+## Codebase Patterns
+- Models use file-scoped namespaces (`namespace NowThenNext.Models;`)
+- Models use default property values (e.g. `string.Empty`, `new()`)
+- WASM build is broken in local environment (ComputeWasmBuildAssets MSB4216 error) - pre-existing issue, not caused by code changes
+- Use `dotnet build` to verify C# compilation (check for 0 C# errors even if WASM toolchain fails)
+- Heredoc commit messages fail due to sandbox tmp restrictions - use inline `-m` flag instead
+
+---
+
+## 2026-02-05 - US-038
+- What was implemented: PhonicsPhase, PhonicsWeek, and GraphemeCard data models
+- Files changed: `src/NowThenNext/Models/PhonicsModels.cs` (new)
+- **Learnings for future iterations:**
+  - Follow existing model pattern: file-scoped namespace, default property values
+  - WASM build fails in local env with MSB4216/MSB4027 - this is pre-existing and not caused by code changes. Zero C# compilation errors confirms build is OK.
+  - Sandbox doesn't allow heredoc temp files in commit messages - use inline `-m` flag
+---
+
+## 2026-02-05 - US-038b
+- What was implemented: IPhonicsDataService interface and PhonicsDataService with Phase 2 (8 teaching weeks, 30 GPCs) and Phase 3 (4 weeks, 14 GPCs) data
+- Files changed:
+  - `src/NowThenNext/Services/IPhonicsDataService.cs` (new) - interface with GetAllPhases(), GetPhase(), GetGraphemeCard()
+  - `src/NowThenNext/Services/PhonicsDataService.cs` (new) - full implementation with BuildWeek helper and hardcoded GPC data
+  - `src/NowThenNext/Program.cs` (modified) - registered IPhonicsDataService as singleton
+- **Learnings for future iterations:**
+  - Phase 2 Week 6 (assessment) is skipped - no cards for that week
+  - Phase 3 Week 2 has two "oo" graphemes (long/short) which need distinct IDs: `p3-w2-oo_long` and `p3-w2-oo_short`. These are constructed manually instead of using the BuildWeek helper since the helper generates IDs from grapheme names (which would collide)
+  - The BuildWeek helper method uses `ref int orderIndex` to maintain sequential ordering across weeks within a phase
+  - Service is registered as Singleton since it holds only static data
+---
