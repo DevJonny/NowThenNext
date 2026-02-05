@@ -28,6 +28,8 @@ public class PhonicsDataService : IPhonicsDataService
     [
         BuildPhase2(),
         BuildPhase3(),
+        BuildPhase4(),
+        BuildPhase5(),
     ];
 
     private static PhonicsPhase BuildPhase2()
@@ -195,6 +197,140 @@ public class PhonicsDataService : IPhonicsDataService
         phase.Weeks.Add(BuildWeek(3, 4, ref orderIndex,
             ("air", "fair", "air is for fair"),
             ("er", "letter", "er is for letter")
+        ));
+
+        return phase;
+    }
+
+    private static PhonicsPhase BuildPhase4()
+    {
+        var phase = new PhonicsPhase
+        {
+            Id = 4,
+            Name = "Phase 4",
+            Description = "Consonant clusters",
+            Weeks = new()
+        };
+
+        var orderIndex = 0;
+
+        // Week 1: Initial consonant clusters
+        phase.Weeks.Add(BuildWeek(4, 1, ref orderIndex,
+            ("bl", "black", "bl is for black"),
+            ("br", "bring", "br is for bring"),
+            ("cl", "clap", "cl is for clap"),
+            ("cr", "crab", "cr is for crab"),
+            ("dr", "drop", "dr is for drop"),
+            ("fl", "flag", "fl is for flag"),
+            ("fr", "frog", "fr is for frog"),
+            ("gl", "glad", "gl is for glad"),
+            ("gr", "grip", "gr is for grip"),
+            ("pl", "plan", "pl is for plan"),
+            ("pr", "press", "pr is for press"),
+            ("sc", "scam", "sc is for scam"),
+            ("sk", "skip", "sk is for skip"),
+            ("sl", "slip", "sl is for slip"),
+            ("sm", "smell", "sm is for smell"),
+            ("sn", "snap", "sn is for snap"),
+            ("sp", "spot", "sp is for spot"),
+            ("st", "stop", "st is for stop"),
+            ("sw", "swim", "sw is for swim"),
+            ("tr", "trip", "tr is for trip"),
+            ("tw", "twin", "tw is for twin")
+        ));
+
+        // Week 2: Final consonant clusters
+        phase.Weeks.Add(BuildWeek(4, 2, ref orderIndex,
+            ("ft", "left", "ft is for left"),
+            ("lf", "self", "lf is for self"),
+            ("lp", "help", "lp is for help"),
+            ("lt", "felt", "lt is for felt"),
+            ("mp", "lamp", "mp is for lamp"),
+            ("nd", "sand", "nd is for sand"),
+            ("nk", "pink", "nk is for pink"),
+            ("nt", "tent", "nt is for tent"),
+            ("pt", "kept", "pt is for kept"),
+            ("sk", "task", "sk is for task"),
+            ("st", "best", "st is for best"),
+            ("xt", "next", "xt is for next")
+        ));
+
+        return phase;
+    }
+
+    private static PhonicsPhase BuildPhase5()
+    {
+        var phase = new PhonicsPhase
+        {
+            Id = 5,
+            Name = "Phase 5",
+            Description = "Alternative spellings & split digraphs",
+            Weeks = new()
+        };
+
+        var orderIndex = 0;
+
+        // Week 1: New spellings
+        phase.Weeks.Add(BuildWeek(5, 1, ref orderIndex,
+            ("ay", "play", "ay is for play"),
+            ("ou", "cloud", "ou is for cloud"),
+            ("ie", "pie", "ie is for pie"),
+            ("ea", "each", "ea is for each"),
+            ("oy", "toy", "oy is for toy"),
+            ("ir", "bird", "ir is for bird"),
+            ("ue", "blue", "ue is for blue"),
+            ("aw", "saw", "aw is for saw"),
+            ("wh", "when", "wh is for when"),
+            ("ph", "phone", "ph is for phone"),
+            ("ew", "new", "ew is for new"),
+            ("oe", "toe", "oe is for toe"),
+            ("au", "August", "au is for August")
+        ));
+
+        // Week 2: Split digraphs
+        phase.Weeks.Add(BuildWeek(5, 2, ref orderIndex,
+            ("a_e", "cake", "a_e is for cake"),
+            ("e_e", "these", "e_e is for these"),
+            ("i_e", "time", "i_e is for time"),
+            ("o_e", "home", "o_e is for home"),
+            ("u_e", "tube", "u_e is for tube")
+        ));
+
+        // Week 3: Alternative pronunciations (manual cards due to duplicate graphemes)
+        phase.Weeks.Add(new PhonicsWeek
+        {
+            WeekNumber = 3,
+            Cards = new List<GraphemeCard>
+            {
+                new() { Id = "p5-w3-ow_snow", Grapheme = "ow", ExampleWord = "snow", KeywordHint = "ow can say snow", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-ow_cow", Grapheme = "ow", ExampleWord = "cow", KeywordHint = "ow can say cow", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-ie_pie", Grapheme = "ie", ExampleWord = "pie", KeywordHint = "ie can say pie", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-ie_field", Grapheme = "ie", ExampleWord = "field", KeywordHint = "ie can say field", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-ea_eat", Grapheme = "ea", ExampleWord = "eat", KeywordHint = "ea can say eat", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-ea_bread", Grapheme = "ea", ExampleWord = "bread", KeywordHint = "ea can say bread", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-ou_cloud", Grapheme = "ou", ExampleWord = "cloud", KeywordHint = "ou can say cloud", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-ou_shoulder", Grapheme = "ou", ExampleWord = "shoulder", KeywordHint = "ou can say shoulder", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-ou_could", Grapheme = "ou", ExampleWord = "could", KeywordHint = "ou can say could", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-ey_key", Grapheme = "ey", ExampleWord = "key", KeywordHint = "ey can say key", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-ey_they", Grapheme = "ey", ExampleWord = "they", KeywordHint = "ey can say they", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-a_acorn", Grapheme = "a", ExampleWord = "acorn", KeywordHint = "a can say acorn", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-e_me", Grapheme = "e", ExampleWord = "me", KeywordHint = "e can say me", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-i_tiger", Grapheme = "i", ExampleWord = "tiger", KeywordHint = "i can say tiger", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-o_go", Grapheme = "o", ExampleWord = "go", KeywordHint = "o can say go", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-u_unicorn", Grapheme = "u", ExampleWord = "unicorn", KeywordHint = "u can say unicorn", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-y_happy", Grapheme = "y", ExampleWord = "happy", KeywordHint = "y can say happy", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-y_fly", Grapheme = "y", ExampleWord = "fly", KeywordHint = "y can say fly", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-ch_school", Grapheme = "ch", ExampleWord = "school", KeywordHint = "ch can say school", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+                new() { Id = "p5-w3-ch_chef", Grapheme = "ch", ExampleWord = "chef", KeywordHint = "ch can say chef", PhaseId = 5, WeekNumber = 3, OrderIndex = orderIndex++ },
+            }
+        });
+
+        // Week 4: Silent letters
+        phase.Weeks.Add(BuildWeek(5, 4, ref orderIndex,
+            ("wr", "write", "wr is for write"),
+            ("kn", "knee", "kn is for knee"),
+            ("gn", "gnome", "gn is for gnome"),
+            ("mb", "lamb", "mb is for lamb")
         ));
 
         return phase;
