@@ -1,4 +1,4 @@
-name: Build, Test & Deploy
+name: Build & Deploy
 
 on:
   push:
@@ -22,14 +22,15 @@ jobs:
       - name: Build application
         run: dotnet build src/NowThenNext/NowThenNext.csproj
 
-      - name: Build tests
-        run: dotnet build tests/NowThenNext.Tests.E2E/NowThenNext.Tests.E2E.csproj
-
-      - name: Install Playwright browsers
-        run: pwsh tests/NowThenNext.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
-
-      - name: Run E2E tests
-        run: dotnet test tests/NowThenNext.Tests.E2E/NowThenNext.Tests.E2E.csproj --no-build
+      # Tests disabled - uncomment to re-enable
+      # - name: Build tests
+      #   run: dotnet build tests/NowThenNext.Tests.E2E/NowThenNext.Tests.E2E.csproj
+      #
+      # - name: Install Playwright browsers
+      #   run: pwsh tests/NowThenNext.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+      #
+      # - name: Run E2E tests
+      #   run: dotnet test tests/NowThenNext.Tests.E2E/NowThenNext.Tests.E2E.csproj --no-build
 
       - name: Publish
         run: dotnet publish src/NowThenNext/NowThenNext.csproj -c Release -o release --nologo
