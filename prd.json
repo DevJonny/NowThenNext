@@ -89,7 +89,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": "Follow the existing button group pattern in Home.razor"
     },
     {
