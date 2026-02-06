@@ -101,6 +101,18 @@ public class PhonicsProgressService : IPhonicsProgressService
     private async Task SaveCompletedSetAsync(HashSet<string> completed)
     {
         var json = JsonSerializer.Serialize(completed);
-        await _jsRuntime.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
+        }
+        catch (JSException ex) when (ex.Message.Contains("QuotaExceededError") ||
+                                      ex.Message.Contains("quota", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new StorageQuotaExceededException("Storage quota exceeded. Please delete some data to free up space.", ex);
+        }
+        catch (Exception)
+        {
+            // Prevent unhandled exceptions from breaking the UI
+        }
     }
 }
