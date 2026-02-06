@@ -325,4 +325,189 @@ public class PhonicsTests
             await page.CloseAsync();
         }
     }
+
+    // --- US-048: Progress reset tests ---
+
+    [Fact]
+    public async Task ResetPhase_ShowsConfirmationModal()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".reset-button", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+
+            // Act - click reset button
+            await page.Locator(".reset-button").ClickAsync();
+
+            // Assert - modal appears with correct title
+            var modal = page.Locator(".modal-content");
+            await Assertions.Expect(modal).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+
+            var title = page.Locator(".modal-title");
+            await Assertions.Expect(title).ToContainTextAsync("Reset", new LocatorAssertionsToContainTextOptions { Timeout = 10000 });
+
+            // Assert - cancel and confirm buttons present
+            await Assertions.Expect(page.Locator(".modal-cancel-button")).ToBeVisibleAsync();
+            await Assertions.Expect(page.Locator(".modal-confirm-button")).ToBeVisibleAsync();
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ResetPhase_ConfirmClearsProgressForThatPhase()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-tile", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-current", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Complete the first sound
+            await page.Locator(".sound-current").ClickAsync();
+            await page.WaitForSelectorAsync(".got-it-button", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator(".got-it-button").ClickAsync();
+
+            // Go back to sound list
+            await page.WaitForSelectorAsync(".back-button", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator(".back-button").ClickAsync();
+            await page.WaitForSelectorAsync(".sound-completed", new PageWaitForSelectorOptions { Timeout = 10000 });
+
+            // Verify progress exists before reset
+            await Assertions.Expect(page.Locator(".sound-completed")).ToHaveCountAsync(1, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
+
+            // Act - reset phase
+            await page.Locator(".reset-button").ClickAsync();
+            await page.WaitForSelectorAsync(".modal-confirm-button", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator(".modal-confirm-button").ClickAsync();
+
+            // Assert - progress cleared: no completed sounds, first sound is current again
+            await Assertions.Expect(page.Locator(".sound-completed")).ToHaveCountAsync(0, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
+            await Assertions.Expect(page.Locator(".sound-current")).ToHaveCountAsync(1, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ResetAll_ShowsConfirmationModal()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics");
+            await page.WaitForSelectorAsync(".reset-button", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+
+            // Act - click reset all button
+            await page.Locator(".reset-button").ClickAsync();
+
+            // Assert - modal appears
+            var modal = page.Locator(".modal-content");
+            await Assertions.Expect(modal).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+
+            var title = page.Locator(".modal-title");
+            await Assertions.Expect(title).ToContainTextAsync("Reset All", new LocatorAssertionsToContainTextOptions { Timeout = 10000 });
+
+            // Assert - buttons present
+            await Assertions.Expect(page.Locator(".modal-cancel-button")).ToBeVisibleAsync();
+            await Assertions.Expect(page.Locator(".modal-confirm-button")).ToBeVisibleAsync();
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ResetAll_ConfirmClearsProgressForAllPhases()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-tile", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-current", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Complete the first sound in Phase 2
+            await page.Locator(".sound-current").ClickAsync();
+            await page.WaitForSelectorAsync(".got-it-button", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator(".got-it-button").ClickAsync();
+
+            // Navigate to phase selection
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics");
+            await page.WaitForSelectorAsync(".phase-card", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Verify Phase 2 shows progress (1/30 sounds)
+            var phase2Count = page.Locator(".phase-card:has-text('Phase 2') .phase-count");
+            await Assertions.Expect(phase2Count).ToContainTextAsync("1/", new LocatorAssertionsToContainTextOptions { Timeout = 10000 });
+
+            // Act - reset all
+            await page.Locator(".reset-button").ClickAsync();
+            await page.WaitForSelectorAsync(".modal-confirm-button", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator(".modal-confirm-button").ClickAsync();
+
+            // Assert - Phase 2 progress is 0
+            await Assertions.Expect(phase2Count).ToContainTextAsync("0/", new LocatorAssertionsToContainTextOptions { Timeout = 10000 });
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task ResetPhase_CancelDoesNotClearProgress()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-tile", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-current", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Complete the first sound
+            await page.Locator(".sound-current").ClickAsync();
+            await page.WaitForSelectorAsync(".got-it-button", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator(".got-it-button").ClickAsync();
+
+            // Go back to sound list
+            await page.WaitForSelectorAsync(".back-button", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator(".back-button").ClickAsync();
+            await page.WaitForSelectorAsync(".sound-completed", new PageWaitForSelectorOptions { Timeout = 10000 });
+
+            // Act - click reset then cancel
+            await page.Locator(".reset-button").ClickAsync();
+            await page.WaitForSelectorAsync(".modal-cancel-button", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator(".modal-cancel-button").ClickAsync();
+
+            // Assert - modal is gone
+            await Assertions.Expect(page.Locator(".modal-content")).ToBeHiddenAsync(new LocatorAssertionsToBeHiddenOptions { Timeout = 10000 });
+
+            // Assert - progress is preserved
+            await Assertions.Expect(page.Locator(".sound-completed")).ToHaveCountAsync(1, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
 }
