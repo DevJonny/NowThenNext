@@ -336,12 +336,11 @@
         Progress = await PhonicsProgress.GetPhaseProgressAsync(PhaseId);
         NextUnlockedId = await PhonicsProgress.GetNextUnlockedGraphemeIdAsync(PhaseId);
 
+        var allCards = Phase.Weeks.SelectMany(w => w.Cards).ToList();
+        var completionResults = await Task.WhenAll(
+            allCards.Select(async card => (card.Id, IsCompleted: await PhonicsProgress.IsCompletedAsync(card.Id))));
         CompletedIds.Clear();
-        foreach (var card in Phase.Weeks.SelectMany(w => w.Cards))
-        {
-            if (await PhonicsProgress.IsCompletedAsync(card.Id))
-                CompletedIds.Add(card.Id);
-        }
+        CompletedIds.UnionWith(completionResults.Where(r => r.IsCompleted).Select(r => r.Id));
     }
 
     private CardState GetCardState(string cardId)
