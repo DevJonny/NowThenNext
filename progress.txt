@@ -197,3 +197,50 @@ Started: 2026-02-05
   - `ToHaveClassAsync(new Regex("nav-disabled"))` validates CSS class presence with regex matching
   - All 19 phonics tests pass in ~29 seconds
 ---
+
+## 2026-02-06 - US-050
+- What was implemented: Extracted StorageQuotaExceededException to shared file, added quota error handling to PhonicsProgressService.SaveCompletedSetAsync
+- Files changed:
+  - `src/NowThenNext/Services/StorageQuotaExceededException.cs` (new) - shared exception class
+  - `src/NowThenNext/Services/LocalStorageImageService.cs` (modified) - removed inline exception class (now uses shared file)
+  - `src/NowThenNext/Services/PhonicsProgressService.cs` (modified) - added try-catch in SaveCompletedSetAsync matching LocalStorageImageService pattern
+- **Learnings for future iterations:**
+  - When extracting types to shared files, both the old and new locations share the same namespace so no using changes needed
+  - The quota error handling pattern: catch JSException with QuotaExceededError/quota message, throw StorageQuotaExceededException; catch general Exception to prevent UI breakage
+---
+
+## 2026-02-06 - US-051
+- What was implemented: Replaced foreach loop in GetNextUnlockedGraphemeIdAsync with LINQ FirstOrDefault
+- Files changed:
+  - `src/NowThenNext/Services/PhonicsProgressService.cs` (modified) - replaced foreach + return with FirstOrDefault predicate
+- **Learnings for future iterations:**
+  - LINQ FirstOrDefault with predicate is a cleaner replacement for foreach + conditional return pattern
+  - Null-conditional `nextCard?.Id` handles both found and not-found cases cleanly
+---
+
+## 2026-02-06 - US-052
+- What was implemented: Replaced foreach loop in PhonicsSoundList.LoadState with Task.WhenAll + LINQ filtering
+- Files changed:
+  - `src/NowThenNext/Pages/PhonicsSoundList.razor` (modified) - replaced sequential foreach with parallel Task.WhenAll, then Where+Select to filter completed IDs
+- **Learnings for future iterations:**
+  - Task.WhenAll with Select(async ...) pattern enables parallel async checks instead of sequential foreach
+  - Use named tuple `(card.Id, IsCompleted: ...)` for clean result destructuring
+  - Used Clear() + UnionWith() instead of reassignment to support readonly field (coordinated with US-054)
+---
+
+## 2026-02-06 - US-053
+- What was implemented: Made PhaseProgress dictionary field readonly in PhonicsPhases.razor
+- Files changed:
+  - `src/NowThenNext/Pages/PhonicsPhases.razor` (modified) - added `readonly` modifier to PhaseProgress field
+- **Learnings for future iterations:**
+  - Dictionary fields that are only mutated via dictionary operations (Add, Clear, indexer) and never reassigned should be readonly
+---
+
+## 2026-02-06 - US-054
+- What was implemented: Made CompletedIds HashSet field readonly in PhonicsSoundList.razor
+- Files changed:
+  - `src/NowThenNext/Pages/PhonicsSoundList.razor` (modified) - added `readonly` modifier to CompletedIds field
+- **Learnings for future iterations:**
+  - HashSet fields that are only mutated via set operations (Add, Clear, UnionWith, ExceptWith) and never reassigned should be readonly
+  - US-052 was already implemented with Clear() + UnionWith() pattern to support this readonly change
+---

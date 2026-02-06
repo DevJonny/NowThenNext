@@ -265,7 +265,7 @@
         "Build passes"
       ],
       "priority": 15,
-      "passes": false,
+      "passes": true,
       "notes": "PR #3 review comment: SaveCompletedSetAsync should handle quota exceeded like LocalStorageImageService does. Extract the exception to a shared file since two services now use it."
     },
     {
@@ -280,7 +280,7 @@
         "Build passes"
       ],
       "priority": 16,
-      "passes": false,
+      "passes": true,
       "notes": "PR #3 review comment: foreach loop implicitly filters, use explicit LINQ filtering"
     },
     {
@@ -296,7 +296,7 @@
         "Build passes"
       ],
       "priority": 17,
-      "passes": false,
+      "passes": true,
       "notes": "PR #3 review comment: foreach loop implicitly filters, use explicit LINQ with Task.WhenAll. Note: if CompletedIds is made readonly in US-054, use Clear() + UnionWith() instead of reassignment"
     },
     {
@@ -308,7 +308,7 @@
         "Build passes"
       ],
       "priority": 18,
-      "passes": false,
+      "passes": true,
       "notes": "PR #3 review comment: field can be readonly"
     },
     {
@@ -320,7 +320,7 @@
         "Build passes"
       ],
       "priority": 19,
-      "passes": false,
+      "passes": true,
       "notes": "PR #3 review comment: field can be readonly. Must be done before or coordinated with US-052 (LINQ refactor uses Clear + UnionWith if readonly)"
     }
   ]
