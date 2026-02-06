@@ -42,7 +42,7 @@ tests/NowThenNext.Tests.E2E/  # E2E tests with Playwright
 ## Current Status
 - Branch: `ralph/phonics-flashcards` (phonics feature in progress)
 - Completed: US-001 through US-037 (37/37 user stories - **MVP COMPLETE**)
-- Phonics: US-038 through US-048 complete (11/13 phonics stories)
+- Phonics: US-038 through US-048 complete (13/13 phonics stories - **PHONICS COMPLETE**)
 - Activities category fully implemented with library, choices selection, display, and E2E tests
 
 ## Important Files
