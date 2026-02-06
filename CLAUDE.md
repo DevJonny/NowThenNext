@@ -12,7 +12,7 @@ Visual schedule, food choice, and activity choice app for children with SEN (Spe
 - **Font**: Nunito (Google Fonts) - rounded, friendly typography
 
 ## Key Design Principles
-1. **Calm & Clear**: Soft colors (teal primary #5B9A9A, muted green accent #7BA893, off-white bg #F9F7F3), generous spacing, minimum 48px touch targets
+1. **Calm & Clear**: Soft colors (teal primary #5B9A9A, muted green accent #7BA893, phonics blue #7BA3C4, off-white bg #F9F7F3), generous spacing, minimum 48px touch targets
 2. **No Harsh Colors**: Avoid pure red/bright yellow - use calm amber #D4A06A for warnings
 3. **Accessibility**: WCAG AA contrast (~8.5:1 ratio), large fonts (18px base, 24px+ labels), rounded sans-serif
 4. **Simplicity**: Minimal UI, no distractions, straightforward navigation
@@ -37,10 +37,12 @@ tests/NowThenNext.Tests.E2E/  # E2E tests with Playwright
 3. **Choice Boards**: Food Choices and Activity Choices (2-6 items)
 4. **Favorites**: Cross-category favorites view
 5. **Backup/Restore**: Export/import data as JSON
+6. **Phonics Flashcards**: UK Letters and Sounds Phases 2-5 with sequential unlocking and progress tracking
 
 ## Current Status
-- Branch: `ralph/nowthenext-mvp`
+- Branch: `ralph/phonics-flashcards` (phonics feature in progress)
 - Completed: US-001 through US-037 (37/37 user stories - **MVP COMPLETE**)
+- Phonics: US-038 through US-048 complete (11/13 phonics stories)
 - Activities category fully implemented with library, choices selection, display, and E2E tests
 
 ## Important Files
@@ -68,6 +70,7 @@ dotnet build
 - **localStorage JSON storage**: Images stored as base64 with metadata
 - **Reusable components**: ImageTile component shared across all libraries
 - **Parallel workflows**: Food Choices and Activity Choices follow same pattern as templates
+- **Static data service**: Phonics GPC data is hardcoded in `PhonicsDataService` (singleton), progress tracked in `PhonicsProgressService` (scoped, uses localStorage key `phonics-progress`)
 
 ## Routing Map
 | Route | Page | Description |
@@ -86,6 +89,9 @@ dotnet build
 | `/activity-display` | ActivityDisplay.razor | Activity display (`?ids=id1,id2,...`) |
 | `/favorites` | Favorites.razor | Favorited images from all categories |
 | `/settings` | Settings.razor | Backup/restore data |
+| `/phonics` | PhonicsPhases.razor | Phonics phase selection (Phase 2-5) |
+| `/phonics/{phaseId}` | PhonicsSoundList.razor | Sound list within a phase |
+| `/phonics/{phaseId}/card/{graphemeId}` | PhonicsCard.razor | Flashcard display with navigation |
 
 ## Data Model
 
@@ -119,6 +125,8 @@ public enum ImageCategory
 @inject IImageStorageService ImageStorage
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
+@inject IPhonicsDataService PhonicsData
+@inject IPhonicsProgressService PhonicsProgress
 ```
 
 ### Tailwind + Custom Colors
@@ -195,16 +203,30 @@ public class MyTests(BlazorAppFixture fixture)
 - **Food Choices**: Min 2 items, no max limit, checkmark badges
 - **Activity Choices**: Min 2 items, no max limit, checkmark badges
 
+### Phonics Patterns
+- **GraphemeCard ID format**: `p{phase}-w{week}-{grapheme}` (e.g., `p2-w1-s`, `p3-w2-oo_long`, `p5-w3-ch_chef`)
+- **Duplicate grapheme IDs**: When multiple cards share a grapheme (e.g., oo long/short, alternative pronunciations), use suffixed IDs and manual card construction instead of the `BuildWeek` helper
+- **Sequential unlocking**: First grapheme in each phase always unlocked; completing one unlocks the next by `OrderIndex`
+- **Progress storage**: `HashSet<string>` of completed card IDs serialized as JSON in localStorage key `phonics-progress`
+- **Three sound tile states**: Completed (muted bg + checkmark), Current (phonics-blue border), Locked (grey + lock icon, `<div>` not `<a>`)
+- **Phonics color**: `calm-phonics: #7BA3C4`, `calm-phonics-dark: #6890B0`, `calm-phonics-light: #9BBDD6`
+
+### Blazor Same-Route Navigation
+- When navigating between pages with the same route template (e.g., `/phonics/2/card/A` to `/phonics/2/card/B`), Blazor reuses the component instance
+- `OnInitializedAsync` does NOT re-run - use `OnParametersSetAsync` instead for pages with changing route parameters
+- Reset any local state flags (like `ShowPhaseComplete`) at the start of `OnParametersSetAsync`
+
 ### E2E Test Timing
 - Blazor WASM needs extra init time - use 60s timeout on `WaitForSelectorAsync`
 - Use `WaitForURLAsync()` for navigation assertions
 - Clear localStorage AFTER navigating to page (requires page context)
 - Note: FileChooser tests can be flaky due to Playwright/Blazor InputFile interaction
+- **Use RELATIVE paths in href selectors** (e.g., `a[href='phonics']` NOT `a[href='/phonics']`) - Blazor renders relative hrefs in the DOM
 
 ## Test Status
-- **Total E2E Tests**: 54 passing
-- **Test Files**: HomePageTests, UploadTests, LibraryTests, ScheduleTests, FoodChoicesTests, ActivityChoicesTests, BackupRestoreTests
-- **Coverage**: All user stories (US-001 to US-037)
+- **Total E2E Tests**: 69 passing (54 MVP + 15 Phonics)
+- **Test Files**: HomePageTests, UploadTests, LibraryTests, ScheduleTests, FoodChoicesTests, ActivityChoicesTests, BackupRestoreTests, PhonicsTests
+- **Coverage**: All user stories (US-001 to US-037, US-046 to US-048)
 
 ## Debugging Priorities
 When debugging 404s, routing errors, or broken assets in this app, check causes in this order:

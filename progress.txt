@@ -159,3 +159,20 @@ Started: 2026-02-05
   - GetNextUnlockedGraphemeIdAsync returns null when all cards in a phase are completed
   - ResetPhaseAsync uses HashSet.ExceptWith to remove only the target phase's card IDs
 ---
+
+## 2026-02-06 - US-048
+- What was implemented: E2E tests for progress reset functionality (5 new tests)
+- Files changed:
+  - `tests/NowThenNext.Tests.E2E/Tests/PhonicsTests.cs` (modified) - added 5 reset progress tests
+- Tests added:
+  - ResetPhase_ShowsConfirmationModal
+  - ResetPhase_ConfirmClearsProgressForThatPhase
+  - ResetAll_ShowsConfirmationModal
+  - ResetAll_ConfirmClearsProgressForAllPhases
+  - ResetPhase_CancelDoesNotClearProgress
+- **Learnings for future iterations:**
+  - Reset tests follow a setup pattern: complete a sound first to have progress, then test reset behavior
+  - Modal visibility can be asserted with `ToBeHiddenAsync` after cancel to confirm dismissal
+  - Phase count text selector `.phase-card:has-text('Phase 2') .phase-count` works for verifying phase-specific progress on the selection screen
+  - All 15 phonics tests pass in ~25 seconds
+---
