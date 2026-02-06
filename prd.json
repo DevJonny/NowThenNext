@@ -198,7 +198,7 @@
         "All tests pass"
       ],
       "priority": 11,
-      "passes": false,
+      "passes": true,
       "notes": "Follow existing E2E test pattern: [Collection(\"BlazorApp\")], BlazorAppFixture, ClearLocalStorageAsync after navigate"
     },
     {
