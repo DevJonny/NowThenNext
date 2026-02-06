@@ -10,6 +10,7 @@ Started: 2026-02-05
 - Use `dotnet build` to verify C# compilation (check for 0 C# errors even if WASM toolchain fails)
 - Heredoc commit messages fail due to sandbox tmp restrictions - use inline `-m` flag instead
 - **E2E test href selectors**: Use RELATIVE paths in selectors (e.g. `a[href='phonics']` NOT `a[href='/phonics']`) - Blazor renders relative hrefs in the DOM
+- **Blazor same-route navigation**: Use `OnParametersSetAsync` (not `OnInitializedAsync`) for pages with changing route parameters - Blazor reuses the component instance
 
 ---
 
@@ -117,6 +118,18 @@ Started: 2026-02-05
   - Kill stray dotnet processes before running tests (`pkill -f "dotnet"`) to avoid port conflicts
   - For phase selection test, navigate to /phonics, clear localStorage, then reload to get clean state
   - All 4 tests pass in ~4 seconds
+---
+
+## 2026-02-05 - US-047
+- What was implemented: E2E tests for sound list and flashcard display/navigation
+- Files changed:
+  - `tests/NowThenNext.Tests.E2E/Tests/PhonicsTests.cs` (modified) - added 6 new tests
+  - `src/NowThenNext/Pages/PhonicsCard.razor` (modified) - fixed: changed OnInitializedAsync to OnParametersSetAsync
+- **Learnings for future iterations:**
+  - CRITICAL: Blazor same-route navigation (e.g. card/A to card/B) does NOT re-run OnInitializedAsync. Must use OnParametersSetAsync for pages with changing route parameters.
+  - Test pattern for clearing state: navigate, wait for selector, clear localStorage, navigate again, wait again
+  - For "Got it!" test, need to wait for the grapheme-display to update after navigation - Playwright auto-waits with locator assertions
+  - All 10 phonics tests pass in ~13 seconds
 ---
 
 ## 2026-02-05 - US-044
