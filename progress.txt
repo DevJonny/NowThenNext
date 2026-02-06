@@ -9,6 +9,7 @@ Started: 2026-02-05
 - WASM build is broken in local environment (ComputeWasmBuildAssets MSB4216 error) - pre-existing issue, not caused by code changes
 - Use `dotnet build` to verify C# compilation (check for 0 C# errors even if WASM toolchain fails)
 - Heredoc commit messages fail due to sandbox tmp restrictions - use inline `-m` flag instead
+- **E2E test href selectors**: Use RELATIVE paths in selectors (e.g. `a[href='phonics']` NOT `a[href='/phonics']`) - Blazor renders relative hrefs in the DOM
 
 ---
 
@@ -105,6 +106,17 @@ Started: 2026-02-05
   - After reset, both pages call LoadState/LoadProgress to refresh the UI
   - Modal confirm button uses calm-warning colour (#D4A06A) to indicate destructive action without harsh red
   - Modal styles are duplicated between pages - could be extracted to shared CSS if more modals are needed
+---
+
+## 2026-02-05 - US-046
+- What was implemented: E2E tests for phonics home button and phase selection screen
+- Files changed:
+  - `tests/NowThenNext.Tests.E2E/Tests/PhonicsTests.cs` (new) - 4 tests: home button nav, 4 phases visible, phase card nav, back button
+- **Learnings for future iterations:**
+  - CRITICAL: Use relative paths in href selectors (`a[href='phonics']` not `a[href='/phonics']`) - Blazor keeps relative hrefs in the DOM
+  - Kill stray dotnet processes before running tests (`pkill -f "dotnet"`) to avoid port conflicts
+  - For phase selection test, navigate to /phonics, clear localStorage, then reload to get clean state
+  - All 4 tests pass in ~4 seconds
 ---
 
 ## 2026-02-05 - US-044
