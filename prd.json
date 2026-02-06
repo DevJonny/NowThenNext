@@ -233,6 +233,95 @@
       "priority": 13,
       "passes": true,
       "notes": ""
+    },
+    {
+      "id": "US-049",
+      "title": "E2E tests for flashcard navigation arrows",
+      "description": "As a developer, I need E2E tests covering the previous/next navigation arrows on the flashcard page so that US-044 has complete test coverage.",
+      "acceptanceCriteria": [
+        "Test: Previous arrow is disabled (has nav-disabled class and disabled attribute) on the first card in a phase",
+        "Test: Next arrow is disabled when the next card is locked (not yet completed or unlocked)",
+        "Test: After completing first sound and navigating to second, previous arrow navigates back to the first card",
+        "Test: On a completed card, next arrow navigates to the next card when it is completed or unlocked",
+        "Tests added to PhonicsTests.cs following existing patterns (CreatePageAsync, try/finally with CloseAsync, ClearLocalStorageAsync after first navigation)",
+        "All new and existing E2E tests pass",
+        "Build passes"
+      ],
+      "priority": 14,
+      "passes": true,
+      "notes": "PR #3 review comment: missing test coverage for prev/next navigation arrows (US-044 gap)"
+    },
+    {
+      "id": "US-050",
+      "title": "Extract StorageQuotaExceededException and add quota error handling to PhonicsProgressService",
+      "description": "As a developer, I want StorageQuotaExceededException moved to a shared location and SaveCompletedSetAsync in PhonicsProgressService to handle localStorage quota exceeded errors consistently with LocalStorageImageService.",
+      "acceptanceCriteria": [
+        "Extract StorageQuotaExceededException from LocalStorageImageService.cs into a new shared file src/NowThenNext/Services/StorageQuotaExceededException.cs",
+        "Update LocalStorageImageService.cs to remove the inline exception class and reference the shared file instead",
+        "SaveCompletedSetAsync in PhonicsProgressService.cs wraps the localStorage.setItem call in a try-catch block",
+        "Catches JSException where the message contains QuotaExceededError or quota (matching the pattern in LocalStorageImageService.SaveAllImagesAsync)",
+        "Throws StorageQuotaExceededException (from the shared file) with a descriptive message",
+        "General exceptions are caught to prevent unhandled errors breaking the UI",
+        "Build passes"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "PR #3 review comment: SaveCompletedSetAsync should handle quota exceeded like LocalStorageImageService does. Extract the exception to a shared file since two services now use it."
+    },
+    {
+      "id": "US-051",
+      "title": "Use explicit LINQ filtering in GetNextUnlockedGraphemeIdAsync",
+      "description": "As a developer, I want GetNextUnlockedGraphemeIdAsync to use explicit LINQ FirstOrDefault with a predicate instead of a foreach loop with an implicit filter.",
+      "acceptanceCriteria": [
+        "Replace the foreach loop in GetNextUnlockedGraphemeIdAsync (PhonicsProgressService.cs) with: var nextCard = allCards.FirstOrDefault(card => !completed.Contains(card.Id))",
+        "Return nextCard?.Id instead of returning inside the loop",
+        "Remove the foreach loop and the 'All completed return null' comment",
+        "Behaviour is unchanged: returns the first non-completed card ID or null if all completed",
+        "Build passes"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": "PR #3 review comment: foreach loop implicitly filters, use explicit LINQ filtering"
+    },
+    {
+      "id": "US-052",
+      "title": "Use explicit LINQ filtering in PhonicsSoundList LoadState",
+      "description": "As a developer, I want the LoadState method in PhonicsSoundList.razor to use explicit LINQ filtering with Task.WhenAll instead of a foreach loop with an implicit filter.",
+      "acceptanceCriteria": [
+        "Replace the foreach loop in LoadState (PhonicsSoundList.razor) that iterates cards and conditionally adds to CompletedIds",
+        "Use Task.WhenAll with Select to check completion of all cards in parallel",
+        "Filter completed results with .Where() and project to a HashSet<string>",
+        "Clear and repopulate CompletedIds (or reassign if no longer readonly - coordinate with US-054)",
+        "Behaviour is unchanged: CompletedIds contains exactly the IDs of completed cards",
+        "Build passes"
+      ],
+      "priority": 17,
+      "passes": false,
+      "notes": "PR #3 review comment: foreach loop implicitly filters, use explicit LINQ with Task.WhenAll. Note: if CompletedIds is made readonly in US-054, use Clear() + UnionWith() instead of reassignment"
+    },
+    {
+      "id": "US-053",
+      "title": "Make PhaseProgress field readonly in PhonicsPhases.razor",
+      "description": "As a developer, I want the PhaseProgress dictionary field in PhonicsPhases.razor to be declared readonly since it is only mutated via dictionary operations, not reassigned.",
+      "acceptanceCriteria": [
+        "Change 'private Dictionary<int, (int Completed, int Total)> PhaseProgress = new();' to 'private readonly Dictionary<int, (int Completed, int Total)> PhaseProgress = new();' in PhonicsPhases.razor",
+        "Build passes"
+      ],
+      "priority": 18,
+      "passes": false,
+      "notes": "PR #3 review comment: field can be readonly"
+    },
+    {
+      "id": "US-054",
+      "title": "Make CompletedIds field readonly in PhonicsSoundList.razor",
+      "description": "As a developer, I want the CompletedIds HashSet field in PhonicsSoundList.razor to be declared readonly since it is only mutated via set operations, not reassigned.",
+      "acceptanceCriteria": [
+        "Change 'private HashSet<string> CompletedIds = new();' to 'private readonly HashSet<string> CompletedIds = new();' in PhonicsSoundList.razor",
+        "Build passes"
+      ],
+      "priority": 19,
+      "passes": false,
+      "notes": "PR #3 review comment: field can be readonly. Must be done before or coordinated with US-052 (LINQ refactor uses Clear + UnionWith if readonly)"
     }
   ]
 }

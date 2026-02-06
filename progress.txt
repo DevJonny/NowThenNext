@@ -182,3 +182,18 @@ Started: 2026-02-05
 - 15 E2E tests covering phase selection, sound list, flashcard display/navigation, and progress reset
 - Build passes with 0 errors, all tests green
 ---
+
+## 2026-02-06 - US-049
+- What was implemented: 4 E2E tests for flashcard navigation arrows (previous/next)
+- Files changed:
+  - `tests/NowThenNext.Tests.E2E/Tests/PhonicsTests.cs` (modified) - added 4 new tests
+- Tests added:
+  - FlashcardNav_PreviousDisabledOnFirstCard - verifies disabled attribute and nav-disabled class
+  - FlashcardNav_NextDisabledWhenNextCardLocked - verifies next arrow is disabled when only first card unlocked
+  - FlashcardNav_PreviousNavigatesBackAfterCompleting - completes first card, then uses previous to go back
+  - FlashcardNav_NextNavigatesToNextCompletedOrUnlockedCard - completes first, goes back, uses next to go forward
+- **Learnings for future iterations:**
+  - `ToHaveAttributeAsync("disabled", "")` works for checking the disabled attribute on Playwright buttons
+  - `ToHaveClassAsync(new Regex("nav-disabled"))` validates CSS class presence with regex matching
+  - All 19 phonics tests pass in ~29 seconds
+---
