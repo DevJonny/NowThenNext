@@ -471,6 +471,143 @@ public class PhonicsTests
         }
     }
 
+    // --- US-049: Flashcard navigation arrow tests ---
+
+    [Fact]
+    public async Task FlashcardNav_PreviousDisabledOnFirstCard()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-tile", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-current", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Navigate to first sound flashcard
+            await page.Locator(".sound-current").ClickAsync();
+            await page.WaitForSelectorAsync(".grapheme-display", new PageWaitForSelectorOptions { Timeout = 10000 });
+
+            // Assert - previous arrow has nav-disabled class and is disabled
+            var prevButton = page.Locator("button[aria-label='Previous sound']");
+            await Assertions.Expect(prevButton).ToHaveAttributeAsync("disabled", "", new LocatorAssertionsToHaveAttributeOptions { Timeout = 10000 });
+            await Assertions.Expect(prevButton).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nav-disabled"));
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task FlashcardNav_NextDisabledWhenNextCardLocked()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-tile", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-current", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Navigate to first sound flashcard (only first is unlocked, second is locked)
+            await page.Locator(".sound-current").ClickAsync();
+            await page.WaitForSelectorAsync(".grapheme-display", new PageWaitForSelectorOptions { Timeout = 10000 });
+
+            // Assert - next arrow has nav-disabled class and is disabled
+            var nextButton = page.Locator("button[aria-label='Next sound']");
+            await Assertions.Expect(nextButton).ToHaveAttributeAsync("disabled", "", new LocatorAssertionsToHaveAttributeOptions { Timeout = 10000 });
+            await Assertions.Expect(nextButton).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nav-disabled"));
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task FlashcardNav_PreviousNavigatesBackAfterCompleting()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-tile", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-current", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Complete first sound to get to second
+            await page.Locator(".sound-current").ClickAsync();
+            await page.WaitForSelectorAsync(".got-it-button", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator(".got-it-button").ClickAsync();
+
+            // Now on second card ("a"), verify it loaded
+            await page.WaitForSelectorAsync(".grapheme-display", new PageWaitForSelectorOptions { Timeout = 10000 });
+            var secondGrapheme = await page.Locator(".grapheme-display").TextContentAsync();
+            Assert.Equal("a", secondGrapheme);
+
+            // Act - click previous arrow
+            var prevButton = page.Locator("button[aria-label='Previous sound']");
+            await Assertions.Expect(prevButton).Not.ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nav-disabled"), new LocatorAssertionsToHaveClassOptions { Timeout = 10000 });
+            await prevButton.ClickAsync();
+
+            // Assert - navigated back to first card ("s")
+            await Assertions.Expect(page.Locator(".grapheme-display")).ToHaveTextAsync("s", new LocatorAssertionsToHaveTextOptions { Timeout = 10000 });
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task FlashcardNav_NextNavigatesToNextCompletedOrUnlockedCard()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-tile", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-current", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Complete first sound ("s") - auto-advances to second ("a")
+            await page.Locator(".sound-current").ClickAsync();
+            await page.WaitForSelectorAsync(".got-it-button", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator(".got-it-button").ClickAsync();
+
+            // Now on second card ("a"). Navigate back to first completed card ("s")
+            await page.WaitForSelectorAsync(".grapheme-display", new PageWaitForSelectorOptions { Timeout = 10000 });
+            var prevButton = page.Locator("button[aria-label='Previous sound']");
+            await prevButton.ClickAsync();
+
+            // Now on first card ("s"), which is completed. Next card ("a") is the current unlocked.
+            await Assertions.Expect(page.Locator(".grapheme-display")).ToHaveTextAsync("s", new LocatorAssertionsToHaveTextOptions { Timeout = 10000 });
+
+            // Act - click next arrow (should be enabled since next card is unlocked)
+            var nextButton = page.Locator("button[aria-label='Next sound']");
+            await Assertions.Expect(nextButton).Not.ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nav-disabled"), new LocatorAssertionsToHaveClassOptions { Timeout = 10000 });
+            await nextButton.ClickAsync();
+
+            // Assert - navigated to second card ("a")
+            await Assertions.Expect(page.Locator(".grapheme-display")).ToHaveTextAsync("a", new LocatorAssertionsToHaveTextOptions { Timeout = 10000 });
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    // --- US-048: Progress reset tests ---
+
     [Fact]
     public async Task ResetPhase_CancelDoesNotClearProgress()
     {
