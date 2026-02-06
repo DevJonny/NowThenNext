@@ -276,7 +276,7 @@
 
 @code {
     private List<PhonicsPhase> Phases = new();
-    private Dictionary<int, (int Completed, int Total)> PhaseProgress = new();
+    private readonly Dictionary<int, (int Completed, int Total)> PhaseProgress = new();
     private bool ShowResetConfirmation;
 
     protected override async Task OnInitializedAsync()
