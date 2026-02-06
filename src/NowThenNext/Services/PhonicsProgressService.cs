@@ -34,20 +34,12 @@ public class PhonicsProgressService : IPhonicsProgressService
         if (phase == null) return null;
 
         var completed = await GetCompletedSetAsync();
-        var allCards = phase.Weeks
+        var nextCard = phase.Weeks
             .SelectMany(w => w.Cards)
             .OrderBy(c => c.OrderIndex)
-            .ToList();
+            .FirstOrDefault(card => !completed.Contains(card.Id));
 
-        // First grapheme is always unlocked; find the first non-completed one
-        foreach (var card in allCards)
-        {
-            if (!completed.Contains(card.Id))
-                return card.Id;
-        }
-
-        // All completed
-        return null;
+        return nextCard?.Id;
     }
 
     public async Task<(int Completed, int Total)> GetPhaseProgressAsync(int phaseId)
