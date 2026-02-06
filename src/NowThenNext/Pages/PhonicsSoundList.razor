@@ -319,7 +319,7 @@
 
     private PhonicsPhase? Phase;
     private (int Completed, int Total) Progress;
-    private HashSet<string> CompletedIds = new();
+    private readonly HashSet<string> CompletedIds = new();
     private string? NextUnlockedId;
     private bool ShowResetConfirmation;
 
