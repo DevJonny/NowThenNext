@@ -145,3 +145,24 @@ Started: 2026-02-07
   - E2E tests pass: 74/74
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-07 - US-058
+- Created LearningCardGrid.razor page at route /learning/{CategoryId} with code-behind LearningCardGrid.razor.cs
+- Page displays all cards for a category in a responsive grid (2 cols mobile, 3 cols tablet, 4 cols desktop)
+- Each card shows SVG/image only by default; tapping reveals the word below with a 0.4s fade animation
+- Toggle behaviour: tapping a revealed card hides the word; revealing a new card auto-hides the previous one
+- SVG built-in cards rendered inline via MarkupString; custom cards rendered as base64 img tags
+- Category emoji and name displayed in page heading
+- Back navigation to /learning
+- Cards are square tiles (aspect-ratio: 1) with min-height 120px, rounded corners, subtle shadow
+- Files changed: src/NowThenNext/Pages/LearningCardGrid.razor (new), src/NowThenNext/Pages/LearningCardGrid.razor.cs (new)
+- **Learnings for future iterations:**
+  - Used OnParametersSetAsync instead of OnInitializedAsync because the route has a parameter (CategoryId) that could change while the component stays mounted (Blazor same-route navigation)
+  - RevealedCardId reset to null at start of OnParametersSetAsync to avoid stale state when navigating between categories
+  - SVG detection: check if ImageData.StartsWith("<svg") to decide between inline rendering and base64 img tag
+  - Card word reveal uses CSS opacity + max-height transition for smooth animation (max-height: 0 to 4rem)
+  - Used :deep(svg) CSS selector to style SVGs rendered inside the card-image div
+  - Single RevealedCardId state variable handles the "only one card revealed at a time" requirement
+  - E2E tests pass: 74/74
+  - Build passes clean with 0 warnings, 0 errors
+---
