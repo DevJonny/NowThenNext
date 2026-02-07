@@ -123,7 +123,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 8,
-      "passes": false,
+      "passes": true,
       "notes": "Reference Home.razor for the existing menu group pattern. Add after the Phonics section."
     },
     {

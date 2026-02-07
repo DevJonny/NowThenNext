@@ -112,3 +112,16 @@ Started: 2026-02-07
   - Service is scoped (not singleton) because it depends on IJSRuntime which requires per-circuit scoping in Blazor WASM
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-07 - US-056
+- Added Learning Cards menu group to home page after Phonics section
+- New menu group uses calm-cards theme colour (#D4937A) with flashcard SVG icon
+- Links to /learning route
+- Updated HomePageTests to expect 5 menu groups (was 4) and verify the 5th group has 1 button
+- Files changed: src/NowThenNext/Pages/Home.razor (modified), tests/NowThenNext.Tests.E2E/Tests/HomePageTests.cs (modified)
+- **Learnings for future iterations:**
+  - Adding a new menu group requires updating the HomePage_MenuButtonsAreGroupedInPairs test which asserts the exact count of .menu-group elements
+  - The flashcard icon (rectangle with cross lines) visually represents learning cards well at the menu icon size
+  - E2E tests pass: 74/74 (up from 69 baseline mentioned in CLAUDE.md - test count grew during prior stories)
+  - Build passes clean with 0 warnings, 0 errors
+---
