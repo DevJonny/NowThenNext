@@ -65,3 +65,18 @@ Started: 2026-02-07
   - Card ID pattern continues: `{categoryId}-{colourName}` (e.g. `colours-red`)
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-07 - US-053
+- Added Animals category and 12 animal cards to LearningCardsBuiltInData
+- Animals category: id='animals', name='Animals', emoji='🐾', isBuiltIn=true
+- 12 animal cards: cat, dog, fish, bird, horse, cow, pig, sheep, rabbit, elephant, lion, tiger
+- Each card has a simple, friendly SVG illustration with key distinguishing features
+- Files changed: src/NowThenNext/Services/LearningCardsBuiltInData.cs (modified)
+- **Learnings for future iterations:**
+  - Animal SVGs use basic shapes (ellipses, circles, paths, lines) to create recognisable silhouettes
+  - Key distinguishing features for each animal: cat (pointed ears, tail), dog (floppy ears, wagging tail), fish (tail fin, scales), bird (beak, wings, legs), horse (mane, long legs, tail), cow (black patches, horns, pink nose), pig (snout with nostrils, curly tail, big ears), sheep (fluffy circles body, dark face/legs), rabbit (long ears, whiskers, cotton tail), elephant (trunk, big ear, thick legs), lion (mane as outer circle, body), tiger (stripes on head/body, rounded ears)
+  - White/light-coloured animals (cow, sheep) need a stroke outline to remain visible against white backgrounds
+  - Warm colour palette used: #E8A87C (cat), #C4956A/#A67B5B (dog), #5B9A9A (fish), #7BA3C4 (bird), #A67B5B (horse), white/#2C3E50 (cow), #F0B4B4 (pig), #F5F0E8/#2C3E50 (sheep), #E8DDD0 (rabbit), #9BBDD6 (elephant), #E8C88A/#D4A06A (lion), #E8A84C (tiger)
+  - Card ID pattern continues: `{categoryId}-{animalName}` (e.g. `animals-cat`)
+  - Build passes clean with 0 warnings, 0 errors
+---
