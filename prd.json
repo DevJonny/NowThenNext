@@ -18,7 +18,7 @@
         "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "notes": "Largest @code block (~105 lines). Reference PlanDay.razor.cs for the exact code-behind pattern: file-scoped namespace NowThenNext.Pages, public partial class, [Inject] private properties with = default!"
     },
     {

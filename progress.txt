@@ -15,3 +15,15 @@ Started: 2026-02-06
 - Heredoc commit messages fail due to sandbox tmp restrictions - use inline `-m` flag instead
 
 ---
+
+## 2026-02-07 - US-055
+- PhonicsCard.razor migrated to code-behind (implemented in prior iteration, verified and marked passing here)
+- PhonicsCard.razor: @code block removed, @page/@style/markup retained
+- PhonicsCard.razor.cs: partial class with [Inject] properties, [Parameter] properties, all fields/methods/lifecycle overrides
+- Build: 0 errors, 0 warnings
+- E2E: 74/74 tests passing
+- Files changed: PhonicsCard.razor, PhonicsCard.razor.cs (created)
+- **Learnings for future iterations:**
+  - Previous iteration completed all 5 code-behind migrations but didn't update prd.json or progress.txt — always update tracking artifacts after committing
+  - E2E test count grew from 73 (in acceptance criteria) to 74 — this is fine, test counts in ACs are approximate baselines
+---
