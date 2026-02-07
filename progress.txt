@@ -1,29 +1,27 @@
-# Ralph Progress Log - Code-Behind Migration
+# Ralph Progress Log - Learning Cards
 
-Branch: ralph/code-behind-migration
-Started: 2026-02-06
+Branch: ralph/learning-cards
+Started: 2026-02-07
 
 ## Codebase Patterns
 - Existing code-behind pattern: file-scoped namespace, `public partial class`, `[Inject] private` properties with `= default!`
 - Pages use namespace `NowThenNext.Pages`, Components use `NowThenNext.Components`
-- No `ComponentBase` inheritance needed in code-behind (Blazor infers it from the .razor file)
-- `@page` directive, `<PageTitle>`, `<style>` blocks stay in the .razor file
 - Check `_Imports.razor` before adding usings to code-behind — many are already global
 - Run E2E tests after every story: `dotnet test tests/NowThenNext.Tests.E2E`
 - WASM build is broken in local environment (ComputeWasmBuildAssets MSB4216 error) - pre-existing issue, not caused by code changes
 - Use `dotnet build` to verify C# compilation (check for 0 C# errors even if WASM toolchain fails)
 - Heredoc commit messages fail due to sandbox tmp restrictions - use inline `-m` flag instead
+- Tailwind config is inline in wwwroot/index.html
+- Follow PhonicsDataService pattern for static built-in data
+- Dev server runs on localhost:5161
 
 ---
 
-## 2026-02-07 - US-055
-- PhonicsCard.razor migrated to code-behind (implemented in prior iteration, verified and marked passing here)
-- PhonicsCard.razor: @code block removed, @page/@style/markup retained
-- PhonicsCard.razor.cs: partial class with [Inject] properties, [Parameter] properties, all fields/methods/lifecycle overrides
-- Build: 0 errors, 0 warnings
-- E2E: 74/74 tests passing
-- Files changed: PhonicsCard.razor, PhonicsCard.razor.cs (created)
+## 2026-02-07 - US-049
+- Created LearningCategory and LearningCard models in Models/LearningCardModels.cs
+- Files changed: src/NowThenNext/Models/LearningCardModels.cs (new)
 - **Learnings for future iterations:**
-  - Previous iteration completed all 5 code-behind migrations but didn't update prd.json or progress.txt — always update tracking artifacts after committing
-  - E2E test count grew from 73 (in acceptance criteria) to 74 — this is fine, test counts in ACs are approximate baselines
+  - Models follow same pattern as ImageItem: file-scoped namespace, auto-initialized properties with defaults
+  - PhonicsModels.cs puts multiple related models in one file, so LearningCardModels.cs follows the same convention (both LearningCategory and LearningCard in one file)
+  - Build passes clean with 0 warnings, 0 errors
 ---

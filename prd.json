@@ -1,96 +1,266 @@
 {
   "project": "NowThenNext",
-  "branchName": "ralph/code-behind-migration",
-  "description": "Migrate remaining 5 Razor files with inline @code blocks to use code-behind (.razor.cs) files for separation of concerns",
+  "branchName": "ralph/learning-cards",
+  "description": "Learning Cards - visual flashcard feature with built-in categories (Shapes, Colours, Animals, Dinosaurs), card flip interaction, and user-created custom categories",
   "userStories": [
     {
-      "id": "US-055",
-      "title": "Migrate PhonicsCard.razor to code-behind",
-      "description": "As a developer, I want PhonicsCard.razor to use a code-behind file so that C# logic is separated from markup.",
+      "id": "US-049",
+      "title": "Add Learning Cards data models",
+      "description": "As a developer, I need LearningCategory and LearningCard models so that the feature has a typed data layer.",
       "acceptanceCriteria": [
-        "Create PhonicsCard.razor.cs as a partial class PhonicsCard (no ComponentBase inheritance needed - follow existing pattern in PlanDay.razor.cs)",
-        "Move all fields, parameters, methods, and lifecycle overrides from the @code block into the code-behind file",
-        "Move @inject directives to [Inject] private properties with = default! (e.g. [Inject] private NavigationManager Navigation { get; set; } = default!)",
-        "Move @using directives to using statements in the code-behind (keep @using for types referenced only in markup, check _Imports.razor for already-global usings)",
-        "Remove the @code { ... } block from PhonicsCard.razor",
-        "Keep @page directive, <PageTitle>, HTML/Razor markup, and <style> block in PhonicsCard.razor",
-        "Build passes",
-        "All E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
+        "Create LearningCategory model in Models/ with properties: Id (string), Name (string), Emoji (string), IsBuiltIn (bool), CreatedAt (DateTime)",
+        "Create LearningCard model in Models/ with properties: Id (string), CategoryId (string), ImageData (string), Word (string), IsBuiltIn (bool)",
+        "Typecheck passes"
       ],
       "priority": 1,
       "passes": true,
-      "notes": "Largest @code block (~105 lines). Reference PlanDay.razor.cs for the exact code-behind pattern: file-scoped namespace NowThenNext.Pages, public partial class, [Inject] private properties with = default!"
+      "notes": "Simple model classes. Follow existing ImageItem pattern in Models/."
+    },
+    {
+      "id": "US-050",
+      "title": "Add Tailwind calm-cards colour theme",
+      "description": "As a developer, I need the calm-cards colour tokens added to the Tailwind config so that all Learning Cards UI can use them consistently.",
+      "acceptanceCriteria": [
+        "Add calm-cards: '#D4937A' to the Tailwind config in wwwroot/index.html",
+        "Add calm-cards-dark: '#B87A62' to the Tailwind config",
+        "Add calm-cards-light: '#E0B0A0' to the Tailwind config",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Tailwind config is in wwwroot/index.html inline. Follow the pattern used for calm-phonics colours."
+    },
+    {
+      "id": "US-051",
+      "title": "Create built-in Shapes SVG data",
+      "description": "As a developer, I need the Shapes category with hand-crafted SVG illustrations for each shape.",
+      "acceptanceCriteria": [
+        "Create a LearningCardsBuiltInData static class (or similar) in Services/ with a method to get built-in Shapes category and cards",
+        "Shapes category: id='shapes', name='Shapes', emoji='🔷', isBuiltIn=true",
+        "Include cards for: circle, square, triangle, rectangle, star, heart, diamond, oval",
+        "Each card has a hand-crafted inline SVG string as ImageData (simple geometric shapes with calm fill colours)",
+        "SVGs render correctly as images (use data URI or raw SVG markup)",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "SVGs should be simple filled shapes, e.g. <svg viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='#5B9A9A'/></svg>. Use varied calm colours for visual interest."
+    },
+    {
+      "id": "US-052",
+      "title": "Create built-in Colours SVG data",
+      "description": "As a developer, I need the Colours category with colour swatch illustrations.",
+      "acceptanceCriteria": [
+        "Add Colours category to built-in data: id='colours', name='Colours', emoji='🎨', isBuiltIn=true",
+        "Include cards for: red, blue, green, yellow, orange, purple, pink, brown, black, white",
+        "Each card has a simple SVG swatch (filled rounded rectangle or circle) using the actual representative colour",
+        "These use real colours (e.g. actual red #E74C3C) not the calm palette - they are teaching colours",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Simple rounded rect SVGs with the teaching colour as fill. Word is the colour name (e.g. 'Red')."
+    },
+    {
+      "id": "US-053",
+      "title": "Create built-in Animals SVG data",
+      "description": "As a developer, I need the Animals category with simple, friendly animal SVG illustrations.",
+      "acceptanceCriteria": [
+        "Add Animals category to built-in data: id='animals', name='Animals', emoji='🐾', isBuiltIn=true",
+        "Include cards for: cat, dog, fish, bird, horse, cow, pig, sheep, rabbit, elephant, lion, tiger",
+        "Each animal has a simple, friendly SVG illustration (filled shapes, minimal detail)",
+        "Illustrations are recognisable at ~120px size without any text label",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "Keep SVGs simple - basic body shapes, key features (ears, tail, trunk). Use friendly, warm colours. These don't need to be photorealistic."
+    },
+    {
+      "id": "US-054",
+      "title": "Create built-in Dinosaurs SVG data",
+      "description": "As a developer, I need the Dinosaurs category with simple, friendly dinosaur SVG illustrations.",
+      "acceptanceCriteria": [
+        "Add Dinosaurs category to built-in data: id='dinosaurs', name='Dinosaurs', emoji='🦕', isBuiltIn=true",
+        "Include cards for: T-Rex, Triceratops, Stegosaurus, Brachiosaurus, Velociraptor, Pteranodon, Ankylosaurus, Diplodocus",
+        "Each dinosaur has a simple, friendly SVG illustration (filled shapes, key distinguishing features)",
+        "Illustrations are recognisable at ~120px size without any text label",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Key features: T-Rex (big head, tiny arms), Triceratops (frill + horns), Stegosaurus (back plates), Brachiosaurus (long neck), etc. Keep friendly, not scary."
+    },
+    {
+      "id": "US-055",
+      "title": "Create LearningCardsDataService for built-in and custom data",
+      "description": "As a developer, I need a service that combines built-in card data with user-created custom categories and cards stored in localStorage.",
+      "acceptanceCriteria": [
+        "Create ILearningCardsDataService interface with methods: GetAllCategoriesAsync, GetCardsByCategoryAsync(categoryId), AddCustomCategoryAsync, AddCustomCardAsync, DeleteCustomCardAsync, DeleteCustomCategoryAsync",
+        "Create LearningCardsDataService implementing the interface",
+        "GetAllCategoriesAsync returns built-in categories (fixed order: Shapes, Colours, Animals, Dinosaurs) followed by custom categories ordered by CreatedAt",
+        "GetCardsByCategoryAsync returns all cards for a given category (built-in or custom)",
+        "Custom categories and cards persisted to localStorage under key 'learning-cards'",
+        "Built-in content is read-only - delete/edit methods only work on custom items",
+        "Register service as scoped in Program.cs DI container",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Follow PhonicsDataService/PhonicsProgressService pattern. Use IJSRuntime for localStorage access. Built-in data comes from the static class created in US-051 through US-054."
     },
     {
       "id": "US-056",
-      "title": "Migrate StorageWarningBanner.razor to code-behind",
-      "description": "As a developer, I want StorageWarningBanner.razor to use a code-behind file so that C# logic is separated from markup.",
+      "title": "Add Learning Cards section to home page",
+      "description": "As a user, I want to see a Learning Cards option on the home page so that I can access the new flashcard feature.",
       "acceptanceCriteria": [
-        "Create StorageWarningBanner.razor.cs as a partial class StorageWarningBanner in namespace NowThenNext.Components",
-        "Move all fields, parameters, methods, and lifecycle overrides from the @code block into the code-behind file",
-        "Move @inject directives to [Inject] private properties with = default!",
-        "Move @using directives to using statements in the code-behind (keep @using for types referenced only in markup, check _Imports.razor for already-global usings)",
-        "Remove the @code { ... } block from StorageWarningBanner.razor",
-        "Keep HTML/Razor markup and <style> block in StorageWarningBanner.razor",
-        "Build passes",
-        "All E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
+        "New 'Learning Cards' menu group on home page, visually distinct from Phonics and other sections",
+        "Uses calm-cards theme colour (soft coral #D4937A) for the menu tile/button",
+        "Touch target meets 48px minimum",
+        "Links to /learning route",
+        "Follows existing home page menu group pattern (see Phonics section as reference)",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
       ],
-      "priority": 2,
-      "passes": true,
-      "notes": "Component in Components/ directory - namespace is NowThenNext.Components. ~69 lines of @code."
+      "priority": 8,
+      "passes": false,
+      "notes": "Reference Home.razor for the existing menu group pattern. Add after the Phonics section."
     },
     {
       "id": "US-057",
-      "title": "Migrate PhonicsSoundList.razor to code-behind",
-      "description": "As a developer, I want PhonicsSoundList.razor to use a code-behind file so that C# logic is separated from markup.",
+      "title": "Create Learning Cards category listing page",
+      "description": "As a user, I want to see all available card categories so that I can choose which topic to explore.",
       "acceptanceCriteria": [
-        "Create PhonicsSoundList.razor.cs as a partial class PhonicsSoundList in namespace NowThenNext.Pages",
-        "Move all fields, parameters, methods, enums (CardState), and lifecycle overrides from the @code block into the code-behind file",
-        "Move @inject directives to [Inject] private properties with = default!",
-        "Move @using directives to using statements in the code-behind (keep @using for types referenced only in markup, check _Imports.razor for already-global usings)",
-        "Remove the @code { ... } block from PhonicsSoundList.razor",
-        "Keep @page directive, <PageTitle>, HTML/Razor markup, and <style> block in PhonicsSoundList.razor",
-        "Build passes",
-        "All E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
+        "Create LearningCategories.razor page at route /learning",
+        "Page displays all categories as large tiles in a responsive grid",
+        "Built-in categories show in fixed order: Shapes, Colours, Animals, Dinosaurs",
+        "Custom categories appear after built-in categories",
+        "Each tile shows the category emoji and name",
+        "Each tile links to /learning/{categoryId}",
+        "Back navigation link to home page",
+        "Uses calm-cards colour theme for page styling",
+        "Responsive padding: px-6 py-8 mobile, sm:px-8 sm:py-10 larger",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
       ],
-      "priority": 3,
-      "passes": true,
-      "notes": "Contains a private enum CardState that must also move to the code-behind. ~68 lines of @code."
+      "priority": 9,
+      "passes": false,
+      "notes": "Follow existing page patterns (PhonicsPhases.razor is a good reference for a category listing page)."
     },
     {
       "id": "US-058",
-      "title": "Migrate PhonicsPhases.razor to code-behind",
-      "description": "As a developer, I want PhonicsPhases.razor to use a code-behind file so that C# logic is separated from markup.",
+      "title": "Create card grid page with flip-to-reveal interaction",
+      "description": "As a user, I want to see all cards in a category as a grid and tap cards to reveal the word.",
       "acceptanceCriteria": [
-        "Create PhonicsPhases.razor.cs as a partial class PhonicsPhases in namespace NowThenNext.Pages",
-        "Move all fields, methods, and lifecycle overrides from the @code block into the code-behind file",
-        "Move @inject directives to [Inject] private properties with = default!",
-        "Move @using directives to using statements in the code-behind (keep @using for types referenced only in markup, check _Imports.razor for already-global usings)",
-        "Remove the @code { ... } block from PhonicsPhases.razor",
-        "Keep @page directive, <PageTitle>, HTML/Razor markup, and <style> block in PhonicsPhases.razor",
-        "Build passes",
-        "All E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
+        "Create LearningCardGrid.razor page at route /learning/{CategoryId}",
+        "Page displays all cards in a responsive grid (2 columns mobile, 3-4 columns tablet/desktop)",
+        "Each card shows only the SVG/image by default (no text visible)",
+        "Cards are square tiles, minimum 120px, with rounded corners and subtle shadow",
+        "Tapping a card reveals the word below the image with a gentle fade animation (~0.4s)",
+        "Image remains visible when word is revealed",
+        "Word displayed in large clear Nunito font (minimum 24px)",
+        "Tapping a revealed card hides the word again (toggle)",
+        "Only one card revealed at a time - revealing a new card auto-hides the previous one",
+        "Category name displayed as page heading",
+        "Back navigation to /learning",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
       ],
-      "priority": 4,
-      "passes": true,
-      "notes": "~42 lines of @code. PhaseProgress field is readonly Dictionary."
+      "priority": 10,
+      "passes": false,
+      "notes": "The SVG ImageData from built-in cards should render inline. For custom cards, ImageData is base64 and should render as <img src='data:image/...' />. Track revealed card by ID in component state."
     },
     {
       "id": "US-059",
-      "title": "Migrate ImageTile.razor to code-behind",
-      "description": "As a developer, I want ImageTile.razor to use a code-behind file so that C# logic is separated from markup.",
+      "title": "Add custom category creation",
+      "description": "As a user, I want to create my own card category with a name and emoji so that I can teach vocabulary specific to my child's needs.",
       "acceptanceCriteria": [
-        "Create ImageTile.razor.cs as a partial class ImageTile in namespace NowThenNext.Components",
-        "Move all [Parameter] properties, EventCallback parameters, fields, and methods from the @code block into the code-behind file",
-        "Move @using directives to using statements in the code-behind (check _Imports.razor for already-global usings)",
-        "Remove the @code { ... } block from ImageTile.razor",
-        "Keep HTML/Razor markup and <style> block in ImageTile.razor",
-        "Build passes",
-        "All E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
+        "Add Category button/tile visible on the category listing page (/learning)",
+        "Tapping opens a modal/form to enter category name and choose an emoji",
+        "Category name is required with friendly validation message",
+        "Emoji picker shows a curated grid of ~20-30 child-friendly emoji (animals, objects, nature, food, etc.)",
+        "Default emoji assigned if none selected (e.g. 📋)",
+        "New category appears on the listing page after creation",
+        "Category persisted via LearningCardsDataService",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
       ],
-      "priority": 5,
-      "passes": true,
-      "notes": "Component in Components/ directory - namespace is NowThenNext.Components. ~37 lines of @code. Has [Parameter] EventCallback properties."
+      "priority": 11,
+      "passes": false,
+      "notes": "Use existing modal pattern (boolean visibility flag, stopPropagation on content). The emoji picker is just a grid of emoji characters the user taps to select - not a native OS picker."
+    },
+    {
+      "id": "US-060",
+      "title": "Add custom card creation with image upload",
+      "description": "As a user, I want to add cards to a custom category by uploading an image and typing a word.",
+      "acceptanceCriteria": [
+        "Add Card button visible on custom category card grid pages (not on built-in category pages)",
+        "Tapping opens a form to upload an image and enter a word",
+        "Image upload uses InputFile component with accept='image/*'",
+        "Image compressed using existing compressImage JS interop (800px max, 0.7 quality)",
+        "Word/label is a required field",
+        "Card appears in the grid after saving",
+        "Card persisted via LearningCardsDataService",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "Reuse the image upload pattern from Upload.razor. Custom card ImageData is base64 (not SVG)."
+    },
+    {
+      "id": "US-061",
+      "title": "Add delete functionality for custom cards and categories",
+      "description": "As a user, I want to delete custom cards and categories I no longer need.",
+      "acceptanceCriteria": [
+        "Delete button visible on custom cards (not on built-in cards)",
+        "Confirmation dialog before card deletion using existing modal pattern",
+        "Card removed from grid after deletion",
+        "Delete button visible on custom categories on the category listing page",
+        "Category deletion confirmation warns that all cards will also be deleted",
+        "Category and all its cards removed after confirmation",
+        "Built-in categories and cards have no delete option",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "Follow the delete confirmation pattern from the image libraries (LibraryTests reference)."
+    },
+    {
+      "id": "US-062",
+      "title": "Include custom learning cards in backup/restore",
+      "description": "As a user, I want my custom learning cards included when I back up or restore data so that I don't lose them.",
+      "acceptanceCriteria": [
+        "Extend Settings.razor backup to include 'learning-cards' localStorage key in the exported JSON",
+        "Extend Settings.razor restore to import 'learning-cards' data from the JSON file",
+        "Built-in categories are not duplicated on restore (only custom data is stored/restored)",
+        "Backup/restore still works correctly for existing data (images, phonics-progress)",
+        "Typecheck passes"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "Reference Settings.razor for the existing backup/restore pattern. The learning-cards key stores only custom categories and cards."
+    },
+    {
+      "id": "US-063",
+      "title": "E2E tests for Learning Cards",
+      "description": "As a developer, I need E2E tests covering the learning cards feature to ensure quality.",
+      "acceptanceCriteria": [
+        "Create LearningCardsTests.cs in the E2E test project",
+        "Test: home page shows Learning Cards link and navigates to /learning",
+        "Test: category listing page shows 4 built-in categories (Shapes, Colours, Animals, Dinosaurs)",
+        "Test: navigating to a built-in category shows card grid with correct number of cards",
+        "Test: tapping a card reveals the word, tapping again hides it",
+        "Test: revealing a second card auto-hides the first",
+        "Test: creating a custom category with name and emoji",
+        "Test: deleting a custom category",
+        "All tests pass",
+        "Typecheck passes"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "Follow existing E2E test patterns (BlazorAppFixture, ClearLocalStorageAsync after navigation, 60s timeout for WaitForSelectorAsync). Use relative href selectors (e.g. a[href='learning'] not a[href='/learning'])."
     }
   ]
 }
