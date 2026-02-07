@@ -167,7 +167,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 10,
-      "passes": false,
+      "passes": true,
       "notes": "The SVG ImageData from built-in cards should render inline. For custom cards, ImageData is base64 and should render as <img src='data:image/...' />. Track revealed card by ID in component state."
     },
     {
