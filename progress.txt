@@ -125,3 +125,23 @@ Started: 2026-02-07
   - E2E tests pass: 74/74 (up from 69 baseline mentioned in CLAUDE.md - test count grew during prior stories)
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-07 - US-057
+- Created LearningCategories.razor page at route /learning with code-behind LearningCategories.razor.cs
+- Page displays all categories as large tiles in a responsive grid (2 cols mobile, 3 cols tablet, 4 cols desktop)
+- Each tile shows category emoji and name, links to /learning/{categoryId}
+- Built-in categories show in fixed order (Shapes, Colours, Animals, Dinosaurs), custom categories after
+- Back navigation button returns to home page
+- Uses calm-cards colour theme (#D4937A) for page styling (back button, hover border)
+- Responsive padding: px-6 py-8 mobile, sm:px-8 sm:py-10 larger screens
+- Files changed: src/NowThenNext/Pages/LearningCategories.razor (new), src/NowThenNext/Pages/LearningCategories.razor.cs (new)
+- **Learnings for future iterations:**
+  - PhonicsPhases.razor is the closest pattern match for a category listing page
+  - Back button colour should match the section theme colour (calm-cards #D4937A for Learning Cards, calm-phonics #7BA3C4 for Phonics)
+  - Category tiles use flex-direction: column (emoji stacked above name) for visual prominence
+  - Grid responsive breakpoints: 2 cols at mobile, 3 at 768px (md), 4 at 1024px (lg)
+  - Code-behind follows pattern: file-scoped namespace, public partial class, [Inject] private properties with = default!
+  - _Imports.razor already includes NowThenNext.Models so no additional using needed in razor file
+  - E2E tests pass: 74/74
+  - Build passes clean with 0 warnings, 0 errors
+---
