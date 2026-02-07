@@ -64,12 +64,12 @@ public class HomePageTests
             // Assert - verify all six buttons are visible by their text content
             // Button order per US-006: Places + Plan the Day (pair), Food + Food Choices (pair), Activities + Activity Choices (pair)
             // Favorites is now a header icon, not a menu button
-            var placesButton = page.Locator("a[href='/places']:has-text('Places')");
+            var placesButton = page.Locator("a[href='places']:has-text('Places')");
             var planButton = page.Locator("a:has-text('Plan the Day')");
-            var foodButton = page.Locator("a[href='/food']:has-text('Food')");
-            var foodChoicesButton = page.Locator("a[href='/food-choices']:has-text('Food Choices')");
-            var activitiesButton = page.Locator("a[href='/activities']:has-text('Activities')");
-            var activityChoicesButton = page.Locator("a[href='/activity-choices']:has-text('Activity Choices')");
+            var foodButton = page.Locator("a[href='food']:has-text('Food')");
+            var foodChoicesButton = page.Locator("a[href='food-choices']:has-text('Food Choices')");
+            var activitiesButton = page.Locator("a[href='activities']:has-text('Activities')");
+            var activityChoicesButton = page.Locator("a[href='activity-choices']:has-text('Activity Choices')");
 
             await Assertions.Expect(placesButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
             await Assertions.Expect(planButton).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
@@ -97,16 +97,20 @@ public class HomePageTests
             await page.WaitForSelectorAsync("nav a", new PageWaitForSelectorOptions { Timeout = 60000 });
             await page.ClearLocalStorageAsync();
 
-            // Assert - verify that buttons are grouped in three pairs with group containers
+            // Assert - verify that buttons are grouped with group containers
             var menuGroups = page.Locator(".menu-group");
-            await Assertions.Expect(menuGroups).ToHaveCountAsync(3, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
+            await Assertions.Expect(menuGroups).ToHaveCountAsync(4, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
 
-            // Verify each group has exactly 2 buttons
+            // Verify first 3 groups have exactly 2 buttons each
             for (int i = 0; i < 3; i++)
             {
                 var groupButtons = menuGroups.Nth(i).Locator(".menu-button");
                 await Assertions.Expect(groupButtons).ToHaveCountAsync(2);
             }
+
+            // Verify 4th group (Phonics) has 1 button
+            var phonicsButtons = menuGroups.Nth(3).Locator(".menu-button");
+            await Assertions.Expect(phonicsButtons).ToHaveCountAsync(1);
         }
         finally
         {
@@ -156,7 +160,7 @@ public class HomePageTests
 
             // Act - click the Food button (navigates to food library)
             // Use exact match to avoid matching "Food Choices"
-            var foodButton = page.Locator("a[href='/food']:has-text('Food')");
+            var foodButton = page.Locator("a[href='food']:has-text('Food')");
             await foodButton.ClickAsync();
 
             // Wait for navigation
@@ -243,7 +247,7 @@ public class HomePageTests
             await page.ClearLocalStorageAsync();
 
             // Act - click the Food Choices button
-            var foodChoicesButton = page.Locator("a[href='/food-choices']:has-text('Food Choices')");
+            var foodChoicesButton = page.Locator("a[href='food-choices']:has-text('Food Choices')");
             await foodChoicesButton.ClickAsync();
 
             // Wait for navigation
@@ -271,7 +275,7 @@ public class HomePageTests
             await page.ClearLocalStorageAsync();
 
             // Act - click the Activities button
-            var activitiesButton = page.Locator("a[href='/activities']:has-text('Activities')");
+            var activitiesButton = page.Locator("a[href='activities']:has-text('Activities')");
             await activitiesButton.ClickAsync();
 
             // Wait for navigation
@@ -299,7 +303,7 @@ public class HomePageTests
             await page.ClearLocalStorageAsync();
 
             // Act - click the Activity Choices button
-            var activityChoicesButton = page.Locator("a[href='/activity-choices']:has-text('Activity Choices')");
+            var activityChoicesButton = page.Locator("a[href='activity-choices']:has-text('Activity Choices')");
             await activityChoicesButton.ClickAsync();
 
             // Wait for navigation
