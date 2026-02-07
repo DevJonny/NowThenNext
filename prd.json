@@ -186,7 +186,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 11,
-      "passes": false,
+      "passes": true,
       "notes": "Use existing modal pattern (boolean visibility flag, stopPropagation on content). The emoji picker is just a grid of emoji characters the user taps to select - not a native OS picker."
     },
     {
