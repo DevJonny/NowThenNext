@@ -50,9 +50,106 @@
                     </div>
                 </div>
             }
+
+            @if (IsCustomCategory)
+            {
+                <!-- Add Card Button Tile -->
+                <div class="add-card-tile" @onclick="OpenAddCardModal" role="button" tabindex="0" aria-label="Add a new card">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-calm-cards" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span class="add-card-label">Add Card</span>
+                </div>
+            }
         </div>
     </div>
 </div>
+
+@if (ShowAddCardModal)
+{
+    <!-- Add Card Modal Backdrop -->
+    <div class="modal-backdrop" @onclick="CloseAddCardModal">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <h2 class="text-xl font-bold text-calm-cards mb-4">Add New Card</h2>
+
+            @if (!string.IsNullOrEmpty(AddCardErrorMessage))
+            {
+                <div class="add-card-error">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>@AddCardErrorMessage</span>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(AddCardValidationMessage))
+            {
+                <div class="add-card-validation">
+                    @AddCardValidationMessage
+                </div>
+            }
+
+            <!-- Image Upload Area -->
+            @if (string.IsNullOrEmpty(NewCardPreviewImage))
+            {
+                <div class="card-upload-area">
+                    <label for="card-file-upload" class="card-upload-label">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-calm-cards" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="text-base font-semibold text-calm-text mt-2">Tap to choose an image</span>
+                        <span class="text-sm text-calm-text-light mt-1">JPG, PNG, or WebP</span>
+                    </label>
+                    <InputFile OnChange="HandleCardFileSelected" accept="image/jpeg,image/png,image/webp" class="hidden-file-input" id="card-file-upload" />
+                </div>
+            }
+            else
+            {
+                <!-- Image Preview -->
+                <div class="card-preview-area">
+                    <img src="@NewCardPreviewImage" alt="Preview" class="card-preview-image" />
+                    <button @onclick="ClearCardPreview" class="clear-preview-btn" aria-label="Remove image">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            }
+
+            <!-- Word Input -->
+            <div class="mt-4">
+                <label for="card-word" class="block text-base font-semibold text-calm-text mb-2">Word</label>
+                <input type="text"
+                       id="card-word"
+                       @bind="NewCardWord"
+                       placeholder="e.g., Apple, Dog, House..."
+                       class="card-form-input"
+                       maxlength="50" />
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 mt-6">
+                <button @onclick="CloseAddCardModal" class="modal-cancel-btn" type="button">
+                    Cancel
+                </button>
+                <button @onclick="SaveNewCard" class="modal-save-btn" type="button" disabled="@IsAddingCard">
+                    @if (IsAddingCard)
+                    {
+                        <svg class="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Saving...</span>
+                    }
+                    else
+                    {
+                        <span>Save Card</span>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+}
 
 <style>
     .back-button {
@@ -148,6 +245,242 @@
         opacity: 1;
         max-height: 4rem;
         padding-bottom: 1rem;
+    }
+
+    /* Add Card Tile */
+    .add-card-tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: white;
+        border-radius: 1rem;
+        border: 2px dashed #D4937A;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 0;
+        min-height: 120px;
+        aspect-ratio: 1;
+        gap: 0.5rem;
+    }
+
+    .add-card-tile:hover {
+        background-color: #FDF5F2;
+        border-color: #B87A62;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(212, 147, 122, 0.2);
+    }
+
+    .add-card-tile:active {
+        transform: translateY(0);
+    }
+
+    .add-card-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #D4937A;
+    }
+
+    /* Modal Styles */
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+        padding: 1rem;
+    }
+
+    .modal-content {
+        background-color: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        width: 100%;
+        max-width: 28rem;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    .add-card-error {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background-color: #FFF3E0;
+        border: 2px solid #D4A06A;
+        border-radius: 0.75rem;
+        color: #E65100;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+    }
+
+    .add-card-validation {
+        padding: 0.75rem 1rem;
+        background-color: #FFF3E0;
+        border: 2px solid #D4A06A;
+        border-radius: 0.75rem;
+        color: #B87A62;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Card Upload Area */
+    .card-upload-area {
+        position: relative;
+    }
+
+    .card-upload-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.5rem;
+        border: 2px dashed #E2DFD8;
+        border-radius: 0.75rem;
+        background-color: #F9F7F3;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .card-upload-label:hover {
+        border-color: #D4937A;
+        background-color: #FDF5F2;
+    }
+
+    .hidden-file-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    /* Card Preview */
+    .card-preview-area {
+        position: relative;
+    }
+
+    .card-preview-image {
+        width: 100%;
+        max-height: 200px;
+        object-fit: contain;
+        border-radius: 0.75rem;
+        background-color: #F9F7F3;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .clear-preview-btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background-color: rgba(61, 72, 82, 0.8);
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .clear-preview-btn:hover {
+        background-color: rgba(61, 72, 82, 1);
+    }
+
+    /* Card Form Input */
+    .card-form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1.125rem;
+        border: 2px solid #E2DFD8;
+        border-radius: 0.75rem;
+        background-color: white;
+        color: #3D4852;
+        transition: border-color 0.2s ease;
+        box-sizing: border-box;
+    }
+
+    .card-form-input:focus {
+        outline: none;
+        border-color: #D4937A;
+    }
+
+    .card-form-input::placeholder {
+        color: #606F7B;
+    }
+
+    /* Modal Buttons */
+    .modal-cancel-btn {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        min-height: 3rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background-color: white;
+        color: #3D4852;
+        border: 2px solid #E2DFD8;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .modal-cancel-btn:hover {
+        background-color: #F0EDE8;
+    }
+
+    .modal-save-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        min-height: 3rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background-color: #D4937A;
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 8px rgba(212, 147, 122, 0.3);
+    }
+
+    .modal-save-btn:hover {
+        background-color: #B87A62;
+        box-shadow: 0 4px 12px rgba(212, 147, 122, 0.4);
+    }
+
+    .modal-save-btn:disabled {
+        background-color: #E0B0A0;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+
+    @@keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
     }
 
     @@media (min-width: 768px) {
