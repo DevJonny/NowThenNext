@@ -88,7 +88,7 @@
         "Typecheck passes"
       ],
       "priority": 6,
-      "passes": false,
+      "passes": true,
       "notes": "Key features: T-Rex (big head, tiny arms), Triceratops (frill + horns), Stegosaurus (back plates), Brachiosaurus (long neck), etc. Keep friendly, not scary."
     },
     {

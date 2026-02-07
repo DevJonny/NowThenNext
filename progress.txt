@@ -80,3 +80,18 @@ Started: 2026-02-07
   - Card ID pattern continues: `{categoryId}-{animalName}` (e.g. `animals-cat`)
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-07 - US-054
+- Added Dinosaurs category and 8 dinosaur cards to LearningCardsBuiltInData
+- Dinosaurs category: id='dinosaurs', name='Dinosaurs', emoji='🦕', isBuiltIn=true
+- 8 dinosaur cards: T-Rex, Triceratops, Stegosaurus, Brachiosaurus, Velociraptor, Pteranodon, Ankylosaurus, Diplodocus
+- Each card has a simple, friendly SVG illustration with key distinguishing features
+- Files changed: src/NowThenNext/Services/LearningCardsBuiltInData.cs (modified)
+- **Learnings for future iterations:**
+  - Dinosaur SVGs use the same basic shapes approach (ellipses, circles, paths, lines) as animal SVGs
+  - Key distinguishing features for each dinosaur: T-Rex (big head, tiny arms, sharp teeth), Triceratops (frill, horns, beak), Stegosaurus (back plates, tail spikes), Brachiosaurus (very long neck, small head), Velociraptor (sleek body, clawed feet, tail), Pteranodon (large wings, head crest, beak), Ankylosaurus (armoured bumps, club tail), Diplodocus (long neck, long whip tail, small head)
+  - Used varied colours from the calm palette: #7BA893 (T-Rex green), #D4A06A (Triceratops amber), #5B9A9A (Stegosaurus teal), #9BBDD6 (Brachiosaurus blue), #E8C88A (Velociraptor sandy), #D4937A (Pteranodon coral), #7BA3C4 (Ankylosaurus phonics blue), #D4A06A (Diplodocus amber)
+  - Dinosaur emoji 🦕 Unicode is U+1F995, UTF-16 surrogate pair: \ud83e\udd95
+  - Card ID pattern continues: `{categoryId}-{dinoName}` (e.g. `dinosaurs-trex`)
+  - Build passes clean with 0 warnings, 0 errors
+---
