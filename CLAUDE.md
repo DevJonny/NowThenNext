@@ -75,7 +75,7 @@ dotnet build
 ## Routing Map
 | Route | Page | Description |
 |-------|------|-------------|
-| `/` | Home.razor | Main menu: Places, Food, Activities, Plan the Day, Food Choices, Activity Choices, Favorites |
+| `/` | Home.razor | Main menu: Places, Food, Activities, Plan the Day, Food Choices, Activity Choices, Favorites, Learning Cards |
 | `/places` | PlacesLibrary.razor | Places image library |
 | `/food` | FoodLibrary.razor | Food image library |
 | `/activities` | ActivitiesLibrary.razor | Activities image library |
@@ -224,7 +224,7 @@ public class MyTests(BlazorAppFixture fixture)
 - **Use RELATIVE paths in href selectors** (e.g., `a[href='phonics']` NOT `a[href='/phonics']`) - Blazor renders relative hrefs in the DOM
 
 ## Test Status
-- **Total E2E Tests**: 69 passing (54 MVP + 15 Phonics)
+- **Total E2E Tests**: 74 passing (54 MVP + 15 Phonics + 5 Learning Cards data layer)
 - **Test Files**: HomePageTests, UploadTests, LibraryTests, ScheduleTests, FoodChoicesTests, ActivityChoicesTests, BackupRestoreTests, PhonicsTests
 - **Coverage**: All user stories (US-001 to US-037, US-046 to US-048)
 
