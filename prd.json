@@ -36,7 +36,7 @@
         "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "Component in Components/ directory - namespace is NowThenNext.Components. ~69 lines of @code."
     },
     {
@@ -54,7 +54,7 @@
         "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": "Contains a private enum CardState that must also move to the code-behind. ~68 lines of @code."
     },
     {
@@ -72,7 +72,7 @@
         "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": "~42 lines of @code. PhaseProgress field is readonly Dictionary."
     },
     {
@@ -89,7 +89,7 @@
         "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": "Component in Components/ directory - namespace is NowThenNext.Components. ~37 lines of @code. Has [Parameter] EventCallback properties."
     }
   ]

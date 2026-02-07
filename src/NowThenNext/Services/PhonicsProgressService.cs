@@ -102,9 +102,10 @@ public class PhonicsProgressService : IPhonicsProgressService
         {
             throw new StorageQuotaExceededException("Storage quota exceeded. Please delete some data to free up space.", ex);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            // Prevent unhandled exceptions from breaking the UI
+            // Log but don't throw - prevent unhandled exceptions from breaking the UI
+            Console.Error.WriteLine($"Failed to save phonics progress: {ex.Message}");
         }
     }
 }
