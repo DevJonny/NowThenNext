@@ -166,3 +166,22 @@ Started: 2026-02-07
   - E2E tests pass: 74/74
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-07 - US-059
+- Added "Add Category" button tile (dashed border, + icon) to the category listing page (/learning)
+- Added modal form with category name input (required, max 30 chars), curated emoji picker (30 child-friendly emojis), and live preview
+- Modal uses existing pattern: boolean visibility flag, @onclick:stopPropagation on content div, backdrop click to dismiss
+- Friendly validation message shown when trying to save without a name
+- Default emoji (clipboard) assigned if none selected
+- Category persisted via LearningCardsDataService.AddCustomCategoryAsync, page refreshes category list after save
+- Files changed: src/NowThenNext/Pages/LearningCategories.razor (modified), src/NowThenNext/Pages/LearningCategories.razor.cs (modified)
+- **Learnings for future iterations:**
+  - Emoji characters in C# code-behind use Unicode escape sequences (e.g. "\U0001F697" for car emoji) - more reliable than pasting literal emoji in source
+  - The emoji picker is a simple CSS grid of button elements, not a native OS picker - keeps it consistent and accessible
+  - Dashed border style (border: 2px dashed #D4937A) visually distinguishes the "add" tile from content tiles
+  - Modal max-height: 90vh with overflow-y: auto prevents content from overflowing on small screens when the emoji grid is tall
+  - SelectEmoji method uses toggle logic (deselect if same emoji tapped again) for better UX
+  - form-input uses box-sizing: border-box to prevent width overflow inside the modal
+  - E2E tests pass: 74/74
+  - Build passes clean with 0 warnings, 0 errors
+---
