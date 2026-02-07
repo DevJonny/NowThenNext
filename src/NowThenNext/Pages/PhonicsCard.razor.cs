@@ -46,6 +46,16 @@ public partial class PhonicsCard
 
         AllCards = phase.Weeks.SelectMany(w => w.Cards).OrderBy(c => c.OrderIndex).ToList();
         CurrentIndex = AllCards.FindIndex(c => c.Id == GraphemeId);
+
+        // If the requested grapheme is not part of this phase, disable navigation
+        if (CurrentIndex < 0)
+        {
+            IsCurrentUnlocked = false;
+            CanGoPrevious = false;
+            CanGoNext = false;
+            return;
+        }
+
         NextUnlockedId = await PhonicsProgress.GetNextUnlockedGraphemeIdAsync(PhaseId);
 
         IsCurrentUnlocked = GraphemeId == NextUnlockedId;

@@ -41,9 +41,9 @@ public partial class StorageWarningBanner
             ShowBanner = storageInfo.UsagePercentage >= WarningThreshold;
             EstimatedRemainingImages = storageInfo.EstimatedRemainingImages;
 
-            // Reset dismissed state if we need to show the banner again
-            // (only if storage was previously below threshold and now above)
-            // Don't auto-reset dismissed state - let the page decide
+            // Update banner visibility based on current storage usage.
+            // Note: we intentionally do not modify IsDismissed here; callers can
+            // use ResetAndCheckAsync if they want to clear the dismissed state.
             StateHasChanged();
         }
         catch
