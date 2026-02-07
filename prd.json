@@ -43,7 +43,7 @@
         "Typecheck passes"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "notes": "SVGs should be simple filled shapes, e.g. <svg viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='#5B9A9A'/></svg>. Use varied calm colours for visual interest."
     },
     {
@@ -58,7 +58,7 @@
         "Typecheck passes"
       ],
       "priority": 4,
-      "passes": false,
+      "passes": true,
       "notes": "Simple rounded rect SVGs with the teaching colour as fill. Word is the colour name (e.g. 'Red')."
     },
     {
