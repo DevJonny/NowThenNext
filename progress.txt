@@ -95,3 +95,20 @@ Started: 2026-02-07
   - Card ID pattern continues: `{categoryId}-{dinoName}` (e.g. `dinosaurs-trex`)
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-07 - US-055
+- Created ILearningCardsDataService interface and LearningCardsDataService implementation
+- Interface defines: GetAllCategoriesAsync, GetCardsByCategoryAsync, AddCustomCategoryAsync, AddCustomCardAsync, DeleteCustomCardAsync, DeleteCustomCategoryAsync
+- Service combines built-in data (from LearningCardsBuiltInData static class) with custom data persisted in localStorage under key 'learning-cards'
+- Built-in categories returned in fixed order (Shapes, Colours, Animals, Dinosaurs), custom categories ordered by CreatedAt
+- Delete/add methods guard against modifying built-in items
+- Registered as scoped service in Program.cs DI container
+- Files changed: src/NowThenNext/Services/ILearningCardsDataService.cs (new), src/NowThenNext/Services/LearningCardsDataService.cs (new), src/NowThenNext/Program.cs (modified)
+- **Learnings for future iterations:**
+  - Followed PhonicsProgressService pattern for localStorage access (IJSRuntime, try/catch, StorageQuotaExceededException)
+  - Used a private nested CustomLearningData class to structure the localStorage JSON (Categories list + Cards list)
+  - Built-in category lookup uses a switch expression for clean pattern matching
+  - GetCardsByCategoryAsync returns built-in cards directly when category is built-in, only queries localStorage for custom categories
+  - Service is scoped (not singleton) because it depends on IJSRuntime which requires per-circuit scoping in Blazor WASM
+  - Build passes clean with 0 warnings, 0 errors
+---
