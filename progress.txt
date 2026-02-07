@@ -25,3 +25,13 @@ Started: 2026-02-07
   - PhonicsModels.cs puts multiple related models in one file, so LearningCardModels.cs follows the same convention (both LearningCategory and LearningCard in one file)
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-07 - US-050
+- Added calm-cards colour tokens to Tailwind config in wwwroot/index.html
+- Colours: calm-cards (#D4937A), calm-cards-dark (#B87A62), calm-cards-light (#E0B0A0)
+- Files changed: src/NowThenNext/wwwroot/index.html (modified)
+- **Learnings for future iterations:**
+  - Tailwind colour tokens are nested under the 'calm' object, so they're used as `bg-calm-cards`, `text-calm-cards`, etc.
+  - Follow the pattern of existing colour groups (phonics, activity) - add comment, then three entries (base, dark, light)
+  - Build passes clean with 0 warnings, 0 errors
+---
