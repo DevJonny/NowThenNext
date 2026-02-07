@@ -185,3 +185,24 @@ Started: 2026-02-07
   - E2E tests pass: 74/74
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-07 - US-060
+- Added "Add Card" button tile (dashed border, + icon) to the card grid page, visible only for custom categories (not built-in)
+- Added modal form with image upload (InputFile component, accept='image/jpeg,image/png,image/webp') and word input (required, max 50 chars)
+- Image preview with clear button, compressed using existing compressImage JS interop (800px max, 0.7 quality)
+- Validation messages for missing word or missing image
+- Error handling for storage quota exceeded and general failures
+- Card saved via LearningCardsDataService.AddCustomCardAsync, grid refreshed after save, modal closed
+- IsCustomCategory computed property checks Category.IsBuiltIn to conditionally render the add card tile
+- Files changed: src/NowThenNext/Pages/LearningCardGrid.razor (modified), src/NowThenNext/Pages/LearningCardGrid.razor.cs (modified)
+- **Learnings for future iterations:**
+  - Reused Upload.razor patterns: InputFile with hidden class, base64 conversion via MemoryStream, compressImage JS interop, data URL extraction
+  - Added IJSRuntime injection to LearningCardGrid code-behind (was not needed before US-060)
+  - Modal follows existing pattern from LearningCategories (US-059): boolean flag, backdrop click to dismiss, @onclick:stopPropagation on content
+  - Card upload label uses <label for="card-file-upload"> linked to InputFile id to trigger the native file picker - avoids need for JS click interop
+  - Image file input uses accept="image/jpeg,image/png,image/webp" (specific MIME types) rather than accept="image/*" for better filtering
+  - box-sizing: border-box on card-form-input prevents width overflow inside modal (same learning from US-059)
+  - The add-card-tile uses aspect-ratio: 1 to match the learning-card tiles visually in the grid
+  - E2E tests pass: 74/74
+  - Build passes clean with 0 warnings, 0 errors
+---
