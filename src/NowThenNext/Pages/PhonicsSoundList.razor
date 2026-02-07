@@ -1,8 +1,4 @@
 @page "/phonics/{PhaseId:int}"
-@using NowThenNext.Models
-@inject NowThenNext.Services.IPhonicsDataService PhonicsData
-@inject NowThenNext.Services.IPhonicsProgressService PhonicsProgress
-@inject NavigationManager Navigation
 
 <PageTitle>@(Phase?.Name ?? "Phonics") - NowThenNext</PageTitle>
 
@@ -312,72 +308,3 @@
         }
     }
 </style>
-
-@code {
-    [Parameter]
-    public int PhaseId { get; set; }
-
-    private PhonicsPhase? Phase;
-    private (int Completed, int Total) Progress;
-    private readonly HashSet<string> CompletedIds = new();
-    private string? NextUnlockedId;
-    private bool ShowResetConfirmation;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await LoadState();
-    }
-
-    private async Task LoadState()
-    {
-        Phase = PhonicsData.GetPhase(PhaseId);
-        if (Phase == null) return;
-
-        Progress = await PhonicsProgress.GetPhaseProgressAsync(PhaseId);
-        NextUnlockedId = await PhonicsProgress.GetNextUnlockedGraphemeIdAsync(PhaseId);
-
-        var allCards = Phase.Weeks.SelectMany(w => w.Cards).ToList();
-        var completionResults = await Task.WhenAll(
-            allCards.Select(async card => (card.Id, IsCompleted: await PhonicsProgress.IsCompletedAsync(card.Id))));
-        CompletedIds.Clear();
-        CompletedIds.UnionWith(completionResults.Where(r => r.IsCompleted).Select(r => r.Id));
-    }
-
-    private CardState GetCardState(string cardId)
-    {
-        if (CompletedIds.Contains(cardId))
-            return CardState.Completed;
-        if (cardId == NextUnlockedId)
-            return CardState.Current;
-        return CardState.Locked;
-    }
-
-    private void ShowResetModal()
-    {
-        ShowResetConfirmation = true;
-    }
-
-    private void CancelReset()
-    {
-        ShowResetConfirmation = false;
-    }
-
-    private async Task ConfirmReset()
-    {
-        await PhonicsProgress.ResetPhaseAsync(PhaseId);
-        ShowResetConfirmation = false;
-        await LoadState();
-    }
-
-    private void GoBack()
-    {
-        Navigation.NavigateTo("phonics");
-    }
-
-    private enum CardState
-    {
-        Completed,
-        Current,
-        Locked
-    }
-}
