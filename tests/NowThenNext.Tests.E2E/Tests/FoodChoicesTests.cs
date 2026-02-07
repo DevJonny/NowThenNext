@@ -365,11 +365,8 @@ public class FoodChoicesTests
         }
 
         // Upload a test image
-        var fileChooserTask = page.WaitForFileChooserAsync();
-        await page.ClickAsync(".upload-area");
-        var fileChooser = await fileChooserTask;
         var testImagePath = await CreateTestImageAsync();
-        await fileChooser.SetFilesAsync(testImagePath);
+        await page.Locator("#file-upload").SetInputFilesAsync(testImagePath);
 
         // Wait for preview
         await page.WaitForSelectorAsync(".preview-image", new PageWaitForSelectorOptions { Timeout = 10000 });

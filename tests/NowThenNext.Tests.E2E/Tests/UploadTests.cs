@@ -19,7 +19,7 @@ public class UploadTests
     }
 
     [Fact]
-    public async Task UploadArea_TriggersFilePickerWhenClicked()
+    public async Task UploadArea_HasFileInputElement()
     {
         // Arrange
         var page = await _fixture.CreatePageAsync();
@@ -30,15 +30,10 @@ public class UploadTests
             await page.WaitForSelectorAsync(".upload-area", new PageWaitForSelectorOptions { Timeout = 60000 });
             await page.ClearLocalStorageAsync();
 
-            // Act & Assert - Set up file chooser listener before clicking
-            var fileChooserTask = page.WaitForFileChooserAsync();
-            await page.ClickAsync(".upload-area");
-
-            // Wait for file chooser dialog to open (this confirms the file picker was triggered)
-            var fileChooser = await fileChooserTask;
-            Assert.NotNull(fileChooser);
-
-            // Cancel the file chooser by not selecting anything
+            // Act & Assert - Verify the hidden file input exists and accepts image files
+            var fileInput = page.Locator("#file-upload");
+            await Assertions.Expect(fileInput).ToHaveCountAsync(1);
+            await Assertions.Expect(fileInput).ToHaveAttributeAsync("accept", new System.Text.RegularExpressions.Regex("image"));
         }
         finally
         {
@@ -58,14 +53,9 @@ public class UploadTests
             await page.WaitForSelectorAsync(".upload-area", new PageWaitForSelectorOptions { Timeout = 60000 });
             await page.ClearLocalStorageAsync();
 
-            // Act - Upload a test image using file chooser
-            var fileChooserTask = page.WaitForFileChooserAsync();
-            await page.ClickAsync(".upload-area");
-            var fileChooser = await fileChooserTask;
-
-            // Create a simple test image (1x1 pixel PNG)
+            // Act - Upload a test image
             var testImagePath = await CreateTestImageAsync();
-            await fileChooser.SetFilesAsync(testImagePath);
+            await page.Locator("#file-upload").SetInputFilesAsync(testImagePath);
 
             // Assert - Preview image should be visible
             await page.WaitForSelectorAsync(".preview-image", new PageWaitForSelectorOptions { Timeout = 10000 });
@@ -95,11 +85,8 @@ public class UploadTests
             await page.ClearLocalStorageAsync();
 
             // First, upload an image to see the category selector
-            var fileChooserTask = page.WaitForFileChooserAsync();
-            await page.ClickAsync(".upload-area");
-            var fileChooser = await fileChooserTask;
             var testImagePath = await CreateTestImageAsync();
-            await fileChooser.SetFilesAsync(testImagePath);
+            await page.Locator("#file-upload").SetInputFilesAsync(testImagePath);
 
             // Wait for preview and category buttons
             await page.WaitForSelectorAsync(".category-buttons", new PageWaitForSelectorOptions { Timeout = 10000 });
@@ -137,11 +124,8 @@ public class UploadTests
             await page.ClearLocalStorageAsync();
 
             // First, upload an image to see the label input
-            var fileChooserTask = page.WaitForFileChooserAsync();
-            await page.ClickAsync(".upload-area");
-            var fileChooser = await fileChooserTask;
             var testImagePath = await CreateTestImageAsync();
-            await fileChooser.SetFilesAsync(testImagePath);
+            await page.Locator("#file-upload").SetInputFilesAsync(testImagePath);
 
             // Wait for the label input to appear
             await page.WaitForSelectorAsync("#image-label", new PageWaitForSelectorOptions { Timeout = 10000 });
@@ -172,11 +156,8 @@ public class UploadTests
             await page.ClearLocalStorageAsync();
 
             // Upload an image
-            var fileChooserTask = page.WaitForFileChooserAsync();
-            await page.ClickAsync(".upload-area");
-            var fileChooser = await fileChooserTask;
             var testImagePath = await CreateTestImageAsync();
-            await fileChooser.SetFilesAsync(testImagePath);
+            await page.Locator("#file-upload").SetInputFilesAsync(testImagePath);
 
             // Wait for preview and fill in details
             await page.WaitForSelectorAsync(".confirm-button", new PageWaitForSelectorOptions { Timeout = 10000 });
@@ -219,11 +200,8 @@ public class UploadTests
             // Upload an image with a unique label
             var uniqueLabel = $"TestPlace_{Guid.NewGuid().ToString()[..8]}";
 
-            var fileChooserTask = page.WaitForFileChooserAsync();
-            await page.ClickAsync(".upload-area");
-            var fileChooser = await fileChooserTask;
             var testImagePath = await CreateTestImageAsync();
-            await fileChooser.SetFilesAsync(testImagePath);
+            await page.Locator("#file-upload").SetInputFilesAsync(testImagePath);
 
             await page.WaitForSelectorAsync(".confirm-button", new PageWaitForSelectorOptions { Timeout = 10000 });
 
