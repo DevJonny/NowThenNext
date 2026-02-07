@@ -1,327 +1,96 @@
 {
   "project": "NowThenNext",
-  "branchName": "ralph/phonics-flashcards",
-  "description": "Phonics Section - Visual flashcard experience for UK Letters and Sounds Phases 2-5 with sequential unlocking and progress tracking",
+  "branchName": "ralph/code-behind-migration",
+  "description": "Migrate remaining 5 Razor files with inline @code blocks to use code-behind (.razor.cs) files for separation of concerns",
   "userStories": [
     {
-      "id": "US-038",
-      "title": "Define phonics data models",
-      "description": "As a developer, I need data models for phonics phases, weeks, and grapheme cards so the app can represent phonics content.",
+      "id": "US-055",
+      "title": "Migrate PhonicsCard.razor to code-behind",
+      "description": "As a developer, I want PhonicsCard.razor to use a code-behind file so that C# logic is separated from markup.",
       "acceptanceCriteria": [
-        "Create PhonicsPhase model with: Id (int), Name (string), Description (string), list of PhonicsWeek",
-        "Create PhonicsWeek model with: WeekNumber (int), list of GraphemeCard",
-        "Create GraphemeCard model with: Id (string), Grapheme (string e.g. 'sh'), ExampleWord (string e.g. 'ship'), KeywordHint (string e.g. 'sh is for ship'), PhaseId (int), WeekNumber (int), OrderIndex (int)",
-        "Models created in src/NowThenNext/Models/ directory",
-        "Build passes"
+        "Create PhonicsCard.razor.cs as a partial class PhonicsCard (no ComponentBase inheritance needed - follow existing pattern in PlanDay.razor.cs)",
+        "Move all fields, parameters, methods, and lifecycle overrides from the @code block into the code-behind file",
+        "Move @inject directives to [Inject] private properties with = default! (e.g. [Inject] private NavigationManager Navigation { get; set; } = default!)",
+        "Move @using directives to using statements in the code-behind (keep @using for types referenced only in markup, check _Imports.razor for already-global usings)",
+        "Remove the @code { ... } block from PhonicsCard.razor",
+        "Keep @page directive, <PageTitle>, HTML/Razor markup, and <style> block in PhonicsCard.razor",
+        "Build passes",
+        "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 1,
-      "passes": true,
-      "notes": ""
+      "passes": false,
+      "notes": "Largest @code block (~105 lines). Reference PlanDay.razor.cs for the exact code-behind pattern: file-scoped namespace NowThenNext.Pages, public partial class, [Inject] private properties with = default!"
     },
     {
-      "id": "US-038b",
-      "title": "Create PhonicsDataService with Phase 2 and Phase 3 data",
-      "description": "As a developer, I need a static data service that returns Phase 2 and Phase 3 grapheme cards in the correct teaching order.",
+      "id": "US-056",
+      "title": "Migrate StorageWarningBanner.razor to code-behind",
+      "description": "As a developer, I want StorageWarningBanner.razor to use a code-behind file so that C# logic is separated from markup.",
       "acceptanceCriteria": [
-        "Create IPhonicsDataService interface with methods: GetAllPhases(), GetPhase(int phaseId), GetGraphemeCard(string cardId)",
-        "Create PhonicsDataService implementing IPhonicsDataService",
-        "Phase 2 data populated with 9 weeks of GPCs: Week 1 (s,a,t,p), Week 2 (i,n,m,d), Week 3 (g,o,c,k), Week 4 (ck,e,u,r), Week 5 (h,b,f,ff,l,ll,ss), Week 6 (assessment - skip or empty), Week 7 (v,w,x,y), Week 8 (z,zz,qu,ch), Week 9 (sh,th,ng,nk)",
-        "Phase 3 data populated with 4 weeks: Week 1 (ai,ee,igh,oa), Week 2 (oo-long,oo-short,ar,or), Week 3 (ur,ow,oi,ear), Week 4 (air,er)",
-        "GraphemeCard Id format: p{phase}-w{week}-{grapheme} (e.g. p2-w1-s, p3-w4-ai)",
-        "Each card has correct ExampleWord and KeywordHint",
-        "Register IPhonicsDataService in Program.cs as singleton",
-        "Build passes"
+        "Create StorageWarningBanner.razor.cs as a partial class StorageWarningBanner in namespace NowThenNext.Components",
+        "Move all fields, parameters, methods, and lifecycle overrides from the @code block into the code-behind file",
+        "Move @inject directives to [Inject] private properties with = default!",
+        "Move @using directives to using statements in the code-behind (keep @using for types referenced only in markup, check _Imports.razor for already-global usings)",
+        "Remove the @code { ... } block from StorageWarningBanner.razor",
+        "Keep HTML/Razor markup and <style> block in StorageWarningBanner.razor",
+        "Build passes",
+        "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 2,
-      "passes": true,
-      "notes": ""
+      "passes": false,
+      "notes": "Component in Components/ directory - namespace is NowThenNext.Components. ~69 lines of @code."
     },
     {
-      "id": "US-038c",
-      "title": "Add Phase 4 and Phase 5 data to PhonicsDataService",
-      "description": "As a developer, I need Phase 4 (consonant clusters) and Phase 5 (alternative spellings, split digraphs) data added to the PhonicsDataService.",
+      "id": "US-057",
+      "title": "Migrate PhonicsSoundList.razor to code-behind",
+      "description": "As a developer, I want PhonicsSoundList.razor to use a code-behind file so that C# logic is separated from markup.",
       "acceptanceCriteria": [
-        "Phase 4 data populated - Initial clusters: bl(black), br(bring), cl(clap), cr(crab), dr(drop), fl(flag), fr(frog), gl(glad), gr(grip), pl(plan), pr(press), sc(scam), sk(skip), sl(slip), sm(smell), sn(snap), sp(spot), st(stop), sw(swim), tr(trip), tw(twin); Final clusters: ft(left), lf(self), lp(help), lt(felt), mp(lamp), nd(sand), nk(pink), nt(tent), pt(kept), sk(task), st(best), xt(next)",
-        "Phase 5 data populated - New spellings: ay(play), ou(cloud), ie(pie), ea(each), oy(toy), ir(bird), ue(blue), aw(saw), wh(when), ph(phone), ew(new), oe(toe), au(August); Split digraphs: a_e(cake), e_e(these), i_e(time), o_e(home), u_e(tube)",
-        "Phase 5 alternative pronunciations included as separate cards: ow(snow/cow), ie(pie/field), ea(eat/bread), ch(chin/school/chef) etc.",
-        "Phase 5 silent letters included: wr(write), kn(knee), gn(gnome), mb(lamb)",
-        "All cards have correct ExampleWord and KeywordHint",
-        "Build passes"
+        "Create PhonicsSoundList.razor.cs as a partial class PhonicsSoundList in namespace NowThenNext.Pages",
+        "Move all fields, parameters, methods, enums (CardState), and lifecycle overrides from the @code block into the code-behind file",
+        "Move @inject directives to [Inject] private properties with = default!",
+        "Move @using directives to using statements in the code-behind (keep @using for types referenced only in markup, check _Imports.razor for already-global usings)",
+        "Remove the @code { ... } block from PhonicsSoundList.razor",
+        "Keep @page directive, <PageTitle>, HTML/Razor markup, and <style> block in PhonicsSoundList.razor",
+        "Build passes",
+        "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 3,
-      "passes": true,
-      "notes": ""
+      "passes": false,
+      "notes": "Contains a private enum CardState that must also move to the code-behind. ~68 lines of @code."
     },
     {
-      "id": "US-039",
-      "title": "Add phonics progress service",
-      "description": "As a developer, I need a service to track which graphemes a child has completed so progress persists across browser sessions.",
+      "id": "US-058",
+      "title": "Migrate PhonicsPhases.razor to code-behind",
+      "description": "As a developer, I want PhonicsPhases.razor to use a code-behind file so that C# logic is separated from markup.",
       "acceptanceCriteria": [
-        "Create IPhonicsProgressService interface",
-        "Create PhonicsProgressService that stores progress in localStorage (key: phonics-progress)",
-        "Method to mark a grapheme as completed by its Id",
-        "Method to check if a grapheme is completed",
-        "Method to get the next unlocked grapheme for a given phase",
-        "Method to get completion count and total count for a phase",
-        "Method to reset progress for a single phase",
-        "Method to reset all phonics progress",
-        "First grapheme in each phase is always unlocked",
-        "Completing a grapheme unlocks the next one in sequence within the same phase",
-        "Register IPhonicsProgressService in Program.cs as scoped service",
-        "Build passes"
+        "Create PhonicsPhases.razor.cs as a partial class PhonicsPhases in namespace NowThenNext.Pages",
+        "Move all fields, methods, and lifecycle overrides from the @code block into the code-behind file",
+        "Move @inject directives to [Inject] private properties with = default!",
+        "Move @using directives to using statements in the code-behind (keep @using for types referenced only in markup, check _Imports.razor for already-global usings)",
+        "Remove the @code { ... } block from PhonicsPhases.razor",
+        "Keep @page directive, <PageTitle>, HTML/Razor markup, and <style> block in PhonicsPhases.razor",
+        "Build passes",
+        "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 4,
-      "passes": true,
-      "notes": "Reuse existing localStorage JS interop pattern from LocalStorageImageService"
+      "passes": false,
+      "notes": "~42 lines of @code. PhaseProgress field is readonly Dictionary."
     },
     {
-      "id": "US-040",
-      "title": "Add Phonics button to home page",
-      "description": "As a user, I want a Phonics option on the home menu so I can access phonics flashcards.",
+      "id": "US-059",
+      "title": "Migrate ImageTile.razor to code-behind",
+      "description": "As a developer, I want ImageTile.razor to use a code-behind file so that C# logic is separated from markup.",
       "acceptanceCriteria": [
-        "New 'Phonics' group on the home page below the Activities group",
-        "Single 'Phonics' button with a book/letter icon (e.g. SVG of 'Aa' or open book)",
-        "Uses a new calm-phonics colour: soft blue #7BA3C4 (add to Tailwind config in index.html)",
-        "Also add calm-phonics-dark: #6890B0 and calm-phonics-light: #9BBDD6 to Tailwind config",
-        "Navigates to /phonics route",
-        "Consistent style with existing menu buttons (48px+ touch target, hover effects, rounded corners)",
+        "Create ImageTile.razor.cs as a partial class ImageTile in namespace NowThenNext.Components",
+        "Move all [Parameter] properties, EventCallback parameters, fields, and methods from the @code block into the code-behind file",
+        "Move @using directives to using statements in the code-behind (check _Imports.razor for already-global usings)",
+        "Remove the @code { ... } block from ImageTile.razor",
+        "Keep HTML/Razor markup and <style> block in ImageTile.razor",
         "Build passes",
-        "Verify in browser using dev-browser skill"
+        "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 5,
-      "passes": true,
-      "notes": "Follow the existing button group pattern in Home.razor"
-    },
-    {
-      "id": "US-041",
-      "title": "Phase selection screen",
-      "description": "As a parent/teacher, I want to choose which phonics phase to work on so I can match the child's current learning stage.",
-      "acceptanceCriteria": [
-        "New PhonicsPhases.razor page at /phonics route",
-        "Back button navigates to home (/)",
-        "Shows 4 phase cards: Phase 2, Phase 3, Phase 4, Phase 5",
-        "Each card shows: phase name, brief description (e.g. 'Single letters & first digraphs'), progress fraction (e.g. '12/30 sounds')",
-        "Each card has a progress bar showing completion percentage",
-        "Tapping a phase card navigates to /phonics/{phaseId}",
-        "Calm visual design: rounded cards, soft colours, generous spacing, calm-phonics colour accents",
-        "48px+ touch targets on phase cards",
-        "Build passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 6,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "US-042",
-      "title": "Sound list within a phase",
-      "description": "As a parent/teacher, I want to see all sounds in a phase organised by week, with clear indication of which are completed, current, and locked.",
-      "acceptanceCriteria": [
-        "New PhonicsSoundList.razor page at /phonics/{PhaseId} route",
-        "Back button navigates to /phonics",
-        "Header shows phase name and progress (e.g. 'Phase 2 - 8/30')",
-        "Sounds displayed in a grid, grouped by week with week labels",
-        "Three visual states: Completed (checkmark overlay, slightly muted), Current/next unlocked (highlighted border in calm-phonics colour), Locked (greyed out, lock icon, not tappable)",
-        "Tapping a completed or current sound navigates to /phonics/{phaseId}/card/{graphemeId}",
-        "Tapping a locked sound does nothing",
-        "Each sound tile shows the grapheme text (e.g. 'sh', 'ai')",
-        "48px+ touch targets",
-        "Build passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 7,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "US-043",
-      "title": "Flashcard display",
-      "description": "As a parent/teacher, I want to show a large, clear flashcard of a grapheme so the child can focus on the letter(s) and example word.",
-      "acceptanceCriteria": [
-        "New PhonicsCard.razor page at /phonics/{PhaseId}/card/{GraphemeId} route",
-        "Back button navigates to sound list (/phonics/{phaseId})",
-        "Large grapheme displayed prominently in the centre (minimum 72px font, bold)",
-        "Example word displayed below the grapheme with the target grapheme highlighted in calm-phonics colour",
-        "Keyword hint displayed in smaller text (e.g. 's is for sun')",
-        "Clean, minimal layout with no distractions",
-        "Calm background colour, high contrast text",
-        "Build passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 8,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "US-044",
-      "title": "Flashcard navigation and completion",
-      "description": "As a parent/teacher, I want to mark a sound as learned and move to the next one so the child progresses through the phase.",
-      "acceptanceCriteria": [
-        "'Got it!' button at bottom of flashcard (prominent, calm-phonics colour, 48px+ touch target)",
-        "Tapping 'Got it!' marks the current grapheme as completed via PhonicsProgressService",
-        "After marking complete, automatically navigates to the next unlocked grapheme's flashcard",
-        "If the completed grapheme was the last in the phase, show a 'Phase Complete!' message and navigate back to the sound list",
-        "'Previous' and 'Next' navigation arrows to browse already-completed sounds without changing completion state",
-        "Cannot navigate forward past the current unlocked sound",
-        "Build passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 9,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "US-045",
-      "title": "Reset phonics progress",
-      "description": "As a parent/teacher, I want to reset phonics progress so the child can start a phase again or start fresh.",
-      "acceptanceCriteria": [
-        "Reset All button on the phase selection screen (/phonics) to reset all progress",
-        "Reset Phase button on each phase's sound list (/phonics/{phaseId}) to reset that phase only",
-        "Both reset actions show a confirmation modal before proceeding (reuse existing modal pattern)",
-        "After reset, progress returns to the beginning (first sound unlocked only)",
-        "Build passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 10,
-      "passes": true,
-      "notes": "Follow the existing ShowDeleteConfirmation modal pattern with @onclick:stopPropagation"
-    },
-    {
-      "id": "US-046",
-      "title": "E2E tests for phonics phase selection",
-      "description": "As a developer, I need E2E tests for the phonics home button and phase selection screen.",
-      "acceptanceCriteria": [
-        "Test: Phonics button visible on home page and navigates to /phonics",
-        "Test: Phase selection screen shows all 4 phases (Phase 2, 3, 4, 5)",
-        "Test: Tapping a phase navigates to the sound list at /phonics/{phaseId}",
-        "Test: Back button on phase selection returns to home",
-        "All tests pass"
-      ],
-      "priority": 11,
-      "passes": true,
-      "notes": "Follow existing E2E test pattern: [Collection(\"BlazorApp\")], BlazorAppFixture, ClearLocalStorageAsync after navigate"
-    },
-    {
-      "id": "US-047",
-      "title": "E2E tests for sound list and flashcard",
-      "description": "As a developer, I need E2E tests for the sound list and flashcard display and navigation.",
-      "acceptanceCriteria": [
-        "Test: Sound list shows graphemes grouped by week",
-        "Test: First sound is unlocked and tappable, subsequent sounds are locked",
-        "Test: Tapping unlocked sound shows flashcard with grapheme, example word, and keyword",
-        "Test: 'Got it!' button marks sound as complete and shows next sound",
-        "Test: Completed sounds show checkmark on sound list",
-        "Test: Progress persists after navigating away and returning",
-        "All tests pass"
-      ],
-      "priority": 12,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "US-048",
-      "title": "E2E tests for progress reset",
-      "description": "As a developer, I need E2E tests for the reset progress functionality.",
-      "acceptanceCriteria": [
-        "Test: Reset single phase shows confirmation modal",
-        "Test: Confirming reset clears progress for that phase only",
-        "Test: Reset all shows confirmation modal",
-        "Test: Confirming reset all clears progress for all phases",
-        "Test: Cancelling reset does not clear progress",
-        "All tests pass"
-      ],
-      "priority": 13,
-      "passes": true,
-      "notes": ""
-    },
-    {
-      "id": "US-049",
-      "title": "E2E tests for flashcard navigation arrows",
-      "description": "As a developer, I need E2E tests covering the previous/next navigation arrows on the flashcard page so that US-044 has complete test coverage.",
-      "acceptanceCriteria": [
-        "Test: Previous arrow is disabled (has nav-disabled class and disabled attribute) on the first card in a phase",
-        "Test: Next arrow is disabled when the next card is locked (not yet completed or unlocked)",
-        "Test: After completing first sound and navigating to second, previous arrow navigates back to the first card",
-        "Test: On a completed card, next arrow navigates to the next card when it is completed or unlocked",
-        "Tests added to PhonicsTests.cs following existing patterns (CreatePageAsync, try/finally with CloseAsync, ClearLocalStorageAsync after first navigation)",
-        "All new and existing E2E tests pass",
-        "Build passes"
-      ],
-      "priority": 14,
-      "passes": true,
-      "notes": "PR #3 review comment: missing test coverage for prev/next navigation arrows (US-044 gap)"
-    },
-    {
-      "id": "US-050",
-      "title": "Extract StorageQuotaExceededException and add quota error handling to PhonicsProgressService",
-      "description": "As a developer, I want StorageQuotaExceededException moved to a shared location and SaveCompletedSetAsync in PhonicsProgressService to handle localStorage quota exceeded errors consistently with LocalStorageImageService.",
-      "acceptanceCriteria": [
-        "Extract StorageQuotaExceededException from LocalStorageImageService.cs into a new shared file src/NowThenNext/Services/StorageQuotaExceededException.cs",
-        "Update LocalStorageImageService.cs to remove the inline exception class and reference the shared file instead",
-        "SaveCompletedSetAsync in PhonicsProgressService.cs wraps the localStorage.setItem call in a try-catch block",
-        "Catches JSException where the message contains QuotaExceededError or quota (matching the pattern in LocalStorageImageService.SaveAllImagesAsync)",
-        "Throws StorageQuotaExceededException (from the shared file) with a descriptive message",
-        "General exceptions are caught to prevent unhandled errors breaking the UI",
-        "Build passes"
-      ],
-      "priority": 15,
-      "passes": true,
-      "notes": "PR #3 review comment: SaveCompletedSetAsync should handle quota exceeded like LocalStorageImageService does. Extract the exception to a shared file since two services now use it."
-    },
-    {
-      "id": "US-051",
-      "title": "Use explicit LINQ filtering in GetNextUnlockedGraphemeIdAsync",
-      "description": "As a developer, I want GetNextUnlockedGraphemeIdAsync to use explicit LINQ FirstOrDefault with a predicate instead of a foreach loop with an implicit filter.",
-      "acceptanceCriteria": [
-        "Replace the foreach loop in GetNextUnlockedGraphemeIdAsync (PhonicsProgressService.cs) with: var nextCard = allCards.FirstOrDefault(card => !completed.Contains(card.Id))",
-        "Return nextCard?.Id instead of returning inside the loop",
-        "Remove the foreach loop and the 'All completed return null' comment",
-        "Behaviour is unchanged: returns the first non-completed card ID or null if all completed",
-        "Build passes"
-      ],
-      "priority": 16,
-      "passes": true,
-      "notes": "PR #3 review comment: foreach loop implicitly filters, use explicit LINQ filtering"
-    },
-    {
-      "id": "US-052",
-      "title": "Use explicit LINQ filtering in PhonicsSoundList LoadState",
-      "description": "As a developer, I want the LoadState method in PhonicsSoundList.razor to use explicit LINQ filtering with Task.WhenAll instead of a foreach loop with an implicit filter.",
-      "acceptanceCriteria": [
-        "Replace the foreach loop in LoadState (PhonicsSoundList.razor) that iterates cards and conditionally adds to CompletedIds",
-        "Use Task.WhenAll with Select to check completion of all cards in parallel",
-        "Filter completed results with .Where() and project to a HashSet<string>",
-        "Clear and repopulate CompletedIds (or reassign if no longer readonly - coordinate with US-054)",
-        "Behaviour is unchanged: CompletedIds contains exactly the IDs of completed cards",
-        "Build passes"
-      ],
-      "priority": 17,
-      "passes": true,
-      "notes": "PR #3 review comment: foreach loop implicitly filters, use explicit LINQ with Task.WhenAll. Note: if CompletedIds is made readonly in US-054, use Clear() + UnionWith() instead of reassignment"
-    },
-    {
-      "id": "US-053",
-      "title": "Make PhaseProgress field readonly in PhonicsPhases.razor",
-      "description": "As a developer, I want the PhaseProgress dictionary field in PhonicsPhases.razor to be declared readonly since it is only mutated via dictionary operations, not reassigned.",
-      "acceptanceCriteria": [
-        "Change 'private Dictionary<int, (int Completed, int Total)> PhaseProgress = new();' to 'private readonly Dictionary<int, (int Completed, int Total)> PhaseProgress = new();' in PhonicsPhases.razor",
-        "Build passes"
-      ],
-      "priority": 18,
-      "passes": true,
-      "notes": "PR #3 review comment: field can be readonly"
-    },
-    {
-      "id": "US-054",
-      "title": "Make CompletedIds field readonly in PhonicsSoundList.razor",
-      "description": "As a developer, I want the CompletedIds HashSet field in PhonicsSoundList.razor to be declared readonly since it is only mutated via set operations, not reassigned.",
-      "acceptanceCriteria": [
-        "Change 'private HashSet<string> CompletedIds = new();' to 'private readonly HashSet<string> CompletedIds = new();' in PhonicsSoundList.razor",
-        "Build passes"
-      ],
-      "priority": 19,
-      "passes": true,
-      "notes": "PR #3 review comment: field can be readonly. Must be done before or coordinated with US-052 (LINQ refactor uses Clear + UnionWith if readonly)"
+      "passes": false,
+      "notes": "Component in Components/ directory - namespace is NowThenNext.Components. ~37 lines of @code. Has [Parameter] EventCallback properties."
     }
   ]
 }
