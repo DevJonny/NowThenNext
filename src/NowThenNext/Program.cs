@@ -11,5 +11,6 @@ builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.
 builder.Services.AddScoped<IImageStorageService, LocalStorageImageService>();
 builder.Services.AddSingleton<IPhonicsDataService, PhonicsDataService>();
 builder.Services.AddScoped<IPhonicsProgressService, PhonicsProgressService>();
+builder.Services.AddScoped<ILearningCardsDataService, LearningCardsDataService>();
 
 await builder.Build().RunAsync();
