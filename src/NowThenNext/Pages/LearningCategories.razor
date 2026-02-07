@@ -1,0 +1,141 @@
+@page "/learning"
+
+<PageTitle>Learning Cards - NowThenNext</PageTitle>
+
+<div class="flex flex-col min-h-screen">
+    <!-- Header -->
+    <header class="w-full max-w-5xl mx-auto px-6 sm:px-8 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <button @onclick="GoBack" class="back-button" aria-label="Go back">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h1 class="text-2xl sm:text-3xl font-bold text-calm-cards">
+                    Learning Cards
+                </h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Category Tiles -->
+    <div class="w-full max-w-5xl mx-auto px-6 py-8 sm:px-8 sm:py-10 flex-1">
+        <div class="category-grid">
+            @foreach (var category in Categories)
+            {
+                <a href="learning/@category.Id" class="category-tile">
+                    <span class="category-emoji">@category.Emoji</span>
+                    <span class="category-name">@category.Name</span>
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .back-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        background-color: white;
+        color: #D4937A;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .back-button:hover {
+        background-color: #F0EDE8;
+    }
+
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        padding-bottom: 2rem;
+    }
+
+    .category-tile {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        padding: 1.5rem 1rem;
+        background-color: white;
+        border-radius: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        min-height: 8rem;
+    }
+
+    .category-tile:hover {
+        border-color: #D4937A;
+        box-shadow: 0 4px 12px rgba(212, 147, 122, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .category-tile:active {
+        transform: translateY(0);
+    }
+
+    .category-emoji {
+        font-size: 2.5rem;
+        line-height: 1;
+    }
+
+    .category-name {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #3D4852;
+        text-align: center;
+    }
+
+    @@media (min-width: 768px) {
+        .category-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+
+        .category-tile {
+            padding: 2rem 1.25rem;
+            min-height: 10rem;
+        }
+
+        .category-emoji {
+            font-size: 3rem;
+        }
+
+        .category-name {
+            font-size: 1.25rem;
+        }
+    }
+
+    @@media (min-width: 1024px) {
+        .category-grid {
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .category-tile {
+            padding: 2.25rem 1.5rem;
+            min-height: 11rem;
+        }
+
+        .category-emoji {
+            font-size: 3.5rem;
+        }
+
+        .category-name {
+            font-size: 1.375rem;
+        }
+    }
+</style>
