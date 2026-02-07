@@ -35,3 +35,33 @@ Started: 2026-02-07
   - Follow the pattern of existing colour groups (phonics, activity) - add comment, then three entries (base, dark, light)
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-07 - US-051
+- Created LearningCardsBuiltInData static class in Services/LearningCardsBuiltInData.cs
+- Shapes category: id='shapes', name='Shapes', emoji='🔷', isBuiltIn=true
+- 8 shape cards: circle, square, triangle, rectangle, star, heart, diamond, oval
+- Each card has hand-crafted inline SVG with varied calm colours (teal, green, coral, blue, amber, phonics-light, cards-dark)
+- Files changed: src/NowThenNext/Services/LearningCardsBuiltInData.cs (new)
+- **Learnings for future iterations:**
+  - Static class pattern works well for built-in data - no DI needed, just static methods
+  - SVG strings use raw string literals (triple quotes) for readability
+  - Card IDs follow pattern: `{categoryId}-{shapeName}` (e.g. `shapes-circle`)
+  - Used varied colours from the calm palette for visual interest: #5B9A9A (teal), #7BA893 (green), #D4937A (coral), #7BA3C4 (blue), #D4A06A (amber), #E0B0A0 (cards-light), #9BBDD6 (phonics-light), #B87A62 (cards-dark)
+  - CreatedAt set to a fixed date (2026-01-01) so built-in categories always sort before custom ones
+  - Build passes clean with 0 warnings, 0 errors
+---
+
+## 2026-02-07 - US-052
+- Added Colours category and 10 colour cards to LearningCardsBuiltInData
+- Colours category: id='colours', name='Colours', emoji='🎨', isBuiltIn=true
+- 10 colour cards: red, blue, green, yellow, orange, purple, pink, brown, black, white
+- Each card uses a rounded rectangle SVG swatch (rx="12") filled with the actual teaching colour
+- White card includes a light grey stroke so it's visible against white backgrounds
+- Files changed: src/NowThenNext/Services/LearningCardsBuiltInData.cs (modified)
+- **Learnings for future iterations:**
+  - Colour cards use real representative colours, not the calm palette (per PRD requirement)
+  - Colour hex values used: #E74C3C (red), #3498DB (blue), #2ECC71 (green), #F1C40F (yellow), #E67E22 (orange), #9B59B6 (purple), #E91E9C (pink), #8B4513 (brown), #2C3E50 (black), #FFFFFF (white)
+  - White/light colours need a stroke outline to remain visible - used stroke="#CCCCCC" stroke-width="2"
+  - Card ID pattern continues: `{categoryId}-{colourName}` (e.g. `colours-red`)
+  - Build passes clean with 0 warnings, 0 errors
+---
