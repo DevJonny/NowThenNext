@@ -15,7 +15,7 @@
         "Remove the @code { ... } block from PhonicsCard.razor",
         "Keep @page directive, <PageTitle>, HTML/Razor markup, and <style> block in PhonicsCard.razor",
         "Build passes",
-        "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
+        "All E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 1,
       "passes": true,
@@ -33,7 +33,7 @@
         "Remove the @code { ... } block from StorageWarningBanner.razor",
         "Keep HTML/Razor markup and <style> block in StorageWarningBanner.razor",
         "Build passes",
-        "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
+        "All E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 2,
       "passes": true,
@@ -51,7 +51,7 @@
         "Remove the @code { ... } block from PhonicsSoundList.razor",
         "Keep @page directive, <PageTitle>, HTML/Razor markup, and <style> block in PhonicsSoundList.razor",
         "Build passes",
-        "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
+        "All E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 3,
       "passes": true,
@@ -69,7 +69,7 @@
         "Remove the @code { ... } block from PhonicsPhases.razor",
         "Keep @page directive, <PageTitle>, HTML/Razor markup, and <style> block in PhonicsPhases.razor",
         "Build passes",
-        "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
+        "All E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 4,
       "passes": true,
@@ -86,7 +86,7 @@
         "Remove the @code { ... } block from ImageTile.razor",
         "Keep HTML/Razor markup and <style> block in ImageTile.razor",
         "Build passes",
-        "All 73 E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
+        "All E2E tests pass (dotnet test tests/NowThenNext.Tests.E2E)"
       ],
       "priority": 5,
       "passes": true,
