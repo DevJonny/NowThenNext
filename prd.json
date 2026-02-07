@@ -73,7 +73,7 @@
         "Typecheck passes"
       ],
       "priority": 5,
-      "passes": false,
+      "passes": true,
       "notes": "Keep SVGs simple - basic body shapes, key features (ears, tail, trunk). Use friendly, warm colours. These don't need to be photorealistic."
     },
     {
