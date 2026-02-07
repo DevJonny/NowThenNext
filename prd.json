@@ -27,7 +27,7 @@
         "Typecheck passes"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "notes": "Tailwind config is in wwwroot/index.html inline. Follow the pattern used for calm-phonics colours."
     },
     {
