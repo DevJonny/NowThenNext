@@ -89,4 +89,104 @@ public static class LearningCardsBuiltInData
             ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="50" rx="45" ry="30" fill="#B87A62"/></svg>"""
         }
     ];
+
+    /// <summary>
+    /// Returns the built-in Colours category with all colour cards.
+    /// </summary>
+    public static LearningCategory GetColoursCategory() => new()
+    {
+        Id = "colours",
+        Name = "Colours",
+        Emoji = "\ud83c\udfa8",
+        IsBuiltIn = true,
+        CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+    };
+
+    /// <summary>
+    /// Returns all cards for the built-in Colours category.
+    /// Each card displays a rounded rectangle swatch in the actual teaching colour.
+    /// </summary>
+    public static List<LearningCard> GetColoursCards() =>
+    [
+        new LearningCard
+        {
+            Id = "colours-red",
+            CategoryId = "colours",
+            Word = "Red",
+            IsBuiltIn = true,
+            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="12" fill="#E74C3C"/></svg>"""
+        },
+        new LearningCard
+        {
+            Id = "colours-blue",
+            CategoryId = "colours",
+            Word = "Blue",
+            IsBuiltIn = true,
+            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="12" fill="#3498DB"/></svg>"""
+        },
+        new LearningCard
+        {
+            Id = "colours-green",
+            CategoryId = "colours",
+            Word = "Green",
+            IsBuiltIn = true,
+            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="12" fill="#2ECC71"/></svg>"""
+        },
+        new LearningCard
+        {
+            Id = "colours-yellow",
+            CategoryId = "colours",
+            Word = "Yellow",
+            IsBuiltIn = true,
+            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="12" fill="#F1C40F"/></svg>"""
+        },
+        new LearningCard
+        {
+            Id = "colours-orange",
+            CategoryId = "colours",
+            Word = "Orange",
+            IsBuiltIn = true,
+            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="12" fill="#E67E22"/></svg>"""
+        },
+        new LearningCard
+        {
+            Id = "colours-purple",
+            CategoryId = "colours",
+            Word = "Purple",
+            IsBuiltIn = true,
+            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="12" fill="#9B59B6"/></svg>"""
+        },
+        new LearningCard
+        {
+            Id = "colours-pink",
+            CategoryId = "colours",
+            Word = "Pink",
+            IsBuiltIn = true,
+            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="12" fill="#E91E9C"/></svg>"""
+        },
+        new LearningCard
+        {
+            Id = "colours-brown",
+            CategoryId = "colours",
+            Word = "Brown",
+            IsBuiltIn = true,
+            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="12" fill="#8B4513"/></svg>"""
+        },
+        new LearningCard
+        {
+            Id = "colours-black",
+            CategoryId = "colours",
+            Word = "Black",
+            IsBuiltIn = true,
+            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="12" fill="#2C3E50"/></svg>"""
+        },
+        new LearningCard
+        {
+            Id = "colours-white",
+            CategoryId = "colours",
+            Word = "White",
+            IsBuiltIn = true,
+            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" rx="12" fill="#FFFFFF" stroke="#CCCCCC" stroke-width="2"/></svg>"""
+        }
+    ];
 }
