@@ -43,16 +43,14 @@ public partial class StorageWarningBanner
 
             // Reset dismissed state if we need to show the banner again
             // (only if storage was previously below threshold and now above)
-            if (ShowBanner)
-            {
-                // Don't auto-reset dismissed state - let the page decide
-                StateHasChanged();
-            }
+            // Don't auto-reset dismissed state - let the page decide
+            StateHasChanged();
         }
         catch
         {
             // Silently fail - don't show banner if we can't get storage info
             ShowBanner = false;
+            StateHasChanged();
         }
     }
 

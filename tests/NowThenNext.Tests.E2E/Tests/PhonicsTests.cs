@@ -492,7 +492,7 @@ public class PhonicsTests
 
             // Assert - previous arrow has nav-disabled class and is disabled
             var prevButton = page.Locator("button[aria-label='Previous sound']");
-            await Assertions.Expect(prevButton).ToHaveAttributeAsync("disabled", "", new LocatorAssertionsToHaveAttributeOptions { Timeout = 10000 });
+            await Assertions.Expect(prevButton).ToBeDisabledAsync(new LocatorAssertionsToBeDisabledOptions { Timeout = 10000 });
             await Assertions.Expect(prevButton).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nav-disabled"));
         }
         finally
@@ -520,7 +520,7 @@ public class PhonicsTests
 
             // Assert - next arrow has nav-disabled class and is disabled
             var nextButton = page.Locator("button[aria-label='Next sound']");
-            await Assertions.Expect(nextButton).ToHaveAttributeAsync("disabled", "", new LocatorAssertionsToHaveAttributeOptions { Timeout = 10000 });
+            await Assertions.Expect(nextButton).ToBeDisabledAsync(new LocatorAssertionsToBeDisabledOptions { Timeout = 10000 });
             await Assertions.Expect(nextButton).ToHaveClassAsync(new System.Text.RegularExpressions.Regex("nav-disabled"));
         }
         finally
