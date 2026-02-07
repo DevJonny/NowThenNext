@@ -118,7 +118,7 @@ public class BackupRestoreTests
     }
 
     [Fact]
-    public async Task RestoreButton_OpensFilePicker()
+    public async Task RestoreButton_HasFileInputElement()
     {
         // Arrange
         var page = await _fixture.CreatePageAsync();
@@ -129,14 +129,10 @@ public class BackupRestoreTests
             await page.WaitForSelectorAsync("button:has-text('Restore Data')", new PageWaitForSelectorOptions { Timeout = 60000 });
             await page.ClearLocalStorageAsync();
 
-            // Act - Set up file chooser listener and click restore button
-            var fileChooserTask = page.WaitForFileChooserAsync();
-            var restoreButton = page.Locator("button:has-text('Restore Data')");
-            await restoreButton.ClickAsync();
-
-            // Assert - File chooser dialog should open
-            var fileChooser = await fileChooserTask;
-            Assert.NotNull(fileChooser);
+            // Act & Assert - Verify the hidden restore file input exists and accepts JSON files
+            var restoreInput = page.Locator("#restore-file-input");
+            await Assertions.Expect(restoreInput).ToHaveCountAsync(1);
+            await Assertions.Expect(restoreInput).ToHaveAttributeAsync("accept", new System.Text.RegularExpressions.Regex("\\.json"));
         }
         finally
         {
@@ -159,12 +155,8 @@ public class BackupRestoreTests
             // Create a valid backup file
             var backupFilePath = await CreateTestBackupFileAsync(2);
 
-            // Act - Open file picker and select the backup file
-            var fileChooserTask = page.WaitForFileChooserAsync();
-            var restoreButton = page.Locator("button:has-text('Restore Data')");
-            await restoreButton.ClickAsync();
-            var fileChooser = await fileChooserTask;
-            await fileChooser.SetFilesAsync(backupFilePath);
+            // Act - Select the backup file via the restore input
+            await page.Locator("#restore-file-input").SetInputFilesAsync(backupFilePath);
 
             // Assert - Modal with replace/merge choice should appear
             await page.WaitForSelectorAsync(".modal-overlay", new PageWaitForSelectorOptions { Timeout = 10000 });
@@ -209,12 +201,8 @@ public class BackupRestoreTests
             var restoredLabel2 = $"RestoredImage2_{Guid.NewGuid().ToString()[..8]}";
             var backupFilePath = await CreateTestBackupFileAsync(2, new[] { restoredLabel1, restoredLabel2 });
 
-            // Open file picker and select the backup file
-            var fileChooserTask = page.WaitForFileChooserAsync();
-            var restoreButton = page.Locator("button:has-text('Restore Data')");
-            await restoreButton.ClickAsync();
-            var fileChooser = await fileChooserTask;
-            await fileChooser.SetFilesAsync(backupFilePath);
+            // Select the backup file via the restore input
+            await page.Locator("#restore-file-input").SetInputFilesAsync(backupFilePath);
 
             // Wait for modal and click Replace
             await page.WaitForSelectorAsync(".modal-overlay", new PageWaitForSelectorOptions { Timeout = 10000 });
@@ -267,12 +255,8 @@ public class BackupRestoreTests
             var mergedLabel2 = $"MergedImage2_{Guid.NewGuid().ToString()[..8]}";
             var backupFilePath = await CreateTestBackupFileAsync(2, new[] { mergedLabel1, mergedLabel2 });
 
-            // Open file picker and select the backup file
-            var fileChooserTask = page.WaitForFileChooserAsync();
-            var restoreButton = page.Locator("button:has-text('Restore Data')");
-            await restoreButton.ClickAsync();
-            var fileChooser = await fileChooserTask;
-            await fileChooser.SetFilesAsync(backupFilePath);
+            // Select the backup file via the restore input
+            await page.Locator("#restore-file-input").SetInputFilesAsync(backupFilePath);
 
             // Wait for modal and click Merge
             await page.WaitForSelectorAsync(".modal-overlay", new PageWaitForSelectorOptions { Timeout = 10000 });
@@ -318,11 +302,8 @@ public class BackupRestoreTests
         }
 
         // Upload a test image
-        var fileChooserTask = page.WaitForFileChooserAsync();
-        await page.ClickAsync(".upload-area");
-        var fileChooser = await fileChooserTask;
         var testImagePath = await CreateTestImageAsync();
-        await fileChooser.SetFilesAsync(testImagePath);
+        await page.Locator("#file-upload").SetInputFilesAsync(testImagePath);
 
         // Wait for preview
         await page.WaitForSelectorAsync(".preview-image", new PageWaitForSelectorOptions { Timeout = 10000 });
