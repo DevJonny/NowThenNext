@@ -205,7 +205,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 12,
-      "passes": false,
+      "passes": true,
       "notes": "Reuse the image upload pattern from Upload.razor. Custom card ImageData is base64 (not SVG)."
     },
     {
