@@ -29,8 +29,75 @@
                     <span class="category-name">@category.Name</span>
                 </a>
             }
+
+            <!-- Add Category Tile -->
+            <button class="category-tile add-category-tile" @onclick="OpenAddCategoryModal" aria-label="Add Category">
+                <span class="category-emoji add-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 sm:w-12 sm:h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                </span>
+                <span class="category-name">Add Category</span>
+            </button>
         </div>
     </div>
+
+    <!-- Add Category Modal -->
+    @if (ShowAddCategoryModal)
+    {
+        <div class="modal-overlay" @onclick="CloseAddCategoryModal">
+            <div class="modal-content" @onclick:stopPropagation="true">
+                <h3 class="modal-title">New Category</h3>
+
+                <!-- Category Name Input -->
+                <div class="form-group">
+                    <label class="form-label" for="categoryName">Category Name</label>
+                    <input id="categoryName"
+                           type="text"
+                           class="form-input"
+                           placeholder="e.g. Vehicles, Fruits..."
+                           @bind="NewCategoryName"
+                           @bind:event="oninput"
+                           maxlength="30" />
+                    @if (ShowNameValidation && string.IsNullOrWhiteSpace(NewCategoryName))
+                    {
+                        <p class="validation-message">Please enter a category name</p>
+                    }
+                </div>
+
+                <!-- Emoji Picker -->
+                <div class="form-group">
+                    <label class="form-label">Choose an Emoji</label>
+                    <div class="emoji-grid">
+                        @foreach (var emoji in AvailableEmojis)
+                        {
+                            <button class="emoji-option @(SelectedEmoji == emoji ? "emoji-selected" : "")"
+                                    @onclick="() => SelectEmoji(emoji)"
+                                    aria-label="Select @emoji emoji">
+                                @emoji
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <!-- Selected Preview -->
+                <div class="preview-row">
+                    <span class="preview-emoji">@(string.IsNullOrEmpty(SelectedEmoji) ? DefaultEmoji : SelectedEmoji)</span>
+                    <span class="preview-name">@(string.IsNullOrWhiteSpace(NewCategoryName) ? "Category Name" : NewCategoryName)</span>
+                </div>
+
+                <!-- Modal Buttons -->
+                <div class="modal-buttons">
+                    <button @onclick="CloseAddCategoryModal" class="modal-cancel-button">
+                        Cancel
+                    </button>
+                    <button @onclick="SaveNewCategory" class="modal-save-button">
+                        Create
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 <style>
@@ -97,6 +164,197 @@
         font-weight: 700;
         color: #3D4852;
         text-align: center;
+    }
+
+    .add-category-tile {
+        border: 2px dashed #D4937A;
+        background-color: #FDF8F6;
+        color: #D4937A;
+    }
+
+    .add-category-tile:hover {
+        background-color: #FAF0EC;
+        border-color: #B87A62;
+        box-shadow: 0 4px 12px rgba(212, 147, 122, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .add-category-tile:active {
+        transform: translateY(0);
+    }
+
+    .add-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #D4937A;
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(61, 72, 82, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        z-index: 50;
+    }
+
+    .modal-content {
+        background-color: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        max-width: 480px;
+        width: 100%;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #3D4852;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #606F7B;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        font-size: 1.125rem;
+        font-family: 'Nunito', sans-serif;
+        border: 2px solid #E2DFD8;
+        border-radius: 0.75rem;
+        outline: none;
+        transition: border-color 0.2s ease;
+        color: #3D4852;
+        background-color: white;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus {
+        border-color: #D4937A;
+    }
+
+    .form-input::placeholder {
+        color: #B0ADA6;
+    }
+
+    .validation-message {
+        margin-top: 0.375rem;
+        font-size: 0.875rem;
+        color: #D4A06A;
+        font-weight: 600;
+    }
+
+    .emoji-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.5rem;
+    }
+
+    .emoji-option {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        aspect-ratio: 1;
+        min-height: 3rem;
+        font-size: 1.5rem;
+        border: 2px solid transparent;
+        border-radius: 0.75rem;
+        background-color: #F9F7F3;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .emoji-option:hover {
+        background-color: #F0EDE8;
+        border-color: #E2DFD8;
+    }
+
+    .emoji-selected {
+        border-color: #D4937A;
+        background-color: #FDF8F6;
+        box-shadow: 0 0 0 2px rgba(212, 147, 122, 0.2);
+    }
+
+    .preview-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        background-color: #F9F7F3;
+        border-radius: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .preview-emoji {
+        font-size: 2rem;
+        line-height: 1;
+    }
+
+    .preview-name {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #3D4852;
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .modal-cancel-button {
+        flex: 1;
+        padding: 0.875rem 1rem;
+        min-height: 3rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background-color: #F0EDE8;
+        color: #3D4852;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .modal-cancel-button:hover {
+        background-color: #E2DFD8;
+    }
+
+    .modal-save-button {
+        flex: 1;
+        padding: 0.875rem 1rem;
+        min-height: 3rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background-color: #D4937A;
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .modal-save-button:hover {
+        background-color: #B87A62;
     }
 
     @@media (min-width: 768px) {
