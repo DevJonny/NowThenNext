@@ -49,26 +49,14 @@ public partial class LearningCardGrid
         var allCategories = await LearningCardsData.GetAllCategoriesAsync();
         Category = allCategories.FirstOrDefault(c => c.Id == CategoryId);
 
-        if (Category != null)
-        {
-            Cards = await LearningCardsData.GetCardsByCategoryAsync(CategoryId);
-        }
-        else
-        {
-            Cards = new();
-        }
+        Cards = Category != null
+            ? await LearningCardsData.GetCardsByCategoryAsync(CategoryId)
+            : new();
     }
 
     private void ToggleCard(string cardId)
     {
-        if (RevealedCardId == cardId)
-        {
-            RevealedCardId = null;
-        }
-        else
-        {
-            RevealedCardId = cardId;
-        }
+        RevealedCardId = RevealedCardId == cardId ? null : cardId;
     }
 
     private void GoBack()
@@ -207,19 +195,12 @@ public partial class LearningCardGrid
                 CompressionQuality
             );
 
-            // Extract base64 from data URL
-            var compressedBase64 = compressedDataUrl;
-            var commaIndex = compressedDataUrl.IndexOf(',');
-            if (commaIndex >= 0)
-            {
-                compressedBase64 = compressedDataUrl.Substring(commaIndex + 1);
-            }
-
+            // Store full data URL (including MIME type) to preserve correct rendering
             var card = new LearningCard
             {
                 Id = Guid.NewGuid().ToString(),
                 CategoryId = CategoryId,
-                ImageData = compressedBase64,
+                ImageData = compressedDataUrl,
                 Word = NewCardWord.Trim(),
                 IsBuiltIn = false
             };

@@ -130,6 +130,7 @@ public class LearningCardsDataService : ILearningCardsDataService
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Failed to save learning cards data: {ex.Message}");
+            throw;
         }
     }
 

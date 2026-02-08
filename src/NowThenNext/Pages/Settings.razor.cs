@@ -338,6 +338,7 @@ public partial class Settings
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Failed to restore learning cards data: {ex.Message}");
+            throw;
         }
     }
 
@@ -358,19 +359,21 @@ public partial class Settings
 
         if (existingRoot.TryGetProperty("Categories", out var existingCategories))
         {
-            foreach (var cat in existingCategories.EnumerateArray())
+            foreach (var cat in existingCategories.EnumerateArray()
+                .Where(c => c.TryGetProperty("Id", out _)))
             {
-                if (cat.TryGetProperty("Id", out var idProp))
-                    existingCategoryIds.Add(idProp.GetString() ?? "");
+                cat.TryGetProperty("Id", out var idProp);
+                existingCategoryIds.Add(idProp.GetString() ?? "");
             }
         }
 
         if (existingRoot.TryGetProperty("Cards", out var existingCards))
         {
-            foreach (var card in existingCards.EnumerateArray())
+            foreach (var card in existingCards.EnumerateArray()
+                .Where(c => c.TryGetProperty("Id", out _)))
             {
-                if (card.TryGetProperty("Id", out var idProp))
-                    existingCardIds.Add(idProp.GetString() ?? "");
+                card.TryGetProperty("Id", out var idProp);
+                existingCardIds.Add(idProp.GetString() ?? "");
             }
         }
 
@@ -389,13 +392,11 @@ public partial class Settings
         }
         if (backupRoot.TryGetProperty("Categories", out var backupCats))
         {
-            foreach (var cat in backupCats.EnumerateArray())
+            foreach (var cat in backupCats.EnumerateArray()
+                .Where(c => c.TryGetProperty("Id", out var id) &&
+                    !existingCategoryIds.Contains(id.GetString() ?? "")))
             {
-                if (cat.TryGetProperty("Id", out var idProp) &&
-                    !existingCategoryIds.Contains(idProp.GetString() ?? ""))
-                {
-                    cat.WriteTo(writer);
-                }
+                cat.WriteTo(writer);
             }
         }
         writer.WriteEndArray();
@@ -409,13 +410,11 @@ public partial class Settings
         }
         if (backupRoot.TryGetProperty("Cards", out var backupCards))
         {
-            foreach (var card in backupCards.EnumerateArray())
+            foreach (var card in backupCards.EnumerateArray()
+                .Where(c => c.TryGetProperty("Id", out var id) &&
+                    !existingCardIds.Contains(id.GetString() ?? "")))
             {
-                if (card.TryGetProperty("Id", out var idProp) &&
-                    !existingCardIds.Contains(idProp.GetString() ?? ""))
-                {
-                    card.WriteTo(writer);
-                }
+                card.WriteTo(writer);
             }
         }
         writer.WriteEndArray();
