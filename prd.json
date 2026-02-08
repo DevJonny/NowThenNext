@@ -224,7 +224,7 @@
         "Verify in browser using dev-browser skill"
       ],
       "priority": 13,
-      "passes": false,
+      "passes": true,
       "notes": "Follow the delete confirmation pattern from the image libraries (LibraryTests reference)."
     },
     {

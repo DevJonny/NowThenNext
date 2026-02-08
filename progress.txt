@@ -206,3 +206,23 @@ Started: 2026-02-07
   - E2E tests pass: 74/74
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-08 - US-061
+- Added delete functionality for custom cards and categories
+- Custom card delete: X button overlay on custom cards (not on built-in), confirmation modal, card removal from grid and localStorage
+- Custom category delete: X button overlay on custom category tiles (not on built-in), confirmation modal warning all cards will also be deleted
+- Card grid restructured to use card-tap-area div to separate tap-to-reveal from delete button click (stopPropagation on delete button)
+- Learning card now has position: relative for absolute positioning of delete button overlay
+- Category tiles wrapped in category-tile-wrapper div for relative positioning of delete button
+- Files changed: src/NowThenNext/Pages/LearningCardGrid.razor (modified), src/NowThenNext/Pages/LearningCardGrid.razor.cs (modified), src/NowThenNext/Pages/LearningCategories.razor (modified), src/NowThenNext/Pages/LearningCategories.razor.cs (modified)
+- **Learnings for future iterations:**
+  - Delete button pattern: absolute-positioned circular button (1.75rem) with semi-transparent dark background, X icon, positioned top-right with z-index: 5
+  - Delete button uses @onclick:stopPropagation="true" to prevent triggering the underlying card tap/link
+  - Delete confirmation modals use calm amber (#D4A06A) for the delete button, not harsh red - consistent with app's calm design principles
+  - Category deletion warning text: "All cards in this category will also be deleted. This cannot be undone." - important to warn users about cascading deletes
+  - The card-tap-area wrapper div separates the clickable reveal area from the delete button, preventing accidental card reveals when deleting
+  - Built-in content protected by @if (!category.IsBuiltIn) and @if (IsCustomCategory) guards - these checks happen in the Razor template, not just the service layer
+  - ConfirmDeleteCard calls StateHasChanged() explicitly after removing the card from the local list to ensure immediate UI update
+  - E2E tests pass: 74/74
+  - Build passes clean with 0 warnings, 0 errors
+---
