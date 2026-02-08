@@ -34,6 +34,10 @@ public partial class LearningCardGrid
     private string? AddCardErrorMessage;
     private string? AddCardValidationMessage;
 
+    // Delete card modal state
+    private bool ShowDeleteCardConfirmation;
+    private string? CardToDeleteId;
+
     // Image compression settings (matches Upload.razor)
     private const int MaxImageDimension = 800;
     private const double CompressionQuality = 0.7;
@@ -73,6 +77,44 @@ public partial class LearningCardGrid
     }
 
     private bool IsCustomCategory => Category != null && !Category.IsBuiltIn;
+
+    private void RequestDeleteCard(string cardId)
+    {
+        CardToDeleteId = cardId;
+        ShowDeleteCardConfirmation = true;
+    }
+
+    private void CancelDeleteCard()
+    {
+        ShowDeleteCardConfirmation = false;
+        CardToDeleteId = null;
+    }
+
+    private async Task ConfirmDeleteCard()
+    {
+        if (!string.IsNullOrEmpty(CardToDeleteId))
+        {
+            try
+            {
+                await LearningCardsData.DeleteCustomCardAsync(CardToDeleteId);
+                Cards.RemoveAll(c => c.Id == CardToDeleteId);
+
+                // If the deleted card was revealed, clear the revealed state
+                if (RevealedCardId == CardToDeleteId)
+                {
+                    RevealedCardId = null;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to delete learning card: {ex.Message}");
+            }
+        }
+
+        ShowDeleteCardConfirmation = false;
+        CardToDeleteId = null;
+        StateHasChanged();
+    }
 
     private void OpenAddCardModal()
     {
