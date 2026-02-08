@@ -224,8 +224,8 @@ public class MyTests(BlazorAppFixture fixture)
 - **Use RELATIVE paths in href selectors** (e.g., `a[href='phonics']` NOT `a[href='/phonics']`) - Blazor renders relative hrefs in the DOM
 
 ## Test Status
-- **Total E2E Tests**: 74 passing (54 MVP + 15 Phonics + 5 Learning Cards data layer)
-- **Test Files**: HomePageTests, UploadTests, LibraryTests, ScheduleTests, FoodChoicesTests, ActivityChoicesTests, BackupRestoreTests, PhonicsTests
+- **Total E2E Tests**: 81 passing (54 MVP + 15 Phonics + 5 Learning Cards data layer + 7 Learning Cards E2E)
+- **Test Files**: HomePageTests, UploadTests, LibraryTests, ScheduleTests, FoodChoicesTests, ActivityChoicesTests, BackupRestoreTests, PhonicsTests, LearningCardsTests
 - **Coverage**: All user stories (US-001 to US-037, US-046 to US-048)
 
 ## Debugging Priorities
