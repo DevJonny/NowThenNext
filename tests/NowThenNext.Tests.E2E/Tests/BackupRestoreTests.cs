@@ -235,6 +235,125 @@ public class BackupRestoreTests
     }
 
     [Fact]
+    public async Task BackupData_IncludesLearningCardsPayload()
+    {
+        // Arrange
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync(_fixture.BaseUrl);
+            await page.WaitForSelectorAsync("h1", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+
+            // Seed custom learning cards data into localStorage
+            var learningCardsData = JsonSerializer.Serialize(new
+            {
+                Categories = new[]
+                {
+                    new { Id = "test-cat-1", Name = "TestCategory", Emoji = "⭐", IsBuiltIn = false, CreatedAt = DateTime.UtcNow.ToString("o") }
+                },
+                Cards = new[]
+                {
+                    new { Id = "test-card-1", CategoryId = "test-cat-1", ImageData = "<svg></svg>", Word = "TestWord", IsBuiltIn = false }
+                }
+            });
+            await page.SetLocalStorageItemAsync("learning-cards", learningCardsData);
+
+            // Navigate to settings and trigger backup
+            await page.GotoAsync($"{_fixture.BaseUrl}/settings");
+            await page.WaitForSelectorAsync("button:has-text('Backup Data')", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            var downloadTask = page.WaitForDownloadAsync();
+            await page.Locator("button:has-text('Backup Data')").ClickAsync();
+            var download = await downloadTask;
+
+            // Read downloaded backup file
+            var downloadPath = await download.PathAsync();
+            var backupJson = await File.ReadAllTextAsync(downloadPath);
+            using var doc = JsonDocument.Parse(backupJson);
+            var root = doc.RootElement;
+
+            // Assert - LearningCardsData is present in backup
+            Assert.True(root.TryGetProperty("LearningCardsData", out var lcData), "Backup should contain LearningCardsData");
+
+            // Assert - Contains our test category
+            Assert.True(lcData.TryGetProperty("Categories", out var cats));
+            var catArray = cats.EnumerateArray().ToList();
+            Assert.Contains(catArray, c => c.GetProperty("Name").GetString() == "TestCategory");
+
+            // Assert - Contains our test card
+            Assert.True(lcData.TryGetProperty("Cards", out var cards));
+            var cardArray = cards.EnumerateArray().ToList();
+            Assert.Contains(cardArray, c => c.GetProperty("Word").GetString() == "TestWord");
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task RestoreReplace_CorrectlyRestoresLearningCardsData()
+    {
+        // Arrange
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync(_fixture.BaseUrl);
+            await page.WaitForSelectorAsync("h1", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+
+            // Navigate to settings
+            await page.GotoAsync($"{_fixture.BaseUrl}/settings");
+            await page.WaitForSelectorAsync("button:has-text('Restore Data')", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Create a backup file that includes learning cards data
+            var categoryId = Guid.NewGuid().ToString();
+            var backupFilePath = await CreateTestBackupFileWithLearningCardsAsync(
+                imageCount: 1,
+                categoryName: "RestoredCat",
+                categoryId: categoryId,
+                cardWord: "RestoredWord"
+            );
+
+            // Act - restore via replace
+            await page.Locator("#restore-file-input").SetInputFilesAsync(backupFilePath);
+            await page.WaitForSelectorAsync(".modal-overlay", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator("button:has-text('Replace All Data')").ClickAsync();
+            await page.WaitForSelectorAsync(".success-message", new PageWaitForSelectorOptions { Timeout = 10000 });
+
+            // Assert - learning cards data was written to localStorage
+            var lcJson = await page.GetLocalStorageItemAsync("learning-cards");
+            Assert.NotNull(lcJson);
+
+            using var doc = JsonDocument.Parse(lcJson);
+            var root = doc.RootElement;
+
+            // Assert - restored category exists
+            Assert.True(root.TryGetProperty("Categories", out var cats));
+            var catArray = cats.EnumerateArray().ToList();
+            Assert.Contains(catArray, c => c.GetProperty("Name").GetString() == "RestoredCat");
+
+            // Assert - restored card exists
+            Assert.True(root.TryGetProperty("Cards", out var cards));
+            var cardArray = cards.EnumerateArray().ToList();
+            Assert.Contains(cardArray, c => c.GetProperty("Word").GetString() == "RestoredWord");
+
+            // Verify by navigating to learning cards - custom category should appear
+            await page.GotoAsync($"{_fixture.BaseUrl}/learning");
+            await page.WaitForSelectorAsync(".category-tile", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await Assertions.Expect(page.Locator(".category-name:has-text('RestoredCat')")).ToBeVisibleAsync(
+                new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
     public async Task RestoreMergeMode_CorrectlyMergesData()
     {
         // Arrange
@@ -405,6 +524,74 @@ public class BackupRestoreTests
 
         var json = JsonSerializer.Serialize(backup, new JsonSerializerOptions { WriteIndented = true });
         var tempPath = Path.Combine(Path.GetTempPath(), $"test_backup_{Guid.NewGuid()}.json");
+        await File.WriteAllTextAsync(tempPath, json);
+        return tempPath;
+    }
+
+    /// <summary>
+    /// Creates a valid backup JSON file that includes learning cards data.
+    /// </summary>
+    private static async Task<string> CreateTestBackupFileWithLearningCardsAsync(
+        int imageCount,
+        string categoryName,
+        string categoryId,
+        string cardWord)
+    {
+        byte[] pngBytes =
+        [
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+            0x00, 0x00, 0x00, 0x0D,
+            0x49, 0x48, 0x44, 0x52,
+            0x00, 0x00, 0x00, 0x01,
+            0x00, 0x00, 0x00, 0x01,
+            0x08, 0x02,
+            0x00, 0x00, 0x00,
+            0x90, 0x77, 0x53, 0xDE,
+            0x00, 0x00, 0x00, 0x0C,
+            0x49, 0x44, 0x41, 0x54,
+            0x08, 0xD7, 0x63, 0xF8, 0xCF, 0xC0, 0x00, 0x00,
+            0x01, 0xA8, 0x00, 0x85,
+            0xA5, 0xEF, 0x73, 0x4F,
+            0x00, 0x00, 0x00, 0x00,
+            0x49, 0x45, 0x4E, 0x44,
+            0xAE, 0x42, 0x60, 0x82
+        ];
+        var base64Image = $"data:image/png;base64,{Convert.ToBase64String(pngBytes)}";
+
+        var images = new List<object>();
+        for (int i = 0; i < imageCount; i++)
+        {
+            images.Add(new
+            {
+                Id = Guid.NewGuid().ToString(),
+                Base64Data = base64Image,
+                Label = $"LCBackupImage_{i}",
+                Category = 0,
+                IsFavorite = false,
+                CreatedAt = DateTime.UtcNow.ToString("o")
+            });
+        }
+
+        var backup = new
+        {
+            Version = "1.0",
+            CreatedAt = DateTime.UtcNow.ToString("o"),
+            Images = images,
+            LearningCardsData = new
+            {
+                Categories = new[]
+                {
+                    new { Id = categoryId, Name = categoryName, Emoji = "🚗", IsBuiltIn = false, CreatedAt = DateTime.UtcNow.ToString("o") }
+                },
+                Cards = new[]
+                {
+                    new { Id = Guid.NewGuid().ToString(), CategoryId = categoryId, ImageData = "<svg></svg>", Word = cardWord, IsBuiltIn = false }
+                }
+            }
+        };
+
+        var json = JsonSerializer.Serialize(backup, new JsonSerializerOptions { WriteIndented = true });
+        var tempPath = Path.Combine(Path.GetTempPath(), $"test_backup_lc_{Guid.NewGuid()}.json");
         await File.WriteAllTextAsync(tempPath, json);
         return tempPath;
     }
