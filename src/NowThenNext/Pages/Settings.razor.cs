@@ -22,6 +22,7 @@ public partial class Settings
     private bool IsRestoring { get; set; }
     private bool ShowRestoreChoiceModal { get; set; }
     private List<ImageItem>? PendingRestoreImages { get; set; }
+    private string? PendingLearningCardsJson { get; set; }
     private string? SuccessMessage { get; set; }
     private string? ErrorMessage { get; set; }
 
@@ -43,12 +44,28 @@ public partial class Settings
             // Get all images from storage
             var images = await ImageStorage.GetAllImagesAsync();
 
+            // Get learning cards custom data from localStorage
+            JsonElement? learningCardsData = null;
+            try
+            {
+                var learningCardsJson = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "learning-cards");
+                if (!string.IsNullOrEmpty(learningCardsJson))
+                {
+                    learningCardsData = JsonSerializer.Deserialize<JsonElement>(learningCardsJson);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to read learning cards data for backup: {ex.Message}");
+            }
+
             // Create backup data structure
             var backup = new BackupData
             {
                 Version = "1.0",
                 CreatedAt = DateTime.UtcNow,
-                Images = images
+                Images = images,
+                LearningCardsData = learningCardsData
             };
 
             // Serialize to JSON
@@ -149,8 +166,11 @@ public partial class Settings
                 }
             }
 
-            // Store pending images and show choice modal
+            // Store pending data and show choice modal
             PendingRestoreImages = backup.Images;
+            PendingLearningCardsJson = backup.LearningCardsData.HasValue
+                ? backup.LearningCardsData.Value.GetRawText()
+                : null;
             ShowRestoreChoiceModal = true;
             StateHasChanged();
         }
@@ -165,6 +185,7 @@ public partial class Settings
     {
         ShowRestoreChoiceModal = false;
         PendingRestoreImages = null;
+        PendingLearningCardsJson = null;
         StateHasChanged();
     }
 
@@ -187,6 +208,9 @@ public partial class Settings
             // Save all images from backup
             await ImageStorage.SaveImagesAsync(PendingRestoreImages);
 
+            // Restore learning cards data (replace)
+            await RestoreLearningCardsAsync(replace: true);
+
             SuccessMessage = $"Restore complete! {PendingRestoreImages.Count} images imported (replaced all data).";
         }
         catch (StorageQuotaExceededException)
@@ -201,6 +225,7 @@ public partial class Settings
         {
             IsRestoring = false;
             PendingRestoreImages = null;
+            PendingLearningCardsJson = null;
             StateHasChanged();
         }
     }
@@ -231,6 +256,9 @@ public partial class Settings
             // Save merged list
             await ImageStorage.SaveImagesAsync(mergedImages);
 
+            // Restore learning cards data (merge)
+            await RestoreLearningCardsAsync(replace: false);
+
             var skippedCount = PendingRestoreImages.Count - newImages.Count;
             if (skippedCount > 0)
             {
@@ -253,7 +281,148 @@ public partial class Settings
         {
             IsRestoring = false;
             PendingRestoreImages = null;
+            PendingLearningCardsJson = null;
             StateHasChanged();
         }
+    }
+
+    /// <summary>
+    /// Restores learning cards custom data from the backup.
+    /// When replace is true, overwrites existing learning cards data.
+    /// When replace is false, merges backup data with existing data (adds new categories/cards, skips duplicates by ID).
+    /// </summary>
+    private async Task RestoreLearningCardsAsync(bool replace)
+    {
+        if (string.IsNullOrEmpty(PendingLearningCardsJson))
+        {
+            if (replace)
+            {
+                // In replace mode, clear existing learning cards data even if backup has none
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "learning-cards");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"Failed to clear learning cards data: {ex.Message}");
+                }
+            }
+            return;
+        }
+
+        try
+        {
+            if (replace)
+            {
+                // Replace: overwrite with backup data
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "learning-cards", PendingLearningCardsJson);
+            }
+            else
+            {
+                // Merge: combine existing and backup learning cards data
+                var existingJson = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "learning-cards");
+
+                if (string.IsNullOrEmpty(existingJson))
+                {
+                    // No existing data - just set the backup data
+                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "learning-cards", PendingLearningCardsJson);
+                }
+                else
+                {
+                    // Merge categories and cards by ID (skip duplicates)
+                    var mergedJson = MergeLearningCardsJson(existingJson, PendingLearningCardsJson);
+                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "learning-cards", mergedJson);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Failed to restore learning cards data: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Merges two learning cards JSON strings by combining categories and cards, skipping duplicates by ID.
+    /// </summary>
+    private static string MergeLearningCardsJson(string existingJson, string backupJson)
+    {
+        using var existingDoc = JsonDocument.Parse(existingJson);
+        using var backupDoc = JsonDocument.Parse(backupJson);
+
+        var existingRoot = existingDoc.RootElement;
+        var backupRoot = backupDoc.RootElement;
+
+        // Get existing category and card IDs for deduplication
+        var existingCategoryIds = new HashSet<string>();
+        var existingCardIds = new HashSet<string>();
+
+        if (existingRoot.TryGetProperty("Categories", out var existingCategories))
+        {
+            foreach (var cat in existingCategories.EnumerateArray())
+            {
+                if (cat.TryGetProperty("Id", out var idProp))
+                    existingCategoryIds.Add(idProp.GetString() ?? "");
+            }
+        }
+
+        if (existingRoot.TryGetProperty("Cards", out var existingCards))
+        {
+            foreach (var card in existingCards.EnumerateArray())
+            {
+                if (card.TryGetProperty("Id", out var idProp))
+                    existingCardIds.Add(idProp.GetString() ?? "");
+            }
+        }
+
+        // Build merged JSON
+        using var stream = new MemoryStream();
+        using var writer = new Utf8JsonWriter(stream);
+
+        writer.WriteStartObject();
+
+        // Merge categories
+        writer.WriteStartArray("Categories");
+        if (existingRoot.TryGetProperty("Categories", out var existCats))
+        {
+            foreach (var cat in existCats.EnumerateArray())
+                cat.WriteTo(writer);
+        }
+        if (backupRoot.TryGetProperty("Categories", out var backupCats))
+        {
+            foreach (var cat in backupCats.EnumerateArray())
+            {
+                if (cat.TryGetProperty("Id", out var idProp) &&
+                    !existingCategoryIds.Contains(idProp.GetString() ?? ""))
+                {
+                    cat.WriteTo(writer);
+                }
+            }
+        }
+        writer.WriteEndArray();
+
+        // Merge cards
+        writer.WriteStartArray("Cards");
+        if (existingRoot.TryGetProperty("Cards", out var existCards))
+        {
+            foreach (var card in existCards.EnumerateArray())
+                card.WriteTo(writer);
+        }
+        if (backupRoot.TryGetProperty("Cards", out var backupCards))
+        {
+            foreach (var card in backupCards.EnumerateArray())
+            {
+                if (card.TryGetProperty("Id", out var idProp) &&
+                    !existingCardIds.Contains(idProp.GetString() ?? ""))
+                {
+                    card.WriteTo(writer);
+                }
+            }
+        }
+        writer.WriteEndArray();
+
+        writer.WriteEndObject();
+        writer.Flush();
+
+        return System.Text.Encoding.UTF8.GetString(stream.ToArray());
     }
 }

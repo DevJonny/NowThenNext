@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace NowThenNext.Models;
 
 /// <summary>
@@ -19,4 +21,11 @@ public class BackupData
     /// All images (Places, Food, and Activities) with their full data
     /// </summary>
     public List<ImageItem> Images { get; set; } = new();
+
+    /// <summary>
+    /// Custom learning cards data (categories and cards created by the user).
+    /// Stored as a raw JSON element to preserve the localStorage format.
+    /// Null when no custom learning cards exist or when restoring from an older backup.
+    /// </summary>
+    public JsonElement? LearningCardsData { get; set; }
 }
