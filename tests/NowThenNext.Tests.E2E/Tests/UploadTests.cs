@@ -19,6 +19,34 @@ public class UploadTests
     }
 
     [Fact]
+    public async Task UploadArea_ClickTriggersFileInputViaJsInterop()
+    {
+        // Arrange
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/upload");
+            await page.WaitForSelectorAsync(".upload-area", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+
+            // Replace triggerFileInputClick with a spy to capture the call
+            await page.EvaluateAsync("window._triggerFileInputCalledWith = null; window.triggerFileInputClick = (id) => { window._triggerFileInputCalledWith = id; }");
+
+            // Act - Click the upload area like a real user would
+            await page.Locator(".upload-area").ClickAsync();
+
+            // Assert - The JS interop should have been called with the correct input ID
+            var calledWith = await page.EvaluateAsync<string>("window._triggerFileInputCalledWith");
+            Assert.Equal("file-upload", calledWith);
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
     public async Task UploadArea_HasFileInputElement()
     {
         // Arrange
