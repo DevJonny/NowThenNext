@@ -226,3 +226,23 @@ Started: 2026-02-07
   - E2E tests pass: 74/74
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-08 - US-062
+- Extended backup/restore in Settings.razor to include 'learning-cards' localStorage key
+- BackupData model updated with nullable JsonElement? LearningCardsData property for backward compatibility
+- Backup reads 'learning-cards' from localStorage and includes it in the exported JSON
+- Restore (replace mode): overwrites 'learning-cards' in localStorage with backup data, clears it if backup has none
+- Restore (merge mode): merges categories and cards by ID (skips duplicates), writes combined result to localStorage
+- MergeLearningCardsJson static helper uses System.Text.Json's JsonDocument/Utf8JsonWriter for low-level JSON merging
+- Built-in categories are not affected because only custom data lives in localStorage under the 'learning-cards' key
+- Old backup files without LearningCardsData property are handled gracefully (nullable JsonElement? defaults to null)
+- Files changed: src/NowThenNext/Models/BackupData.cs (modified), src/NowThenNext/Pages/Settings.razor.cs (modified)
+- **Learnings for future iterations:**
+  - JsonElement? (nullable) is the right approach for optional backup fields - older backups deserialize cleanly with the property as null
+  - GetRawText() on JsonElement gives the raw JSON string which can be stored directly in localStorage
+  - For merge logic, working at the JSON document level (JsonDocument.Parse + Utf8JsonWriter) avoids needing to deserialize into strongly-typed models and re-serialize - cleaner when the data structure is owned by another service
+  - The learning-cards localStorage key only contains custom categories/cards, never built-in data, so backup/restore naturally avoids duplicating built-in content
+  - PendingLearningCardsJson must be cleared in CancelRestore, PerformReplace finally, and PerformMerge finally - three places that reset state
+  - E2E tests pass: 74/74
+  - Build passes clean with 0 warnings, 0 errors
+---

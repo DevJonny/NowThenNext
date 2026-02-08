@@ -239,7 +239,7 @@
         "Typecheck passes"
       ],
       "priority": 14,
-      "passes": false,
+      "passes": true,
       "notes": "Reference Settings.razor for the existing backup/restore pattern. The learning-cards key stores only custom categories and cards."
     },
     {
