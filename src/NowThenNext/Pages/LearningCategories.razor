@@ -24,10 +24,23 @@
         <div class="category-grid">
             @foreach (var category in Categories)
             {
-                <a href="learning/@category.Id" class="category-tile">
-                    <span class="category-emoji">@category.Emoji</span>
-                    <span class="category-name">@category.Name</span>
-                </a>
+                <div class="category-tile-wrapper">
+                    <a href="learning/@category.Id" class="category-tile">
+                        <span class="category-emoji">@category.Emoji</span>
+                        <span class="category-name">@category.Name</span>
+                    </a>
+                    @if (!category.IsBuiltIn)
+                    {
+                        <button class="delete-category-btn"
+                                @onclick="() => RequestDeleteCategory(category.Id, category.Name)"
+                                @onclick:stopPropagation="true"
+                                aria-label="Delete @category.Name category">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    }
+                </div>
             }
 
             <!-- Add Category Tile -->
@@ -98,6 +111,25 @@
             </div>
         </div>
     }
+
+    <!-- Delete Category Confirmation Modal -->
+    @if (ShowDeleteCategoryModal)
+    {
+        <div class="modal-overlay" @onclick="CancelDeleteCategory">
+            <div class="modal-content" @onclick:stopPropagation="true">
+                <h3 class="modal-title">Delete Category?</h3>
+                <p class="modal-message">Are you sure you want to delete <strong>@CategoryToDeleteName</strong>? All cards in this category will also be deleted. This cannot be undone.</p>
+                <div class="modal-buttons">
+                    <button @onclick="CancelDeleteCategory" class="modal-cancel-button">
+                        Cancel
+                    </button>
+                    <button @onclick="ConfirmDeleteCategory" class="modal-delete-button">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
 </div>
 
 <style>
@@ -125,6 +157,10 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
         padding-bottom: 2rem;
+    }
+
+    .category-tile-wrapper {
+        position: relative;
     }
 
     .category-tile {
@@ -190,6 +226,29 @@
         color: #D4937A;
     }
 
+    /* Delete Category Button */
+    .delete-category-btn {
+        position: absolute;
+        top: 0.375rem;
+        right: 0.375rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        border-radius: 50%;
+        background-color: rgba(61, 72, 82, 0.7);
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        z-index: 5;
+    }
+
+    .delete-category-btn:hover {
+        background-color: rgba(212, 160, 106, 1);
+    }
+
     /* Modal Styles */
     .modal-overlay {
         position: fixed;
@@ -218,6 +277,13 @@
         font-weight: 700;
         color: #3D4852;
         margin-bottom: 1.25rem;
+    }
+
+    .modal-message {
+        font-size: 1rem;
+        color: #606F7B;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
     }
 
     .form-group {
@@ -355,6 +421,25 @@
 
     .modal-save-button:hover {
         background-color: #B87A62;
+    }
+
+    .modal-delete-button {
+        flex: 1;
+        padding: 0.875rem 1rem;
+        min-height: 3rem;
+        font-size: 1rem;
+        font-weight: 600;
+        background-color: #D4A06A;
+        color: white;
+        border: none;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: 'Nunito', sans-serif;
+    }
+
+    .modal-delete-button:hover {
+        background-color: #C4905A;
     }
 
     @@media (min-width: 768px) {

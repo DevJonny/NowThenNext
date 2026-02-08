@@ -22,6 +22,11 @@ public partial class LearningCategories
 
     private const string DefaultEmoji = "\U0001F4CB"; // clipboard emoji
 
+    // Delete category modal state
+    private bool ShowDeleteCategoryModal { get; set; }
+    private string? CategoryToDeleteId;
+    private string? CategoryToDeleteName;
+
     // Curated list of child-friendly emojis (~30)
     private static readonly string[] AvailableEmojis =
     [
@@ -83,6 +88,41 @@ public partial class LearningCategories
     private void SelectEmoji(string emoji)
     {
         SelectedEmoji = SelectedEmoji == emoji ? string.Empty : emoji;
+    }
+
+    private void RequestDeleteCategory(string categoryId, string categoryName)
+    {
+        CategoryToDeleteId = categoryId;
+        CategoryToDeleteName = categoryName;
+        ShowDeleteCategoryModal = true;
+    }
+
+    private void CancelDeleteCategory()
+    {
+        ShowDeleteCategoryModal = false;
+        CategoryToDeleteId = null;
+        CategoryToDeleteName = null;
+    }
+
+    private async Task ConfirmDeleteCategory()
+    {
+        if (!string.IsNullOrEmpty(CategoryToDeleteId))
+        {
+            try
+            {
+                await LearningCardsData.DeleteCustomCategoryAsync(CategoryToDeleteId);
+                Categories = await LearningCardsData.GetAllCategoriesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to delete custom category: {ex.Message}");
+            }
+        }
+
+        ShowDeleteCategoryModal = false;
+        CategoryToDeleteId = null;
+        CategoryToDeleteName = null;
+        StateHasChanged();
     }
 
     private async Task SaveNewCategory()
