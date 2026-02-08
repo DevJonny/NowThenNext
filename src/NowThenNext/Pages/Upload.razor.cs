@@ -55,9 +55,7 @@ public partial class Upload
 
     private async Task TriggerFileInput()
     {
-        // This will be handled by the InputFile component through JavaScript interop
-        // The actual click is handled via the label/onclick
-        await Task.CompletedTask;
+        await JSRuntime.InvokeVoidAsync("triggerFileInputClick", "file-upload");
     }
 
     private void HandleDragOver()
