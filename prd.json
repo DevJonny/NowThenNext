@@ -259,7 +259,7 @@
         "Typecheck passes"
       ],
       "priority": 15,
-      "passes": false,
+      "passes": true,
       "notes": "Follow existing E2E test patterns (BlazorAppFixture, ClearLocalStorageAsync after navigation, 60s timeout for WaitForSelectorAsync). Use relative href selectors (e.g. a[href='learning'] not a[href='/learning'])."
     }
   ]

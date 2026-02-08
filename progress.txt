@@ -246,3 +246,26 @@ Started: 2026-02-07
   - E2E tests pass: 74/74
   - Build passes clean with 0 warnings, 0 errors
 ---
+
+## 2026-02-08 - US-063
+- Created LearningCardsTests.cs in the E2E test project with 7 comprehensive tests
+- Test 1: Home page shows Learning Cards link and navigates to /learning
+- Test 2: Category listing page shows 4 built-in categories (Shapes, Colours, Animals, Dinosaurs) plus Add Category tile
+- Test 3: Navigating to Shapes category shows card grid with 8 cards
+- Test 4: Tapping a card reveals the word ("Circle"), tapping again hides it (toggle behaviour)
+- Test 5: Revealing a second card ("Square") auto-hides the first ("Circle") - only one card revealed at a time
+- Test 6: Creating a custom category "Vehicles" with emoji picker, verifying it appears on listing page
+- Test 7: Deleting a custom category "Toys" with confirmation modal, verifying it disappears from listing page
+- Updated CLAUDE.md test count to 81 (54 MVP + 15 Phonics + 5 Learning Cards data layer + 7 Learning Cards E2E)
+- Files changed: tests/NowThenNext.Tests.E2E/Tests/LearningCardsTests.cs (new), CLAUDE.md (modified)
+- **Learnings for future iterations:**
+  - xUnit v3 test filter: use `FullyQualifiedName~ClassName` not `ClassName~ClassName` for filtering
+  - Category tiles include the Add Category tile with class `.category-tile.add-category-tile`, so total count is built-in + 1
+  - `.learning-card.revealed` CSS class is the reliable indicator that a card word is shown
+  - `.card-word-visible` CSS class is applied to the word div when revealed - useful for asserting word content
+  - `.card-tap-area` is the correct click target for card reveal (not `.learning-card` which also contains the delete button)
+  - Custom category creation flow: click `.add-category-tile` -> fill `#categoryName` -> click `.emoji-option` -> click `.modal-save-button`
+  - Custom category deletion flow: click `.delete-category-btn` -> confirm in modal via `.modal-delete-button`
+  - E2E tests pass: 81/81 (all tests green)
+  - Build passes clean with 0 warnings, 0 errors
+---

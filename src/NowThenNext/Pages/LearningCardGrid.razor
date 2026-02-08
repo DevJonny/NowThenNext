@@ -41,10 +41,8 @@
                         </button>
                     }
 
-                    <div class="card-tap-area"
+                    <button type="button" class="card-tap-area"
                          @onclick="() => ToggleCard(card.Id)"
-                         role="button"
-                         tabindex="0"
                          aria-label="@(RevealedCardId == card.Id ? $"{card.Word} - tap to hide" : $"Tap to reveal word")">
                         <!-- Image -->
                         <div class="card-image">
@@ -52,9 +50,13 @@
                             {
                                 @((MarkupString)card.ImageData)
                             }
+                            else if (card.ImageData.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <img src="@card.ImageData" alt="@card.Word" />
+                            }
                             else
                             {
-                                <img src="data:image/png;base64,@card.ImageData" alt="@card.Word" />
+                                <img src="data:image/jpeg;base64,@card.ImageData" alt="@card.Word" />
                             }
                         </div>
 
@@ -62,19 +64,19 @@
                         <div class="card-word @(RevealedCardId == card.Id ? "card-word-visible" : "")">
                             @card.Word
                         </div>
-                    </div>
+                    </button>
                 </div>
             }
 
             @if (IsCustomCategory)
             {
                 <!-- Add Card Button Tile -->
-                <div class="add-card-tile" @onclick="OpenAddCardModal" role="button" tabindex="0" aria-label="Add a new card">
+                <button type="button" class="add-card-tile" @onclick="OpenAddCardModal" aria-label="Add a new card">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-calm-cards" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                     </svg>
                     <span class="add-card-label">Add Card</span>
-                </div>
+                </button>
             }
         </div>
     </div>
@@ -232,6 +234,12 @@
         flex-direction: column;
         align-items: center;
         width: 100%;
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        font: inherit;
+        color: inherit;
     }
 
     .learning-card:hover {
