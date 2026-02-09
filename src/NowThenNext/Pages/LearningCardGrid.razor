@@ -54,6 +54,10 @@
                             {
                                 <img src="@card.ImageData" alt="@card.Word" />
                             }
+                            else if (card.ImageData.Contains('/'))
+                            {
+                                <img src="@card.ImageData" alt="@card.Word" />
+                            }
                             else
                             {
                                 <img src="data:image/jpeg;base64,@card.ImageData" alt="@card.Word" />

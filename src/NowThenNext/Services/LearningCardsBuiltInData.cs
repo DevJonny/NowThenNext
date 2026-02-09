@@ -320,7 +320,7 @@ public static class LearningCardsBuiltInData
 
     /// <summary>
     /// Returns all cards for the built-in Dinosaurs category.
-    /// Each card has a simple, friendly SVG illustration with key distinguishing features, recognisable at ~120px.
+    /// Each card uses a DBCLS/Togopic illustration (CC BY 4.0) from Wikimedia Commons.
     /// </summary>
     public static List<LearningCard> GetDinosaursCards() =>
     [
@@ -330,7 +330,7 @@ public static class LearningCardsBuiltInData
             CategoryId = "dinosaurs",
             Word = "T-Rex",
             IsBuiltIn = true,
-            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="58" rx="22" ry="18" fill="#7BA893"/><circle cx="38" cy="36" r="18" fill="#7BA893"/><circle cx="32" cy="32" r="3" fill="#2C3E50"/><path d="M24 40 L20 42 L26 44 L22 46 L28 48 L24 50 L30 50" fill="white" stroke="#2C3E50" stroke-width="1"/><line x1="56" y1="50" x2="60" y2="58" stroke="#7BA893" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="58" x2="56" y2="62" stroke="#7BA893" stroke-width="3" stroke-linecap="round"/><line x1="50" y1="48" x2="54" y2="56" stroke="#7BA893" stroke-width="4" stroke-linecap="round"/><line x1="54" y1="56" x2="50" y2="60" stroke="#7BA893" stroke-width="3" stroke-linecap="round"/><line x1="38" y1="74" x2="38" y2="92" stroke="#7BA893" stroke-width="7" stroke-linecap="round"/><line x1="58" y1="74" x2="58" y2="92" stroke="#7BA893" stroke-width="7" stroke-linecap="round"/><path d="M70 55 Q80 50 85 58 Q88 64 82 62 Q78 60 75 65 Q72 68 70 62" fill="#7BA893"/></svg>"""
+            ImageData = "images/dinosaurs/trex.png"
         },
         new LearningCard
         {
@@ -338,7 +338,7 @@ public static class LearningCardsBuiltInData
             CategoryId = "dinosaurs",
             Word = "Triceratops",
             IsBuiltIn = true,
-            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="55" cy="55" rx="28" ry="22" fill="#D4A06A"/><ellipse cx="28" cy="45" rx="18" ry="16" fill="#D4A06A"/><path d="M18 30 Q10 18 22 22 Q28 24 26 30" fill="#E8C88A"/><path d="M38 30 Q42 14 36 22 Q32 26 34 30" fill="#E8C88A"/><line x1="12" y1="40" x2="2" y2="32" stroke="#D4A06A" stroke-width="3" stroke-linecap="round"/><line x1="14" y1="36" x2="4" y2="26" stroke="#D4A06A" stroke-width="3" stroke-linecap="round"/><line x1="24" y1="30" x2="20" y2="18" stroke="#D4A06A" stroke-width="3" stroke-linecap="round"/><circle cx="22" cy="42" r="2.5" fill="#2C3E50"/><ellipse cx="14" cy="50" rx="4" ry="3" fill="#B87A62"/><line x1="42" y1="74" x2="42" y2="92" stroke="#D4A06A" stroke-width="7" stroke-linecap="round"/><line x1="56" y1="75" x2="56" y2="92" stroke="#D4A06A" stroke-width="7" stroke-linecap="round"/><line x1="66" y1="74" x2="66" y2="92" stroke="#D4A06A" stroke-width="7" stroke-linecap="round"/><path d="M82 50 Q90 48 88 56 Q86 60 82 56" fill="#D4A06A"/></svg>"""
+            ImageData = "images/dinosaurs/triceratops.png"
         },
         new LearningCard
         {
@@ -346,7 +346,7 @@ public static class LearningCardsBuiltInData
             CategoryId = "dinosaurs",
             Word = "Stegosaurus",
             IsBuiltIn = true,
-            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="60" rx="30" ry="18" fill="#5B9A9A"/><ellipse cx="22" cy="48" rx="12" ry="10" fill="#5B9A9A"/><circle cx="17" cy="45" r="2" fill="#2C3E50"/><polygon points="35,42 40,26 45,42" fill="#D4937A"/><polygon points="43,40 48,22 53,40" fill="#D4937A"/><polygon points="51,40 56,24 61,40" fill="#D4937A"/><polygon points="59,42 64,28 69,42" fill="#D4937A"/><line x1="38" y1="76" x2="38" y2="92" stroke="#5B9A9A" stroke-width="6" stroke-linecap="round"/><line x1="52" y1="76" x2="52" y2="92" stroke="#5B9A9A" stroke-width="6" stroke-linecap="round"/><line x1="62" y1="76" x2="62" y2="92" stroke="#5B9A9A" stroke-width="6" stroke-linecap="round"/><line x1="82" y1="58" x2="92" y2="50" stroke="#5B9A9A" stroke-width="4" stroke-linecap="round"/><line x1="82" y1="62" x2="94" y2="58" stroke="#5B9A9A" stroke-width="4" stroke-linecap="round"/><line x1="80" y1="66" x2="92" y2="66" stroke="#5B9A9A" stroke-width="4" stroke-linecap="round"/><line x1="80" y1="70" x2="90" y2="74" stroke="#5B9A9A" stroke-width="4" stroke-linecap="round"/></svg>"""
+            ImageData = "images/dinosaurs/stegosaurus.png"
         },
         new LearningCard
         {
@@ -354,15 +354,15 @@ public static class LearningCardsBuiltInData
             CategoryId = "dinosaurs",
             Word = "Brachiosaurus",
             IsBuiltIn = true,
-            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="58" cy="62" rx="26" ry="18" fill="#9BBDD6"/><path d="M38 55 Q30 40 26 28 Q22 16 28 10 Q34 6 36 14 Q38 20 36 28 Q35 36 38 48" fill="#9BBDD6" stroke="none"/><circle cx="30" cy="12" r="8" fill="#9BBDD6"/><circle cx="27" cy="10" r="2" fill="#2C3E50"/><ellipse cx="24" cy="15" rx="3" ry="2" fill="#7BA3C4"/><line x1="46" y1="78" x2="46" y2="94" stroke="#9BBDD6" stroke-width="7" stroke-linecap="round"/><line x1="58" y1="78" x2="58" y2="94" stroke="#9BBDD6" stroke-width="7" stroke-linecap="round"/><line x1="66" y1="78" x2="66" y2="94" stroke="#9BBDD6" stroke-width="7" stroke-linecap="round"/><line x1="74" y1="76" x2="74" y2="94" stroke="#9BBDD6" stroke-width="7" stroke-linecap="round"/><path d="M82 58 Q90 54 92 62 Q92 68 86 64" fill="#9BBDD6"/></svg>"""
+            ImageData = "images/dinosaurs/brachiosaurus.png"
         },
         new LearningCard
         {
-            Id = "dinosaurs-velociraptor",
+            Id = "dinosaurs-allosaurus",
             CategoryId = "dinosaurs",
-            Word = "Velociraptor",
+            Word = "Allosaurus",
             IsBuiltIn = true,
-            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="52" cy="52" rx="18" ry="14" fill="#E8C88A"/><ellipse cx="30" cy="36" rx="14" ry="11" fill="#E8C88A"/><circle cx="25" cy="33" r="2.5" fill="#2C3E50"/><path d="M18 40 L12 42 L18 44 L14 46 L20 46" fill="white" stroke="#2C3E50" stroke-width="1"/><line x1="42" y1="44" x2="48" y2="50" stroke="#E8C88A" stroke-width="3" stroke-linecap="round"/><line x1="48" y1="50" x2="44" y2="54" stroke="#E8C88A" stroke-width="2.5" stroke-linecap="round"/><line x1="38" y1="42" x2="42" y2="48" stroke="#E8C88A" stroke-width="3" stroke-linecap="round"/><line x1="42" y1="48" x2="38" y2="52" stroke="#E8C88A" stroke-width="2.5" stroke-linecap="round"/><line x1="44" y1="64" x2="44" y2="82" stroke="#E8C88A" stroke-width="5" stroke-linecap="round"/><line x1="44" y1="82" x2="38" y2="86" stroke="#E8C88A" stroke-width="3" stroke-linecap="round"/><line x1="58" y1="64" x2="58" y2="82" stroke="#E8C88A" stroke-width="5" stroke-linecap="round"/><line x1="58" y1="82" x2="52" y2="86" stroke="#E8C88A" stroke-width="3" stroke-linecap="round"/><line x1="58" y1="80" x2="62" y2="76" stroke="#D4A06A" stroke-width="3" stroke-linecap="round"/><path d="M68 48 Q80 42 88 48 Q92 52 84 50 Q78 48 74 54 Q70 58 68 52" fill="#E8C88A"/></svg>"""
+            ImageData = "images/dinosaurs/allosaurus.png"
         },
         new LearningCard
         {
@@ -370,7 +370,7 @@ public static class LearningCardsBuiltInData
             CategoryId = "dinosaurs",
             Word = "Pteranodon",
             IsBuiltIn = true,
-            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="50" rx="14" ry="10" fill="#D4937A"/><ellipse cx="34" cy="42" rx="12" ry="9" fill="#D4937A"/><circle cx="30" cy="40" r="2" fill="#2C3E50"/><path d="M24 44 L14 48 L24 46" fill="#B87A62"/><path d="M36 34 L42 22 L52 30" fill="#D4937A" stroke="none"/><path d="M38 42 Q20 24 6 20 Q10 30 18 36 Q24 40 34 44" fill="#E0B0A0" stroke="#D4937A" stroke-width="1"/><path d="M56 44 Q76 22 94 18 Q88 28 80 36 Q72 42 60 46" fill="#E0B0A0" stroke="#D4937A" stroke-width="1"/><line x1="44" y1="58" x2="42" y2="70" stroke="#D4937A" stroke-width="3" stroke-linecap="round"/><line x1="56" y1="58" x2="58" y2="70" stroke="#D4937A" stroke-width="3" stroke-linecap="round"/></svg>"""
+            ImageData = "images/dinosaurs/pteranodon.png"
         },
         new LearningCard
         {
@@ -378,7 +378,7 @@ public static class LearningCardsBuiltInData
             CategoryId = "dinosaurs",
             Word = "Ankylosaurus",
             IsBuiltIn = true,
-            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="55" rx="32" ry="20" fill="#7BA3C4"/><ellipse cx="22" cy="48" rx="12" ry="10" fill="#7BA3C4"/><circle cx="17" cy="45" r="2" fill="#2C3E50"/><ellipse cx="14" cy="52" rx="4" ry="3" fill="#6890B0"/><circle cx="35" cy="42" r="5" fill="#6890B0"/><circle cx="48" cy="38" r="5" fill="#6890B0"/><circle cx="62" cy="40" r="5" fill="#6890B0"/><circle cx="72" cy="46" r="4" fill="#6890B0"/><circle cx="40" cy="50" r="4" fill="#6890B0"/><circle cx="55" cy="48" r="4" fill="#6890B0"/><line x1="36" y1="72" x2="36" y2="88" stroke="#7BA3C4" stroke-width="7" stroke-linecap="round"/><line x1="50" y1="73" x2="50" y2="88" stroke="#7BA3C4" stroke-width="7" stroke-linecap="round"/><line x1="62" y1="72" x2="62" y2="88" stroke="#7BA3C4" stroke-width="7" stroke-linecap="round"/><path d="M80 52 Q88 48 92 54" stroke="#7BA3C4" stroke-width="5" stroke-linecap="round" fill="none"/><circle cx="94" cy="54" r="6" fill="#6890B0"/></svg>"""
+            ImageData = "images/dinosaurs/ankylosaurus.png"
         },
         new LearningCard
         {
@@ -386,7 +386,7 @@ public static class LearningCardsBuiltInData
             CategoryId = "dinosaurs",
             Word = "Diplodocus",
             IsBuiltIn = true,
-            ImageData = """<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="55" cy="58" rx="24" ry="16" fill="#D4A06A"/><path d="M34 52 Q28 40 22 30 Q18 22 22 16 Q26 12 28 18 Q30 24 28 32 Q27 40 32 48" fill="#D4A06A" stroke="none"/><circle cx="24" cy="16" r="7" fill="#D4A06A"/><circle cx="21" cy="14" r="2" fill="#2C3E50"/><ellipse cx="18" cy="19" rx="3" ry="2" fill="#B87A62"/><path d="M76 54 Q84 50 88 54 Q92 58 96 54 Q98 50 96 56 Q94 62 88 58 Q84 54 80 58" fill="#D4A06A" stroke="none"/><line x1="44" y1="72" x2="44" y2="90" stroke="#D4A06A" stroke-width="6" stroke-linecap="round"/><line x1="54" y1="72" x2="54" y2="90" stroke="#D4A06A" stroke-width="6" stroke-linecap="round"/><line x1="62" y1="72" x2="62" y2="90" stroke="#D4A06A" stroke-width="6" stroke-linecap="round"/><line x1="70" y1="70" x2="70" y2="90" stroke="#D4A06A" stroke-width="6" stroke-linecap="round"/></svg>"""
+            ImageData = "images/dinosaurs/diplodocus.png"
         }
     ];
 }
