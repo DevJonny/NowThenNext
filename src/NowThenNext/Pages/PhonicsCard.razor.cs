@@ -29,10 +29,12 @@ public partial class PhonicsCard
     private bool CanGoPrevious;
     private bool CanGoNext;
     private bool ShowPhaseComplete;
+    private bool ShowImage;
 
     protected override async Task OnParametersSetAsync()
     {
         ShowPhaseComplete = false;
+        ShowImage = false;
         await LoadCardState();
     }
 
@@ -123,6 +125,16 @@ public partial class PhonicsCard
 
         return $"{before}<span class=\"grapheme-highlight\">{match}</span>{after}";
     }
+
+    private void ToggleImage()
+    {
+        if (!string.IsNullOrEmpty(Card?.ImagePath))
+        {
+            ShowImage = !ShowImage;
+        }
+    }
+
+    private bool HasImage => !string.IsNullOrEmpty(Card?.ImagePath);
 
     private void GoBack()
     {
