@@ -23,4 +23,5 @@ public class GraphemeCard
     public int PhaseId { get; set; }
     public int WeekNumber { get; set; }
     public int OrderIndex { get; set; }
+    public string? ImagePath { get; set; }
 }
