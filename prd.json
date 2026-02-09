@@ -1,266 +1,123 @@
 {
   "project": "NowThenNext",
-  "branchName": "ralph/learning-cards",
-  "description": "Learning Cards - visual flashcard feature with built-in categories (Shapes, Colours, Animals, Dinosaurs), card flip interaction, and user-created custom categories",
+  "branchName": "ralph/phonics-card-images",
+  "description": "Phonics Card Images - add illustrations for example words with tap-to-flip interaction on phonics flashcards",
   "userStories": [
     {
-      "id": "US-049",
-      "title": "Add Learning Cards data models",
-      "description": "As a developer, I need LearningCategory and LearningCard models so that the feature has a typed data layer.",
+      "id": "US-065",
+      "title": "Add ImagePath field to GraphemeCard model",
+      "description": "As a developer, I need the data model to support an image path per phonics card so illustrations can be wired up.",
       "acceptanceCriteria": [
-        "Create LearningCategory model in Models/ with properties: Id (string), Name (string), Emoji (string), IsBuiltIn (bool), CreatedAt (DateTime)",
-        "Create LearningCard model in Models/ with properties: Id (string), CategoryId (string), ImageData (string), Word (string), IsBuiltIn (bool)",
+        "Add ImagePath property (string, nullable) to GraphemeCard in Models/PhonicsModels.cs",
         "Typecheck passes"
       ],
       "priority": 1,
       "passes": true,
-      "notes": "Simple model classes. Follow existing ImageItem pattern in Models/."
+      "notes": "Simple model change. Add 'public string? ImagePath { get; set; }' to the GraphemeCard class."
     },
     {
-      "id": "US-050",
-      "title": "Add Tailwind calm-cards colour theme",
-      "description": "As a developer, I need the calm-cards colour tokens added to the Tailwind config so that all Learning Cards UI can use them consistently.",
+      "id": "US-066",
+      "title": "Add tap-to-flip interaction on PhonicsCard page",
+      "description": "As a user, I want to tap a phonics card to flip between the grapheme view and an image of the example word so I can build visual associations.",
       "acceptanceCriteria": [
-        "Add calm-cards: '#D4937A' to the Tailwind config in wwwroot/index.html",
-        "Add calm-cards-dark: '#B87A62' to the Tailwind config",
-        "Add calm-cards-light: '#E0B0A0' to the Tailwind config",
-        "Typecheck passes"
+        "Tapping the card area (grapheme + word section) flips to show the image + word",
+        "Tapping again flips back to the grapheme view",
+        "Flip uses a gentle CSS transition (~0.4s, matching learning cards style)",
+        "The example word remains visible on both sides",
+        "If no image is set (ImagePath is null), tapping does nothing and card does not flip",
+        "The Got it! button, previous/next arrows, and back button are NOT part of the flippable area",
+        "Flip state resets when navigating to a different card (in OnParametersSetAsync)",
+        "Uses phonics colour theme (calm-phonics #7BA3C4)",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
       ],
       "priority": 2,
       "passes": true,
-      "notes": "Tailwind config is in wwwroot/index.html inline. Follow the pattern used for calm-phonics colours."
+      "notes": "Add a bool ShowImage toggle in PhonicsCard.razor.cs. The card body area gets an @onclick handler. When ShowImage is true, render an <img src='@CurrentCard.ImagePath'> instead of the grapheme/hint. The example word with highlighted grapheme stays visible on both sides. Reset ShowImage = false at the start of OnParametersSetAsync. Only enable click when CurrentCard?.ImagePath is not null."
     },
     {
-      "id": "US-051",
-      "title": "Create built-in Shapes SVG data",
-      "description": "As a developer, I need the Shapes category with hand-crafted SVG illustrations for each shape.",
+      "id": "US-067",
+      "title": "Add Phase 2 phonics images and wire up paths",
+      "description": "As a developer, I need to add illustration PNGs for all concrete Phase 2 example words and set their ImagePath in PhonicsDataService.",
       "acceptanceCriteria": [
-        "Create a LearningCardsBuiltInData static class (or similar) in Services/ with a method to get built-in Shapes category and cards",
-        "Shapes category: id='shapes', name='Shapes', emoji='🔷', isBuiltIn=true",
-        "Include cards for: circle, square, triangle, rectangle, star, heart, diamond, oval",
-        "Each card has a hand-crafted inline SVG string as ImageData (simple geometric shapes with calm fill colours)",
-        "SVGs render correctly as images (use data URI or raw SVG markup)",
-        "Typecheck passes"
+        "PNG files added to wwwroot/images/phonics/ for Phase 2 cards with concrete example words, named by card ID (e.g. p2-w1-s.png)",
+        "Each image clearly represents the example word (sun, ant, tap, pin, etc.)",
+        "Cards with abstract/hard-to-illustrate words (e.g. it, on, up, got, yes) are skipped — no ImagePath set, card does not flip",
+        "All illustrated Phase 2 cards in PhonicsDataService.cs have ImagePath set to images/phonics/{id}.png",
+        "Images render correctly when tapping a Phase 2 card to flip",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
       ],
       "priority": 3,
       "passes": true,
-      "notes": "SVGs should be simple filled shapes, e.g. <svg viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='#5B9A9A'/></svg>. Use varied calm colours for visual interest."
+      "notes": "Images must already exist in wwwroot/images/phonics/ before this story can be completed. The story wires up ImagePath values in PhonicsDataService.cs for Phase 2 BuildWeek calls. Abstract words to skip: 'it' (p2-w2-i), 'got' (p2-w3-g), 'on' (p2-w3-o), 'up' (p2-w4-u), 'win' (p2-w7-w), 'yes' (p2-w7-y). Concrete words to include: sun, ant, tap, pin, net, mat, dog, cat, kid, duck, egg, red, hat, bat, fan, puff, leg, bell, hiss, van, fox, zip, buzz, queen, chip, shop, thin, ring, pink."
     },
     {
-      "id": "US-052",
-      "title": "Create built-in Colours SVG data",
-      "description": "As a developer, I need the Colours category with colour swatch illustrations.",
+      "id": "US-068",
+      "title": "Add Phase 3 phonics images and wire up paths",
+      "description": "As a developer, I need to add illustration PNGs for all Phase 3 example words and set their ImagePath in PhonicsDataService.",
       "acceptanceCriteria": [
-        "Add Colours category to built-in data: id='colours', name='Colours', emoji='🎨', isBuiltIn=true",
-        "Include cards for: red, blue, green, yellow, orange, purple, pink, brown, black, white",
-        "Each card has a simple SVG swatch (filled rounded rectangle or circle) using the actual representative colour",
-        "These use real colours (e.g. actual red #E74C3C) not the calm palette - they are teaching colours",
-        "Typecheck passes"
+        "PNG files added to wwwroot/images/phonics/ for Phase 3 cards with concrete example words, named by card ID",
+        "Each image clearly represents the example word (rain, feet, night, boat, moon, book, car, fork, nurse, cow, coin, dear, fair, letter)",
+        "Cards with abstract words are skipped — no ImagePath set",
+        "All illustrated Phase 3 cards in PhonicsDataService.cs have ImagePath set",
+        "Images render correctly when tapping a Phase 3 card to flip",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
       ],
       "priority": 4,
       "passes": true,
-      "notes": "Simple rounded rect SVGs with the teaching colour as fill. Word is the colour name (e.g. 'Red')."
+      "notes": "Phase 3 has 14 cards and most example words are concrete. All should get images: rain, feet, night, boat, moon, book, car, fork, nurse, cow, coin, dear, fair, letter. Uses duplicate-grapheme pattern for oo_long/oo_short."
     },
     {
-      "id": "US-053",
-      "title": "Create built-in Animals SVG data",
-      "description": "As a developer, I need the Animals category with simple, friendly animal SVG illustrations.",
+      "id": "US-069",
+      "title": "Add Phase 4 phonics images and wire up paths",
+      "description": "As a developer, I need to add illustration PNGs for Phase 4 cards with concrete example words and set their ImagePath in PhonicsDataService.",
       "acceptanceCriteria": [
-        "Add Animals category to built-in data: id='animals', name='Animals', emoji='🐾', isBuiltIn=true",
-        "Include cards for: cat, dog, fish, bird, horse, cow, pig, sheep, rabbit, elephant, lion, tiger",
-        "Each animal has a simple, friendly SVG illustration (filled shapes, minimal detail)",
-        "Illustrations are recognisable at ~120px size without any text label",
-        "Typecheck passes"
+        "PNG files added to wwwroot/images/phonics/ for Phase 4 cards with concrete example words, named by card ID",
+        "Each image clearly represents the example word (crab, flag, frog, lamp, tent, sand, etc.)",
+        "Cards with abstract words (e.g. bring, glad, grip, plan, press, self, best, kept, task, next) are skipped — no ImagePath set",
+        "All illustrated Phase 4 cards in PhonicsDataService.cs have ImagePath set",
+        "Images render correctly when tapping a Phase 4 card to flip",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
       ],
       "priority": 5,
       "passes": true,
-      "notes": "Keep SVGs simple - basic body shapes, key features (ears, tail, trunk). Use friendly, warm colours. These don't need to be photorealistic."
+      "notes": "Phase 4 has many abstract consonant-cluster words. Concrete words to include: black, clap, crab, drop, flag, frog, skip, slip, snap, spot, stop, swim, trip, twin, lamp, sand, pink, tent. Abstract words to skip: bring, glad, grip, plan, press, scam, smell, left, self, help, felt, kept, task, best, next."
     },
     {
-      "id": "US-054",
-      "title": "Create built-in Dinosaurs SVG data",
-      "description": "As a developer, I need the Dinosaurs category with simple, friendly dinosaur SVG illustrations.",
+      "id": "US-070",
+      "title": "Add Phase 5 phonics images and wire up paths",
+      "description": "As a developer, I need to add illustration PNGs for Phase 5 cards with concrete example words and set their ImagePath in PhonicsDataService.",
       "acceptanceCriteria": [
-        "Add Dinosaurs category to built-in data: id='dinosaurs', name='Dinosaurs', emoji='🦕', isBuiltIn=true",
-        "Include cards for: T-Rex, Triceratops, Stegosaurus, Brachiosaurus, Velociraptor, Pteranodon, Ankylosaurus, Diplodocus",
-        "Each dinosaur has a simple, friendly SVG illustration (filled shapes, key distinguishing features)",
-        "Illustrations are recognisable at ~120px size without any text label",
-        "Typecheck passes"
+        "PNG files added to wwwroot/images/phonics/ for Phase 5 cards with concrete example words, named by card ID",
+        "Each image clearly represents the example word (play, cloud, pie, toy, bird, cake, snow, etc.)",
+        "Cards with abstract words (e.g. each, when, new, these, could, they, me, go) are skipped — no ImagePath set",
+        "All illustrated Phase 5 cards in PhonicsDataService.cs have ImagePath set",
+        "Images render correctly when tapping a Phase 5 card to flip",
+        "Typecheck passes",
+        "Verify in browser using dev-browser skill"
       ],
       "priority": 6,
       "passes": true,
-      "notes": "Key features: T-Rex (big head, tiny arms), Triceratops (frill + horns), Stegosaurus (back plates), Brachiosaurus (long neck), etc. Keep friendly, not scary."
+      "notes": "Phase 5 has split digraphs and alternative pronunciations. Concrete words: play, cloud, pie, toy, bird, blue, saw, phone, toe, cake, time, home, tube, snow, cow, field, bread, shoulder, key, acorn, tiger, unicorn, fly, school, chef, write, knee, gnome, lamb. Abstract words to skip: each, when, new, these, could, they, me, go, happy, August, eat."
     },
     {
-      "id": "US-055",
-      "title": "Create LearningCardsDataService for built-in and custom data",
-      "description": "As a developer, I need a service that combines built-in card data with user-created custom categories and cards stored in localStorage.",
+      "id": "US-071",
+      "title": "E2E test for phonics card flip interaction",
+      "description": "As a developer, I need E2E tests to verify the tap-to-flip interaction works correctly.",
       "acceptanceCriteria": [
-        "Create ILearningCardsDataService interface with methods: GetAllCategoriesAsync, GetCardsByCategoryAsync(categoryId), AddCustomCategoryAsync, AddCustomCardAsync, DeleteCustomCardAsync, DeleteCustomCategoryAsync",
-        "Create LearningCardsDataService implementing the interface",
-        "GetAllCategoriesAsync returns built-in categories (fixed order: Shapes, Colours, Animals, Dinosaurs) followed by custom categories ordered by CreatedAt",
-        "GetCardsByCategoryAsync returns all cards for a given category (built-in or custom)",
-        "Custom categories and cards persisted to localStorage under key 'learning-cards'",
-        "Built-in content is read-only - delete/edit methods only work on custom items",
-        "Register service as scoped in Program.cs DI container",
+        "Test: tapping a phonics card with an image flips to show the image",
+        "Test: tapping again flips back to show the grapheme",
+        "Test: navigating to next card resets flip state",
+        "Test: Got it! button still works after flipping",
+        "All tests pass",
         "Typecheck passes"
       ],
       "priority": 7,
       "passes": true,
-      "notes": "Follow PhonicsDataService/PhonicsProgressService pattern. Use IJSRuntime for localStorage access. Built-in data comes from the static class created in US-051 through US-054."
-    },
-    {
-      "id": "US-056",
-      "title": "Add Learning Cards section to home page",
-      "description": "As a user, I want to see a Learning Cards option on the home page so that I can access the new flashcard feature.",
-      "acceptanceCriteria": [
-        "New 'Learning Cards' menu group on home page, visually distinct from Phonics and other sections",
-        "Uses calm-cards theme colour (soft coral #D4937A) for the menu tile/button",
-        "Touch target meets 48px minimum",
-        "Links to /learning route",
-        "Follows existing home page menu group pattern (see Phonics section as reference)",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 8,
-      "passes": true,
-      "notes": "Reference Home.razor for the existing menu group pattern. Add after the Phonics section."
-    },
-    {
-      "id": "US-057",
-      "title": "Create Learning Cards category listing page",
-      "description": "As a user, I want to see all available card categories so that I can choose which topic to explore.",
-      "acceptanceCriteria": [
-        "Create LearningCategories.razor page at route /learning",
-        "Page displays all categories as large tiles in a responsive grid",
-        "Built-in categories show in fixed order: Shapes, Colours, Animals, Dinosaurs",
-        "Custom categories appear after built-in categories",
-        "Each tile shows the category emoji and name",
-        "Each tile links to /learning/{categoryId}",
-        "Back navigation link to home page",
-        "Uses calm-cards colour theme for page styling",
-        "Responsive padding: px-6 py-8 mobile, sm:px-8 sm:py-10 larger",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 9,
-      "passes": true,
-      "notes": "Follow existing page patterns (PhonicsPhases.razor is a good reference for a category listing page)."
-    },
-    {
-      "id": "US-058",
-      "title": "Create card grid page with flip-to-reveal interaction",
-      "description": "As a user, I want to see all cards in a category as a grid and tap cards to reveal the word.",
-      "acceptanceCriteria": [
-        "Create LearningCardGrid.razor page at route /learning/{CategoryId}",
-        "Page displays all cards in a responsive grid (2 columns mobile, 3-4 columns tablet/desktop)",
-        "Each card shows only the SVG/image by default (no text visible)",
-        "Cards are square tiles, minimum 120px, with rounded corners and subtle shadow",
-        "Tapping a card reveals the word below the image with a gentle fade animation (~0.4s)",
-        "Image remains visible when word is revealed",
-        "Word displayed in large clear Nunito font (minimum 24px)",
-        "Tapping a revealed card hides the word again (toggle)",
-        "Only one card revealed at a time - revealing a new card auto-hides the previous one",
-        "Category name displayed as page heading",
-        "Back navigation to /learning",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 10,
-      "passes": true,
-      "notes": "The SVG ImageData from built-in cards should render inline. For custom cards, ImageData is base64 and should render as <img src='data:image/...' />. Track revealed card by ID in component state."
-    },
-    {
-      "id": "US-059",
-      "title": "Add custom category creation",
-      "description": "As a user, I want to create my own card category with a name and emoji so that I can teach vocabulary specific to my child's needs.",
-      "acceptanceCriteria": [
-        "Add Category button/tile visible on the category listing page (/learning)",
-        "Tapping opens a modal/form to enter category name and choose an emoji",
-        "Category name is required with friendly validation message",
-        "Emoji picker shows a curated grid of ~20-30 child-friendly emoji (animals, objects, nature, food, etc.)",
-        "Default emoji assigned if none selected (e.g. 📋)",
-        "New category appears on the listing page after creation",
-        "Category persisted via LearningCardsDataService",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 11,
-      "passes": true,
-      "notes": "Use existing modal pattern (boolean visibility flag, stopPropagation on content). The emoji picker is just a grid of emoji characters the user taps to select - not a native OS picker."
-    },
-    {
-      "id": "US-060",
-      "title": "Add custom card creation with image upload",
-      "description": "As a user, I want to add cards to a custom category by uploading an image and typing a word.",
-      "acceptanceCriteria": [
-        "Add Card button visible on custom category card grid pages (not on built-in category pages)",
-        "Tapping opens a form to upload an image and enter a word",
-        "Image upload uses InputFile component with accept='image/*'",
-        "Image compressed using existing compressImage JS interop (800px max, 0.7 quality)",
-        "Word/label is a required field",
-        "Card appears in the grid after saving",
-        "Card persisted via LearningCardsDataService",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 12,
-      "passes": true,
-      "notes": "Reuse the image upload pattern from Upload.razor. Custom card ImageData is base64 (not SVG)."
-    },
-    {
-      "id": "US-061",
-      "title": "Add delete functionality for custom cards and categories",
-      "description": "As a user, I want to delete custom cards and categories I no longer need.",
-      "acceptanceCriteria": [
-        "Delete button visible on custom cards (not on built-in cards)",
-        "Confirmation dialog before card deletion using existing modal pattern",
-        "Card removed from grid after deletion",
-        "Delete button visible on custom categories on the category listing page",
-        "Category deletion confirmation warns that all cards will also be deleted",
-        "Category and all its cards removed after confirmation",
-        "Built-in categories and cards have no delete option",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 13,
-      "passes": true,
-      "notes": "Follow the delete confirmation pattern from the image libraries (LibraryTests reference)."
-    },
-    {
-      "id": "US-062",
-      "title": "Include custom learning cards in backup/restore",
-      "description": "As a user, I want my custom learning cards included when I back up or restore data so that I don't lose them.",
-      "acceptanceCriteria": [
-        "Extend Settings.razor backup to include 'learning-cards' localStorage key in the exported JSON",
-        "Extend Settings.razor restore to import 'learning-cards' data from the JSON file",
-        "Built-in categories are not duplicated on restore (only custom data is stored/restored)",
-        "Backup/restore still works correctly for existing data (images, phonics-progress)",
-        "Typecheck passes"
-      ],
-      "priority": 14,
-      "passes": true,
-      "notes": "Reference Settings.razor for the existing backup/restore pattern. The learning-cards key stores only custom categories and cards."
-    },
-    {
-      "id": "US-063",
-      "title": "E2E tests for Learning Cards",
-      "description": "As a developer, I need E2E tests covering the learning cards feature to ensure quality.",
-      "acceptanceCriteria": [
-        "Create LearningCardsTests.cs in the E2E test project",
-        "Test: home page shows Learning Cards link and navigates to /learning",
-        "Test: category listing page shows 4 built-in categories (Shapes, Colours, Animals, Dinosaurs)",
-        "Test: navigating to a built-in category shows card grid with correct number of cards",
-        "Test: tapping a card reveals the word, tapping again hides it",
-        "Test: revealing a second card auto-hides the first",
-        "Test: creating a custom category with name and emoji",
-        "Test: deleting a custom category",
-        "All tests pass",
-        "Typecheck passes"
-      ],
-      "priority": 15,
-      "passes": true,
-      "notes": "Follow existing E2E test patterns (BlazorAppFixture, ClearLocalStorageAsync after navigation, 60s timeout for WaitForSelectorAsync). Use relative href selectors (e.g. a[href='learning'] not a[href='/learning'])."
+      "notes": "Add tests to PhonicsTests.cs. Navigate to a Phase 2 card that has an image (e.g. /phonics/2/card/p2-w1-s which shows 'sun'). Test the flip toggle, then navigate to next card and verify flip resets. Use relative href selectors per CLAUDE.md."
     }
   ]
 }

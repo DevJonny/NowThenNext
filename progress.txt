@@ -1,271 +1,65 @@
-# Ralph Progress Log - Learning Cards
+# Ralph Progress Log - Phonics Card Images
 
-Branch: ralph/learning-cards
-Started: 2026-02-07
+Branch: ralph/phonics-card-images
+Started: 2026-02-09
 
 ## Codebase Patterns
-- Existing code-behind pattern: file-scoped namespace, `public partial class`, `[Inject] private` properties with `= default!`
-- Pages use namespace `NowThenNext.Pages`, Components use `NowThenNext.Components`
-- Check `_Imports.razor` before adding usings to code-behind — many are already global
-- Run E2E tests after every story: `dotnet test tests/NowThenNext.Tests.E2E`
-- WASM build is broken in local environment (ComputeWasmBuildAssets MSB4216 error) - pre-existing issue, not caused by code changes
-- Use `dotnet build` to verify C# compilation (check for 0 C# errors even if WASM toolchain fails)
-- Heredoc commit messages fail due to sandbox tmp restrictions - use inline `-m` flag instead
-- Tailwind config is inline in wwwroot/index.html
-- Follow PhonicsDataService pattern for static built-in data
-- Dev server runs on localhost:5161
+- Phonics data is hardcoded in `PhonicsDataService.cs` (singleton), uses `BuildWeek` helper for most weeks
+- Phase 5 Week 3 manually constructs cards (duplicate graphemes with suffixed IDs like `oo_long`, `ch_chef`)
+- GraphemeCard ID format: `p{phase}-w{week}-{grapheme}`
+- PhonicsCard.razor uses `OnParametersSetAsync` (not OnInitializedAsync) because Blazor reuses the component for same-route navigation
+- Image path rendering pattern: relative paths like `images/dinosaurs/trex.png` work via the `card.ImageData.Contains('/')` branch in LearningCardGrid.razor
+- E2E tests use relative href selectors (e.g. `a[href='phonics']` not `a[href='/phonics']`)
+- Dev server: localhost:5161
 
 ---
 
-## 2026-02-07 - US-049
-- Created LearningCategory and LearningCard models in Models/LearningCardModels.cs
-- Files changed: src/NowThenNext/Models/LearningCardModels.cs (new)
+## 2026-02-09 - US-065
+- Added `public string? ImagePath { get; set; }` to GraphemeCard in Models/PhonicsModels.cs
+- Files changed: src/NowThenNext/Models/PhonicsModels.cs
 - **Learnings for future iterations:**
-  - Models follow same pattern as ImageItem: file-scoped namespace, auto-initialized properties with defaults
-  - PhonicsModels.cs puts multiple related models in one file, so LearningCardModels.cs follows the same convention (both LearningCategory and LearningCard in one file)
-  - Build passes clean with 0 warnings, 0 errors
+  - Nullable string property (string?) allows cards without images to remain unchanged
+  - Build passes clean with 0 errors
 ---
 
-## 2026-02-07 - US-050
-- Added calm-cards colour tokens to Tailwind config in wwwroot/index.html
-- Colours: calm-cards (#D4937A), calm-cards-dark (#B87A62), calm-cards-light (#E0B0A0)
-- Files changed: src/NowThenNext/wwwroot/index.html (modified)
+## 2026-02-09 - US-066
+- Added tap-to-flip interaction on PhonicsCard page
+- `ShowImage` bool toggle + `ToggleImage()` method in code-behind, reset in `OnParametersSetAsync`
+- `HasImage` computed property checks `Card?.ImagePath` is not null/empty
+- Razor template: `@onclick="ToggleImage"` on `.flashcard` div, conditional rendering of image vs grapheme
+- Example word with highlighted grapheme stays visible on both sides
+- Cards without ImagePath: no cursor change, tap does nothing (guarded by `HasImage` check)
+- CSS: `.flashcard-tappable` class adds cursor pointer and hover shadow; `.card-image-display` / `.card-image` for image rendering
+- Files changed: src/NowThenNext/Pages/PhonicsCard.razor, src/NowThenNext/Pages/PhonicsCard.razor.cs
 - **Learnings for future iterations:**
-  - Tailwind colour tokens are nested under the 'calm' object, so they're used as `bg-calm-cards`, `text-calm-cards`, etc.
-  - Follow the pattern of existing colour groups (phonics, activity) - add comment, then three entries (base, dark, light)
-  - Build passes clean with 0 warnings, 0 errors
+  - The flip is not a CSS 3D flip — it's a content swap (conditional rendering) which is simpler and more accessible
+  - `HasImage` property avoids repeated null checks in both razor and code-behind
+  - The `.flashcard-tappable` class is conditionally applied so cards without images don't show pointer cursor
+  - Example word moved below the conditional block so it's always visible regardless of flip state
+  - E2E tests pass: 84/84 (no regressions)
 ---
 
-## 2026-02-07 - US-051
-- Created LearningCardsBuiltInData static class in Services/LearningCardsBuiltInData.cs
-- Shapes category: id='shapes', name='Shapes', emoji='🔷', isBuiltIn=true
-- 8 shape cards: circle, square, triangle, rectangle, star, heart, diamond, oval
-- Each card has hand-crafted inline SVG with varied calm colours (teal, green, coral, blue, amber, phonics-light, cards-dark)
-- Files changed: src/NowThenNext/Services/LearningCardsBuiltInData.cs (new)
+## 2026-02-09 - US-067 to US-070
+- Added Noto Color Emoji (Apache 2.0) PNG images for phonics cards across all phases
+- 56 PNG files copied to `wwwroot/images/phonics/`, named by card ID (e.g. `p2-w1-s.png`)
+- Images sourced from Google Noto Color Emoji 128px PNGs, mapped to Unicode codepoints via shell script
+- Added `CardsWithImages` HashSet and `AssignImagePaths()` method to PhonicsDataService.cs
+- Abstract/hard-to-illustrate words skipped (no ImagePath set, card doesn't flip)
+- Files changed: src/NowThenNext/Services/PhonicsDataService.cs, 56 PNG files in wwwroot/images/phonics/
 - **Learnings for future iterations:**
-  - Static class pattern works well for built-in data - no DI needed, just static methods
-  - SVG strings use raw string literals (triple quotes) for readability
-  - Card IDs follow pattern: `{categoryId}-{shapeName}` (e.g. `shapes-circle`)
-  - Used varied colours from the calm palette for visual interest: #5B9A9A (teal), #7BA893 (green), #D4937A (coral), #7BA3C4 (blue), #D4A06A (amber), #E0B0A0 (cards-light), #9BBDD6 (phonics-light), #B87A62 (cards-dark)
-  - CreatedAt set to a fixed date (2026-01-01) so built-in categories always sort before custom ones
-  - Build passes clean with 0 warnings, 0 errors
+  - Centralized `AssignImagePaths` method with HashSet is cleaner than modifying `BuildWeek` helper signature
+  - Noto Color Emoji provides good coverage for concrete nouns but not all words (abstract words naturally excluded)
+  - Shell script approach for mapping card IDs to emoji codepoints was efficient for bulk operations
+  - E2E tests pass: 84/84 (no regressions)
 ---
 
-## 2026-02-07 - US-052
-- Added Colours category and 10 colour cards to LearningCardsBuiltInData
-- Colours category: id='colours', name='Colours', emoji='🎨', isBuiltIn=true
-- 10 colour cards: red, blue, green, yellow, orange, purple, pink, brown, black, white
-- Each card uses a rounded rectangle SVG swatch (rx="12") filled with the actual teaching colour
-- White card includes a light grey stroke so it's visible against white backgrounds
-- Files changed: src/NowThenNext/Services/LearningCardsBuiltInData.cs (modified)
+## 2026-02-09 - US-071
+- Added 4 E2E tests for phonics card flip interaction to PhonicsTests.cs
+- Tests: FlashcardFlip_TappingCardWithImage_ShowsImage, FlashcardFlip_TappingAgain_ShowsGrapheme, FlashcardFlip_NavigatingToNextCard_ResetsFlipState, FlashcardFlip_GotItWorksAfterFlipping
+- Tests navigate directly to `/phonics/2/card/p2-w1-s` (the "s" card with sun image) for flip tests
+- Files changed: tests/NowThenNext.Tests.E2E/Tests/PhonicsTests.cs
 - **Learnings for future iterations:**
-  - Colour cards use real representative colours, not the calm palette (per PRD requirement)
-  - Colour hex values used: #E74C3C (red), #3498DB (blue), #2ECC71 (green), #F1C40F (yellow), #E67E22 (orange), #9B59B6 (purple), #E91E9C (pink), #8B4513 (brown), #2C3E50 (black), #FFFFFF (white)
-  - White/light colours need a stroke outline to remain visible - used stroke="#CCCCCC" stroke-width="2"
-  - Card ID pattern continues: `{categoryId}-{colourName}` (e.g. `colours-red`)
-  - Build passes clean with 0 warnings, 0 errors
----
-
-## 2026-02-07 - US-053
-- Added Animals category and 12 animal cards to LearningCardsBuiltInData
-- Animals category: id='animals', name='Animals', emoji='🐾', isBuiltIn=true
-- 12 animal cards: cat, dog, fish, bird, horse, cow, pig, sheep, rabbit, elephant, lion, tiger
-- Each card has a simple, friendly SVG illustration with key distinguishing features
-- Files changed: src/NowThenNext/Services/LearningCardsBuiltInData.cs (modified)
-- **Learnings for future iterations:**
-  - Animal SVGs use basic shapes (ellipses, circles, paths, lines) to create recognisable silhouettes
-  - Key distinguishing features for each animal: cat (pointed ears, tail), dog (floppy ears, wagging tail), fish (tail fin, scales), bird (beak, wings, legs), horse (mane, long legs, tail), cow (black patches, horns, pink nose), pig (snout with nostrils, curly tail, big ears), sheep (fluffy circles body, dark face/legs), rabbit (long ears, whiskers, cotton tail), elephant (trunk, big ear, thick legs), lion (mane as outer circle, body), tiger (stripes on head/body, rounded ears)
-  - White/light-coloured animals (cow, sheep) need a stroke outline to remain visible against white backgrounds
-  - Warm colour palette used: #E8A87C (cat), #C4956A/#A67B5B (dog), #5B9A9A (fish), #7BA3C4 (bird), #A67B5B (horse), white/#2C3E50 (cow), #F0B4B4 (pig), #F5F0E8/#2C3E50 (sheep), #E8DDD0 (rabbit), #9BBDD6 (elephant), #E8C88A/#D4A06A (lion), #E8A84C (tiger)
-  - Card ID pattern continues: `{categoryId}-{animalName}` (e.g. `animals-cat`)
-  - Build passes clean with 0 warnings, 0 errors
----
-
-## 2026-02-07 - US-054
-- Added Dinosaurs category and 8 dinosaur cards to LearningCardsBuiltInData
-- Dinosaurs category: id='dinosaurs', name='Dinosaurs', emoji='🦕', isBuiltIn=true
-- 8 dinosaur cards: T-Rex, Triceratops, Stegosaurus, Brachiosaurus, Velociraptor, Pteranodon, Ankylosaurus, Diplodocus
-- Each card has a simple, friendly SVG illustration with key distinguishing features
-- Files changed: src/NowThenNext/Services/LearningCardsBuiltInData.cs (modified)
-- **Learnings for future iterations:**
-  - Dinosaur SVGs use the same basic shapes approach (ellipses, circles, paths, lines) as animal SVGs
-  - Key distinguishing features for each dinosaur: T-Rex (big head, tiny arms, sharp teeth), Triceratops (frill, horns, beak), Stegosaurus (back plates, tail spikes), Brachiosaurus (very long neck, small head), Velociraptor (sleek body, clawed feet, tail), Pteranodon (large wings, head crest, beak), Ankylosaurus (armoured bumps, club tail), Diplodocus (long neck, long whip tail, small head)
-  - Used varied colours from the calm palette: #7BA893 (T-Rex green), #D4A06A (Triceratops amber), #5B9A9A (Stegosaurus teal), #9BBDD6 (Brachiosaurus blue), #E8C88A (Velociraptor sandy), #D4937A (Pteranodon coral), #7BA3C4 (Ankylosaurus phonics blue), #D4A06A (Diplodocus amber)
-  - Dinosaur emoji 🦕 Unicode is U+1F995, UTF-16 surrogate pair: \ud83e\udd95
-  - Card ID pattern continues: `{categoryId}-{dinoName}` (e.g. `dinosaurs-trex`)
-  - Build passes clean with 0 warnings, 0 errors
----
-
-## 2026-02-07 - US-055
-- Created ILearningCardsDataService interface and LearningCardsDataService implementation
-- Interface defines: GetAllCategoriesAsync, GetCardsByCategoryAsync, AddCustomCategoryAsync, AddCustomCardAsync, DeleteCustomCardAsync, DeleteCustomCategoryAsync
-- Service combines built-in data (from LearningCardsBuiltInData static class) with custom data persisted in localStorage under key 'learning-cards'
-- Built-in categories returned in fixed order (Shapes, Colours, Animals, Dinosaurs), custom categories ordered by CreatedAt
-- Delete/add methods guard against modifying built-in items
-- Registered as scoped service in Program.cs DI container
-- Files changed: src/NowThenNext/Services/ILearningCardsDataService.cs (new), src/NowThenNext/Services/LearningCardsDataService.cs (new), src/NowThenNext/Program.cs (modified)
-- **Learnings for future iterations:**
-  - Followed PhonicsProgressService pattern for localStorage access (IJSRuntime, try/catch, StorageQuotaExceededException)
-  - Used a private nested CustomLearningData class to structure the localStorage JSON (Categories list + Cards list)
-  - Built-in category lookup uses a switch expression for clean pattern matching
-  - GetCardsByCategoryAsync returns built-in cards directly when category is built-in, only queries localStorage for custom categories
-  - Service is scoped (not singleton) because it depends on IJSRuntime which requires per-circuit scoping in Blazor WASM
-  - Build passes clean with 0 warnings, 0 errors
----
-
-## 2026-02-07 - US-056
-- Added Learning Cards menu group to home page after Phonics section
-- New menu group uses calm-cards theme colour (#D4937A) with flashcard SVG icon
-- Links to /learning route
-- Updated HomePageTests to expect 5 menu groups (was 4) and verify the 5th group has 1 button
-- Files changed: src/NowThenNext/Pages/Home.razor (modified), tests/NowThenNext.Tests.E2E/Tests/HomePageTests.cs (modified)
-- **Learnings for future iterations:**
-  - Adding a new menu group requires updating the HomePage_MenuButtonsAreGroupedInPairs test which asserts the exact count of .menu-group elements
-  - The flashcard icon (rectangle with cross lines) visually represents learning cards well at the menu icon size
-  - E2E tests pass: 74/74 (up from 69 baseline mentioned in CLAUDE.md - test count grew during prior stories)
-  - Build passes clean with 0 warnings, 0 errors
----
-
-## 2026-02-07 - US-057
-- Created LearningCategories.razor page at route /learning with code-behind LearningCategories.razor.cs
-- Page displays all categories as large tiles in a responsive grid (2 cols mobile, 3 cols tablet, 4 cols desktop)
-- Each tile shows category emoji and name, links to /learning/{categoryId}
-- Built-in categories show in fixed order (Shapes, Colours, Animals, Dinosaurs), custom categories after
-- Back navigation button returns to home page
-- Uses calm-cards colour theme (#D4937A) for page styling (back button, hover border)
-- Responsive padding: px-6 py-8 mobile, sm:px-8 sm:py-10 larger screens
-- Files changed: src/NowThenNext/Pages/LearningCategories.razor (new), src/NowThenNext/Pages/LearningCategories.razor.cs (new)
-- **Learnings for future iterations:**
-  - PhonicsPhases.razor is the closest pattern match for a category listing page
-  - Back button colour should match the section theme colour (calm-cards #D4937A for Learning Cards, calm-phonics #7BA3C4 for Phonics)
-  - Category tiles use flex-direction: column (emoji stacked above name) for visual prominence
-  - Grid responsive breakpoints: 2 cols at mobile, 3 at 768px (md), 4 at 1024px (lg)
-  - Code-behind follows pattern: file-scoped namespace, public partial class, [Inject] private properties with = default!
-  - _Imports.razor already includes NowThenNext.Models so no additional using needed in razor file
-  - E2E tests pass: 74/74
-  - Build passes clean with 0 warnings, 0 errors
----
-
-## 2026-02-07 - US-058
-- Created LearningCardGrid.razor page at route /learning/{CategoryId} with code-behind LearningCardGrid.razor.cs
-- Page displays all cards for a category in a responsive grid (2 cols mobile, 3 cols tablet, 4 cols desktop)
-- Each card shows SVG/image only by default; tapping reveals the word below with a 0.4s fade animation
-- Toggle behaviour: tapping a revealed card hides the word; revealing a new card auto-hides the previous one
-- SVG built-in cards rendered inline via MarkupString; custom cards rendered as base64 img tags
-- Category emoji and name displayed in page heading
-- Back navigation to /learning
-- Cards are square tiles (aspect-ratio: 1) with min-height 120px, rounded corners, subtle shadow
-- Files changed: src/NowThenNext/Pages/LearningCardGrid.razor (new), src/NowThenNext/Pages/LearningCardGrid.razor.cs (new)
-- **Learnings for future iterations:**
-  - Used OnParametersSetAsync instead of OnInitializedAsync because the route has a parameter (CategoryId) that could change while the component stays mounted (Blazor same-route navigation)
-  - RevealedCardId reset to null at start of OnParametersSetAsync to avoid stale state when navigating between categories
-  - SVG detection: check if ImageData.StartsWith("<svg") to decide between inline rendering and base64 img tag
-  - Card word reveal uses CSS opacity + max-height transition for smooth animation (max-height: 0 to 4rem)
-  - Used :deep(svg) CSS selector to style SVGs rendered inside the card-image div
-  - Single RevealedCardId state variable handles the "only one card revealed at a time" requirement
-  - E2E tests pass: 74/74
-  - Build passes clean with 0 warnings, 0 errors
----
-
-## 2026-02-07 - US-059
-- Added "Add Category" button tile (dashed border, + icon) to the category listing page (/learning)
-- Added modal form with category name input (required, max 30 chars), curated emoji picker (30 child-friendly emojis), and live preview
-- Modal uses existing pattern: boolean visibility flag, @onclick:stopPropagation on content div, backdrop click to dismiss
-- Friendly validation message shown when trying to save without a name
-- Default emoji (clipboard) assigned if none selected
-- Category persisted via LearningCardsDataService.AddCustomCategoryAsync, page refreshes category list after save
-- Files changed: src/NowThenNext/Pages/LearningCategories.razor (modified), src/NowThenNext/Pages/LearningCategories.razor.cs (modified)
-- **Learnings for future iterations:**
-  - Emoji characters in C# code-behind use Unicode escape sequences (e.g. "\U0001F697" for car emoji) - more reliable than pasting literal emoji in source
-  - The emoji picker is a simple CSS grid of button elements, not a native OS picker - keeps it consistent and accessible
-  - Dashed border style (border: 2px dashed #D4937A) visually distinguishes the "add" tile from content tiles
-  - Modal max-height: 90vh with overflow-y: auto prevents content from overflowing on small screens when the emoji grid is tall
-  - SelectEmoji method uses toggle logic (deselect if same emoji tapped again) for better UX
-  - form-input uses box-sizing: border-box to prevent width overflow inside the modal
-  - E2E tests pass: 74/74
-  - Build passes clean with 0 warnings, 0 errors
----
-
-## 2026-02-07 - US-060
-- Added "Add Card" button tile (dashed border, + icon) to the card grid page, visible only for custom categories (not built-in)
-- Added modal form with image upload (InputFile component, accept='image/jpeg,image/png,image/webp') and word input (required, max 50 chars)
-- Image preview with clear button, compressed using existing compressImage JS interop (800px max, 0.7 quality)
-- Validation messages for missing word or missing image
-- Error handling for storage quota exceeded and general failures
-- Card saved via LearningCardsDataService.AddCustomCardAsync, grid refreshed after save, modal closed
-- IsCustomCategory computed property checks Category.IsBuiltIn to conditionally render the add card tile
-- Files changed: src/NowThenNext/Pages/LearningCardGrid.razor (modified), src/NowThenNext/Pages/LearningCardGrid.razor.cs (modified)
-- **Learnings for future iterations:**
-  - Reused Upload.razor patterns: InputFile with hidden class, base64 conversion via MemoryStream, compressImage JS interop, data URL extraction
-  - Added IJSRuntime injection to LearningCardGrid code-behind (was not needed before US-060)
-  - Modal follows existing pattern from LearningCategories (US-059): boolean flag, backdrop click to dismiss, @onclick:stopPropagation on content
-  - Card upload label uses <label for="card-file-upload"> linked to InputFile id to trigger the native file picker - avoids need for JS click interop
-  - Image file input uses accept="image/jpeg,image/png,image/webp" (specific MIME types) rather than accept="image/*" for better filtering
-  - box-sizing: border-box on card-form-input prevents width overflow inside modal (same learning from US-059)
-  - The add-card-tile uses aspect-ratio: 1 to match the learning-card tiles visually in the grid
-  - E2E tests pass: 74/74
-  - Build passes clean with 0 warnings, 0 errors
----
-
-## 2026-02-08 - US-061
-- Added delete functionality for custom cards and categories
-- Custom card delete: X button overlay on custom cards (not on built-in), confirmation modal, card removal from grid and localStorage
-- Custom category delete: X button overlay on custom category tiles (not on built-in), confirmation modal warning all cards will also be deleted
-- Card grid restructured to use card-tap-area div to separate tap-to-reveal from delete button click (stopPropagation on delete button)
-- Learning card now has position: relative for absolute positioning of delete button overlay
-- Category tiles wrapped in category-tile-wrapper div for relative positioning of delete button
-- Files changed: src/NowThenNext/Pages/LearningCardGrid.razor (modified), src/NowThenNext/Pages/LearningCardGrid.razor.cs (modified), src/NowThenNext/Pages/LearningCategories.razor (modified), src/NowThenNext/Pages/LearningCategories.razor.cs (modified)
-- **Learnings for future iterations:**
-  - Delete button pattern: absolute-positioned circular button (1.75rem) with semi-transparent dark background, X icon, positioned top-right with z-index: 5
-  - Delete button uses @onclick:stopPropagation="true" to prevent triggering the underlying card tap/link
-  - Delete confirmation modals use calm amber (#D4A06A) for the delete button, not harsh red - consistent with app's calm design principles
-  - Category deletion warning text: "All cards in this category will also be deleted. This cannot be undone." - important to warn users about cascading deletes
-  - The card-tap-area wrapper div separates the clickable reveal area from the delete button, preventing accidental card reveals when deleting
-  - Built-in content protected by @if (!category.IsBuiltIn) and @if (IsCustomCategory) guards - these checks happen in the Razor template, not just the service layer
-  - ConfirmDeleteCard calls StateHasChanged() explicitly after removing the card from the local list to ensure immediate UI update
-  - E2E tests pass: 74/74
-  - Build passes clean with 0 warnings, 0 errors
----
-
-## 2026-02-08 - US-062
-- Extended backup/restore in Settings.razor to include 'learning-cards' localStorage key
-- BackupData model updated with nullable JsonElement? LearningCardsData property for backward compatibility
-- Backup reads 'learning-cards' from localStorage and includes it in the exported JSON
-- Restore (replace mode): overwrites 'learning-cards' in localStorage with backup data, clears it if backup has none
-- Restore (merge mode): merges categories and cards by ID (skips duplicates), writes combined result to localStorage
-- MergeLearningCardsJson static helper uses System.Text.Json's JsonDocument/Utf8JsonWriter for low-level JSON merging
-- Built-in categories are not affected because only custom data lives in localStorage under the 'learning-cards' key
-- Old backup files without LearningCardsData property are handled gracefully (nullable JsonElement? defaults to null)
-- Files changed: src/NowThenNext/Models/BackupData.cs (modified), src/NowThenNext/Pages/Settings.razor.cs (modified)
-- **Learnings for future iterations:**
-  - JsonElement? (nullable) is the right approach for optional backup fields - older backups deserialize cleanly with the property as null
-  - GetRawText() on JsonElement gives the raw JSON string which can be stored directly in localStorage
-  - For merge logic, working at the JSON document level (JsonDocument.Parse + Utf8JsonWriter) avoids needing to deserialize into strongly-typed models and re-serialize - cleaner when the data structure is owned by another service
-  - The learning-cards localStorage key only contains custom categories/cards, never built-in data, so backup/restore naturally avoids duplicating built-in content
-  - PendingLearningCardsJson must be cleared in CancelRestore, PerformReplace finally, and PerformMerge finally - three places that reset state
-  - E2E tests pass: 74/74
-  - Build passes clean with 0 warnings, 0 errors
----
-
-## 2026-02-08 - US-063
-- Created LearningCardsTests.cs in the E2E test project with 7 comprehensive tests
-- Test 1: Home page shows Learning Cards link and navigates to /learning
-- Test 2: Category listing page shows 4 built-in categories (Shapes, Colours, Animals, Dinosaurs) plus Add Category tile
-- Test 3: Navigating to Shapes category shows card grid with 8 cards
-- Test 4: Tapping a card reveals the word ("Circle"), tapping again hides it (toggle behaviour)
-- Test 5: Revealing a second card ("Square") auto-hides the first ("Circle") - only one card revealed at a time
-- Test 6: Creating a custom category "Vehicles" with emoji picker, verifying it appears on listing page
-- Test 7: Deleting a custom category "Toys" with confirmation modal, verifying it disappears from listing page
-- Updated CLAUDE.md test count to 81 (54 MVP + 15 Phonics + 5 Learning Cards data layer + 7 Learning Cards E2E)
-- Files changed: tests/NowThenNext.Tests.E2E/Tests/LearningCardsTests.cs (new), CLAUDE.md (modified)
-- **Learnings for future iterations:**
-  - xUnit v3 test filter: use `FullyQualifiedName~ClassName` not `ClassName~ClassName` for filtering
-  - Category tiles include the Add Category tile with class `.category-tile.add-category-tile`, so total count is built-in + 1
-  - `.learning-card.revealed` CSS class is the reliable indicator that a card word is shown
-  - `.card-word-visible` CSS class is applied to the word div when revealed - useful for asserting word content
-  - `.card-tap-area` is the correct click target for card reveal (not `.learning-card` which also contains the delete button)
-  - Custom category creation flow: click `.add-category-tile` -> fill `#categoryName` -> click `.emoji-option` -> click `.modal-save-button`
-  - Custom category deletion flow: click `.delete-category-btn` -> confirm in modal via `.modal-delete-button`
-  - E2E tests pass: 81/81 (all tests green)
-  - Build passes clean with 0 warnings, 0 errors
+  - Direct URL navigation to specific phonics cards works well for testing (no need to navigate through the UI)
+  - `.card-image` selector reliably distinguishes image-side from grapheme-side
+  - E2E tests pass: 88/88 (84 existing + 4 new)
 ---
