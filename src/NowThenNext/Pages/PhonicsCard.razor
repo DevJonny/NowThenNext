@@ -36,15 +36,25 @@
     {
         <!-- Flashcard -->
         <div class="flashcard-container">
-            <div class="flashcard">
-                <!-- Large Grapheme -->
-                <div class="grapheme-display">@Card.Grapheme</div>
+            <div class="flashcard @(HasImage ? "flashcard-tappable" : "")" @onclick="ToggleImage">
+                @if (ShowImage && HasImage)
+                {
+                    <!-- Image side -->
+                    <div class="card-image-display">
+                        <img src="@Card.ImagePath" alt="@Card.ExampleWord" class="card-image" />
+                    </div>
+                }
+                else
+                {
+                    <!-- Grapheme side -->
+                    <div class="grapheme-display">@Card.Grapheme</div>
 
-                <!-- Example Word with highlighted grapheme -->
+                    <!-- Keyword Hint -->
+                    <div class="keyword-hint">@Card.KeywordHint</div>
+                }
+
+                <!-- Example Word with highlighted grapheme (visible on both sides) -->
                 <div class="example-word">@((MarkupString)HighlightGrapheme(Card.ExampleWord, Card.Grapheme))</div>
-
-                <!-- Keyword Hint -->
-                <div class="keyword-hint">@Card.KeywordHint</div>
             </div>
         </div>
 
@@ -143,6 +153,31 @@
         font-size: 1.125rem;
         color: #606F7B;
         font-style: italic;
+    }
+
+    .flashcard-tappable {
+        cursor: pointer;
+        transition: box-shadow 0.2s ease;
+    }
+
+    .flashcard-tappable:hover {
+        box-shadow: 0 6px 20px rgba(123, 163, 196, 0.2);
+    }
+
+    .card-image-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-height: 16rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-image {
+        max-width: 100%;
+        max-height: 16rem;
+        object-fit: contain;
+        border-radius: 0.75rem;
     }
 
     /* Phase Complete */
