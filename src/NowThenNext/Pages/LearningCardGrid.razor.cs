@@ -52,6 +52,8 @@ public partial class LearningCardGrid
         Cards = Category != null
             ? await LearningCardsData.GetCardsByCategoryAsync(CategoryId)
             : new();
+
+        ShuffleList(Cards);
     }
 
     private void ToggleCard(string cardId)
@@ -207,8 +209,9 @@ public partial class LearningCardGrid
 
             await LearningCardsData.AddCustomCardAsync(card);
 
-            // Refresh cards list
+            // Refresh cards list and re-shuffle
             Cards = await LearningCardsData.GetCardsByCategoryAsync(CategoryId);
+            ShuffleList(Cards);
 
             // Close modal
             ShowAddCardModal = false;
@@ -226,6 +229,15 @@ public partial class LearningCardGrid
         {
             IsAddingCard = false;
             StateHasChanged();
+        }
+    }
+
+    private static void ShuffleList<T>(List<T> list)
+    {
+        for (var i = list.Count - 1; i > 0; i--)
+        {
+            var j = Random.Shared.Next(i + 1);
+            (list[i], list[j]) = (list[j], list[i]);
         }
     }
 }

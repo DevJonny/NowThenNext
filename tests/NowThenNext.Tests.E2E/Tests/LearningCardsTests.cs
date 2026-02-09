@@ -128,10 +128,11 @@ public class LearningCardsTests
             // Assert - the first card now has the revealed class
             await Assertions.Expect(page.Locator(".learning-card.revealed")).ToHaveCountAsync(1, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
 
-            // Assert - the word "Circle" is visible (first shape card)
+            // Assert - a word is visible (cards are shuffled so we check any word appears)
             var visibleWord = page.Locator(".card-word-visible");
             await Assertions.Expect(visibleWord).ToHaveCountAsync(1, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
-            await Assertions.Expect(visibleWord).ToContainTextAsync("Circle", new LocatorAssertionsToContainTextOptions { Timeout = 10000 });
+            var firstWordText = await visibleWord.TextContentAsync();
+            Assert.False(string.IsNullOrWhiteSpace(firstWordText), "Revealed word should not be empty");
 
             // Act - tap the same card again
             await firstCard.ClickAsync();
@@ -165,9 +166,11 @@ public class LearningCardsTests
             var cardTapAreas = page.Locator(".card-tap-area");
             await cardTapAreas.Nth(0).ClickAsync();
 
-            // Assert - first card revealed, word "Circle" visible
+            // Assert - first card revealed with a word visible
             await Assertions.Expect(page.Locator(".learning-card.revealed")).ToHaveCountAsync(1, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
-            await Assertions.Expect(page.Locator(".card-word-visible")).ToContainTextAsync("Circle", new LocatorAssertionsToContainTextOptions { Timeout = 10000 });
+            var firstVisibleWord = page.Locator(".card-word-visible");
+            await Assertions.Expect(firstVisibleWord).ToHaveCountAsync(1, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
+            var firstWordText = await firstVisibleWord.TextContentAsync();
 
             // Act - tap the second card
             await cardTapAreas.Nth(1).ClickAsync();
@@ -175,10 +178,11 @@ public class LearningCardsTests
             // Assert - still only one card revealed
             await Assertions.Expect(page.Locator(".learning-card.revealed")).ToHaveCountAsync(1, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
 
-            // Assert - the word is now "Square" (second shape), not "Circle"
+            // Assert - the visible word changed (different card is now revealed)
             var visibleWord = page.Locator(".card-word-visible");
             await Assertions.Expect(visibleWord).ToHaveCountAsync(1, new LocatorAssertionsToHaveCountOptions { Timeout = 10000 });
-            await Assertions.Expect(visibleWord).ToContainTextAsync("Square", new LocatorAssertionsToContainTextOptions { Timeout = 10000 });
+            var secondWordText = await visibleWord.TextContentAsync();
+            Assert.NotEqual(firstWordText, secondWordText);
         }
         finally
         {
