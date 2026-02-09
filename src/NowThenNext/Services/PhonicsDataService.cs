@@ -10,6 +10,7 @@ public class PhonicsDataService : IPhonicsDataService
     public PhonicsDataService()
     {
         _phases = BuildAllPhases();
+        AssignImagePaths(_phases);
         _cardLookup = _phases
             .SelectMany(p => p.Weeks)
             .SelectMany(w => w.Cards)
@@ -334,6 +335,45 @@ public class PhonicsDataService : IPhonicsDataService
         ));
 
         return phase;
+    }
+
+    private static readonly HashSet<string> CardsWithImages = new()
+    {
+        // Phase 2
+        "p2-w1-s", "p2-w1-a", "p2-w1-p",
+        "p2-w2-n", "p2-w2-d",
+        "p2-w3-c",
+        "p2-w4-ck", "p2-w4-e", "p2-w4-r",
+        "p2-w5-h", "p2-w5-b", "p2-w5-l", "p2-w5-ll",
+        "p2-w7-v", "p2-w7-x",
+        "p2-w8-qu",
+        "p2-w9-ng", "p2-w9-sh",
+        // Phase 3
+        "p3-w1-ai", "p3-w1-oa",
+        "p3-w2-oo_long", "p3-w2-oo_short", "p3-w2-ar", "p3-w2-or",
+        "p3-w3-ow", "p3-w3-oi",
+        "p3-w4-er",
+        // Phase 4
+        "p4-w1-cr", "p4-w1-fl", "p4-w1-fr", "p4-w1-st", "p4-w1-sw",
+        "p4-w2-mp", "p4-w2-nt",
+        // Phase 5
+        "p5-w1-ou", "p5-w1-ie", "p5-w1-oy", "p5-w1-ir", "p5-w1-ph", "p5-w1-aw",
+        "p5-w2-a_e", "p5-w2-i_e", "p5-w2-o_e",
+        "p5-w3-ow_snow", "p5-w3-ow_cow", "p5-w3-ie_pie", "p5-w3-ea_bread",
+        "p5-w3-ou_cloud", "p5-w3-ey_key", "p5-w3-i_tiger", "p5-w3-u_unicorn",
+        "p5-w3-y_fly", "p5-w3-ch_school",
+        "p5-w4-kn", "p5-w4-gn", "p5-w4-mb",
+    };
+
+    private static void AssignImagePaths(List<PhonicsPhase> phases)
+    {
+        foreach (var card in phases.SelectMany(p => p.Weeks).SelectMany(w => w.Cards))
+        {
+            if (CardsWithImages.Contains(card.Id))
+            {
+                card.ImagePath = $"images/phonics/{card.Id}.png";
+            }
+        }
     }
 
     private static PhonicsWeek BuildWeek(int phaseId, int weekNumber, ref int orderIndex,
