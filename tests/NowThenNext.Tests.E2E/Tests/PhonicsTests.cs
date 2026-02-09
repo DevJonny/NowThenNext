@@ -608,6 +608,143 @@ public class PhonicsTests
 
     // --- US-048: Progress reset tests ---
 
+    // --- US-071: Phonics card flip interaction tests ---
+
+    [Fact]
+    public async Task FlashcardFlip_TappingCardWithImage_ShowsImage()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            // Navigate directly to the "s" card which has an image (sun)
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2/card/p2-w1-s");
+            await page.WaitForSelectorAsync(".flashcard", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2/card/p2-w1-s");
+            await page.WaitForSelectorAsync(".grapheme-display", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Assert - grapheme is showing initially
+            await Assertions.Expect(page.Locator(".grapheme-display")).ToHaveTextAsync("s", new LocatorAssertionsToHaveTextOptions { Timeout = 10000 });
+            await Assertions.Expect(page.Locator(".card-image")).Not.ToBeVisibleAsync();
+
+            // Assert - card has tappable class (has an image)
+            await Assertions.Expect(page.Locator(".flashcard-tappable")).ToBeVisibleAsync();
+
+            // Act - tap the card
+            await page.Locator(".flashcard").ClickAsync();
+
+            // Assert - image is now showing
+            await Assertions.Expect(page.Locator(".card-image")).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+            await Assertions.Expect(page.Locator(".grapheme-display")).Not.ToBeVisibleAsync();
+
+            // Assert - example word is still visible on image side
+            await Assertions.Expect(page.Locator(".example-word")).ToBeVisibleAsync();
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task FlashcardFlip_TappingAgain_ShowsGrapheme()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2/card/p2-w1-s");
+            await page.WaitForSelectorAsync(".flashcard", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2/card/p2-w1-s");
+            await page.WaitForSelectorAsync(".grapheme-display", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Act - tap to flip to image
+            await page.Locator(".flashcard").ClickAsync();
+            await Assertions.Expect(page.Locator(".card-image")).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+
+            // Act - tap again to flip back
+            await page.Locator(".flashcard").ClickAsync();
+
+            // Assert - grapheme is showing again
+            await Assertions.Expect(page.Locator(".grapheme-display")).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+            await Assertions.Expect(page.Locator(".card-image")).Not.ToBeVisibleAsync();
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task FlashcardFlip_NavigatingToNextCard_ResetsFlipState()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-tile", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-current", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Navigate to first sound ("s") and flip to image
+            await page.Locator(".sound-current").ClickAsync();
+            await page.WaitForSelectorAsync(".grapheme-display", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator(".flashcard").ClickAsync();
+            await Assertions.Expect(page.Locator(".card-image")).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+
+            // Complete card via Got it! (this navigates to next card "a")
+            await page.Locator(".got-it-button").ClickAsync();
+            await page.WaitForSelectorAsync(".grapheme-display", new PageWaitForSelectorOptions { Timeout = 10000 });
+
+            // Assert - next card shows grapheme (not image), flip state was reset
+            await Assertions.Expect(page.Locator(".grapheme-display")).ToHaveTextAsync("a", new LocatorAssertionsToHaveTextOptions { Timeout = 10000 });
+            await Assertions.Expect(page.Locator(".card-image")).Not.ToBeVisibleAsync();
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    [Fact]
+    public async Task FlashcardFlip_GotItWorksAfterFlipping()
+    {
+        var page = await _fixture.CreatePageAsync();
+
+        try
+        {
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-tile", new PageWaitForSelectorOptions { Timeout = 60000 });
+            await page.ClearLocalStorageAsync();
+            await page.GotoAsync($"{_fixture.BaseUrl}/phonics/2");
+            await page.WaitForSelectorAsync(".sound-current", new PageWaitForSelectorOptions { Timeout = 60000 });
+
+            // Navigate to first sound and flip
+            await page.Locator(".sound-current").ClickAsync();
+            await page.WaitForSelectorAsync(".grapheme-display", new PageWaitForSelectorOptions { Timeout = 10000 });
+            await page.Locator(".flashcard").ClickAsync();
+            await Assertions.Expect(page.Locator(".card-image")).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 10000 });
+
+            // Act - click Got it! while image is showing
+            await page.Locator(".got-it-button").ClickAsync();
+
+            // Assert - advanced to next card ("a")
+            await page.WaitForSelectorAsync(".grapheme-display", new PageWaitForSelectorOptions { Timeout = 10000 });
+            var nextGrapheme = await page.Locator(".grapheme-display").TextContentAsync();
+            Assert.Equal("a", nextGrapheme);
+        }
+        finally
+        {
+            await page.CloseAsync();
+        }
+    }
+
+    // --- US-048: Progress reset tests (continued) ---
+
     [Fact]
     public async Task ResetPhase_CancelDoesNotClearProgress()
     {
