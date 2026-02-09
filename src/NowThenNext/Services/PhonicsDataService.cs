@@ -367,12 +367,12 @@ public class PhonicsDataService : IPhonicsDataService
 
     private static void AssignImagePaths(List<PhonicsPhase> phases)
     {
-        foreach (var card in phases.SelectMany(p => p.Weeks).SelectMany(w => w.Cards))
+        foreach (var card in phases
+                     .SelectMany(p => p.Weeks)
+                     .SelectMany(w => w.Cards)
+                     .Where(card => CardsWithImages.Contains(card.Id)))
         {
-            if (CardsWithImages.Contains(card.Id))
-            {
-                card.ImagePath = $"images/phonics/{card.Id}.png";
-            }
+            card.ImagePath = $"images/phonics/{card.Id}.png";
         }
     }
 
