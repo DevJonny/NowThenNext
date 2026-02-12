@@ -18,6 +18,9 @@ public partial class Settings
     [Inject]
     private IJSRuntime JSRuntime { get; set; } = default!;
 
+    [Inject]
+    private ILearningCardsDataService LearningCards { get; set; } = default!;
+
     private bool IsBackingUp { get; set; }
     private bool IsRestoring { get; set; }
     private bool ShowRestoreChoiceModal { get; set; }
@@ -44,11 +47,11 @@ public partial class Settings
             // Get all images from storage
             var images = await ImageStorage.GetAllImagesAsync();
 
-            // Get learning cards custom data from localStorage
+            // Get learning cards custom data
             JsonElement? learningCardsData = null;
             try
             {
-                var learningCardsJson = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "learning-cards");
+                var learningCardsJson = await LearningCards.GetRawCustomDataJsonAsync();
                 if (!string.IsNullOrEmpty(learningCardsJson))
                 {
                     learningCardsData = JsonSerializer.Deserialize<JsonElement>(learningCardsJson);
@@ -300,7 +303,7 @@ public partial class Settings
                 // In replace mode, clear existing learning cards data even if backup has none
                 try
                 {
-                    await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "learning-cards");
+                    await LearningCards.ClearCustomDataAsync();
                 }
                 catch (Exception ex)
                 {
@@ -315,23 +318,23 @@ public partial class Settings
             if (replace)
             {
                 // Replace: overwrite with backup data
-                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "learning-cards", PendingLearningCardsJson);
+                await LearningCards.SetRawCustomDataJsonAsync(PendingLearningCardsJson);
             }
             else
             {
                 // Merge: combine existing and backup learning cards data
-                var existingJson = await JSRuntime.InvokeAsync<string?>("localStorage.getItem", "learning-cards");
+                var existingJson = await LearningCards.GetRawCustomDataJsonAsync();
 
                 if (string.IsNullOrEmpty(existingJson))
                 {
                     // No existing data - just set the backup data
-                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "learning-cards", PendingLearningCardsJson);
+                    await LearningCards.SetRawCustomDataJsonAsync(PendingLearningCardsJson);
                 }
                 else
                 {
                     // Merge categories and cards by ID (skip duplicates)
                     var mergedJson = MergeLearningCardsJson(existingJson, PendingLearningCardsJson);
-                    await JSRuntime.InvokeVoidAsync("localStorage.setItem", "learning-cards", mergedJson);
+                    await LearningCards.SetRawCustomDataJsonAsync(mergedJson);
                 }
             }
         }

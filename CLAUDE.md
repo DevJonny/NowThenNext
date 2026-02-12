@@ -7,7 +7,7 @@ Visual schedule, food choice, and activity choice app for children with SEN (Spe
 - **Framework**: Blazor WebAssembly (WASM) - .NET 10 RC (preview)
 - **Language**: C# / .NET
 - **Styling**: Tailwind CSS CDN with custom SEN-friendly theme
-- **Storage**: Browser localStorage (base64 encoded images, ~5MB quota)
+- **Storage**: Browser IndexedDB via `wwwroot/js/indexeddb.js` (base64 encoded images, hundreds of MB capacity)
 - **Testing**: Playwright E2E tests with xUnit v3
 - **Font**: Nunito (Google Fonts) - rounded, friendly typography
 
@@ -67,10 +67,10 @@ dotnet build
 
 ## Design Patterns
 - **Category-based architecture**: All images categorized as Places, Food, or Activities
-- **localStorage JSON storage**: Images stored as base64 with metadata
+- **IndexedDB JSON storage**: Images stored as base64 JSON strings in IndexedDB (one record per store, key `"data"`)
 - **Reusable components**: ImageTile component shared across all libraries
 - **Parallel workflows**: Food Choices and Activity Choices follow same pattern as templates
-- **Static data service**: Phonics GPC data is hardcoded in `PhonicsDataService` (singleton), progress tracked in `PhonicsProgressService` (scoped, uses localStorage key `phonics-progress`)
+- **Static data service**: Phonics GPC data is hardcoded in `PhonicsDataService` (singleton), progress tracked in `PhonicsProgressService` (scoped, uses IndexedDB store `phonics-progress`)
 
 ## Routing Map
 | Route | Page | Description |
@@ -207,7 +207,7 @@ public class MyTests(BlazorAppFixture fixture)
 - **GraphemeCard ID format**: `p{phase}-w{week}-{grapheme}` (e.g., `p2-w1-s`, `p3-w2-oo_long`, `p5-w3-ch_chef`)
 - **Duplicate grapheme IDs**: When multiple cards share a grapheme (e.g., oo long/short, alternative pronunciations), use suffixed IDs and manual card construction instead of the `BuildWeek` helper
 - **Sequential unlocking**: First grapheme in each phase always unlocked; completing one unlocks the next by `OrderIndex`
-- **Progress storage**: `HashSet<string>` of completed card IDs serialized as JSON in localStorage key `phonics-progress`
+- **Progress storage**: `HashSet<string>` of completed card IDs serialized as JSON in IndexedDB store `phonics-progress`
 - **Three sound tile states**: Completed (muted bg + checkmark), Current (phonics-blue border), Locked (grey + lock icon, `<div>` not `<a>`)
 - **Phonics color**: `calm-phonics: #7BA3C4`, `calm-phonics-dark: #6890B0`, `calm-phonics-light: #9BBDD6`
 
@@ -219,7 +219,7 @@ public class MyTests(BlazorAppFixture fixture)
 ### E2E Test Timing
 - Blazor WASM needs extra init time - use 60s timeout on `WaitForSelectorAsync`
 - Use `WaitForURLAsync()` for navigation assertions
-- Clear localStorage AFTER navigating to page (requires page context)
+- Clear storage (IndexedDB + localStorage) AFTER navigating to page (requires page context)
 - Note: FileChooser tests can be flaky due to Playwright/Blazor InputFile interaction
 - **Use RELATIVE paths in href selectors** (e.g., `a[href='phonics']` NOT `a[href='/phonics']`) - Blazor renders relative hrefs in the DOM
 

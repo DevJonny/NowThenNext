@@ -7,7 +7,7 @@ namespace NowThenNext.Services;
 public class LearningCardsDataService : ILearningCardsDataService
 {
     private readonly IJSRuntime _jsRuntime;
-    private const string StorageKey = "learning-cards";
+    private const string StoreName = "learning-cards";
 
     public LearningCardsDataService(IJSRuntime jsRuntime)
     {
@@ -103,7 +103,7 @@ public class LearningCardsDataService : ILearningCardsDataService
     {
         try
         {
-            var json = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", StorageKey);
+            var json = await _jsRuntime.InvokeAsync<string?>("indexedDb.getItem", StoreName);
             if (string.IsNullOrEmpty(json))
                 return new CustomLearningData();
 
@@ -120,7 +120,7 @@ public class LearningCardsDataService : ILearningCardsDataService
         var json = JsonSerializer.Serialize(data);
         try
         {
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
+            await _jsRuntime.InvokeVoidAsync("indexedDb.setItem", StoreName, json);
         }
         catch (JSException ex) when (ex.Message.Contains("QuotaExceededError") ||
                                       ex.Message.Contains("quota", StringComparison.OrdinalIgnoreCase))
@@ -134,10 +134,21 @@ public class LearningCardsDataService : ILearningCardsDataService
         }
     }
 
-    /// <summary>
-    /// Internal data structure for persisting custom categories and cards to localStorage.
-    /// Only custom (user-created) items are stored; built-in data is never persisted.
-    /// </summary>
+    public async Task<string?> GetRawCustomDataJsonAsync()
+    {
+        return await _jsRuntime.InvokeAsync<string?>("indexedDb.getItem", StoreName);
+    }
+
+    public async Task SetRawCustomDataJsonAsync(string json)
+    {
+        await _jsRuntime.InvokeVoidAsync("indexedDb.setItem", StoreName, json);
+    }
+
+    public async Task ClearCustomDataAsync()
+    {
+        await _jsRuntime.InvokeVoidAsync("indexedDb.removeItem", StoreName);
+    }
+
     private class CustomLearningData
     {
         public List<LearningCategory> Categories { get; set; } = [];

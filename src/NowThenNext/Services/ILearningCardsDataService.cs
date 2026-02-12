@@ -10,4 +10,7 @@ public interface ILearningCardsDataService
     Task AddCustomCardAsync(LearningCard card);
     Task DeleteCustomCardAsync(string cardId);
     Task DeleteCustomCategoryAsync(string categoryId);
+    Task<string?> GetRawCustomDataJsonAsync();
+    Task SetRawCustomDataJsonAsync(string json);
+    Task ClearCustomDataAsync();
 }
