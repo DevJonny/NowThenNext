@@ -14,6 +14,18 @@
     };
 
     let db = null;
+    let dbPromise = null;
+
+    async function ensureDb() {
+        if (db) return db;
+        if (!dbPromise) {
+            dbPromise = openDatabase().then(function (database) {
+                db = database;
+                return db;
+            });
+        }
+        return dbPromise;
+    }
 
     function openDatabase() {
         return new Promise((resolve, reject) => {
@@ -47,15 +59,19 @@
                 const promise = new Promise((resolve, reject) => {
                     const tx = database.transaction(storeName, 'readwrite');
                     const store = tx.objectStore(storeName);
-                    const putRequest = store.put(data, DATA_KEY);
+                    store.put(data, DATA_KEY);
 
-                    putRequest.onsuccess = function () {
+                    tx.oncomplete = function () {
                         localStorage.removeItem(lsKey);
                         resolve();
                     };
 
-                    putRequest.onerror = function (event) {
+                    tx.onerror = function (event) {
                         reject(new Error('Migration failed for ' + storeName + ': ' + event.target.error));
+                    };
+
+                    tx.onabort = function (event) {
+                        reject(new Error('Migration aborted for ' + storeName + ': ' + (event.target.error || 'Transaction aborted')));
                     };
                 });
                 promises.push(promise);
@@ -71,9 +87,10 @@
             await migrateFromLocalStorage(db);
         },
 
-        getItem: function (storeName) {
+        getItem: async function (storeName) {
+            const database = await ensureDb();
             return new Promise((resolve, reject) => {
-                const tx = db.transaction(storeName, 'readonly');
+                const tx = database.transaction(storeName, 'readonly');
                 const store = tx.objectStore(storeName);
                 const request = store.get(DATA_KEY);
 
@@ -87,58 +104,57 @@
             });
         },
 
-        setItem: function (storeName, value) {
+        setItem: async function (storeName, value) {
+            const database = await ensureDb();
             return new Promise((resolve, reject) => {
-                const tx = db.transaction(storeName, 'readwrite');
+                const tx = database.transaction(storeName, 'readwrite');
                 const store = tx.objectStore(storeName);
-                const request = store.put(value, DATA_KEY);
+                store.put(value, DATA_KEY);
 
-                request.onsuccess = function () {
+                tx.oncomplete = function () {
                     resolve();
                 };
 
-                request.onerror = function (event) {
+                tx.onerror = function (event) {
                     reject(new Error('Failed to write to ' + storeName + ': ' + event.target.error));
                 };
             });
         },
 
-        removeItem: function (storeName) {
+        removeItem: async function (storeName) {
+            const database = await ensureDb();
             return new Promise((resolve, reject) => {
-                const tx = db.transaction(storeName, 'readwrite');
+                const tx = database.transaction(storeName, 'readwrite');
                 const store = tx.objectStore(storeName);
-                const request = store.delete(DATA_KEY);
+                store.delete(DATA_KEY);
 
-                request.onsuccess = function () {
+                tx.oncomplete = function () {
                     resolve();
                 };
 
-                request.onerror = function (event) {
+                tx.onerror = function (event) {
                     reject(new Error('Failed to delete from ' + storeName + ': ' + event.target.error));
                 };
             });
         },
 
-        clearAll: function () {
+        clearAll: async function () {
+            const database = await ensureDb();
             return new Promise((resolve, reject) => {
-                const tx = db.transaction(STORES, 'readwrite');
-                let completed = 0;
+                const tx = database.transaction(STORES, 'readwrite');
 
                 for (const storeName of STORES) {
                     const store = tx.objectStore(storeName);
-                    const request = store.clear();
-
-                    request.onsuccess = function () {
-                        completed++;
-                        if (completed === STORES.length) {
-                            resolve();
-                        }
-                    };
-
-                    request.onerror = function (event) {
-                        reject(new Error('Failed to clear ' + storeName + ': ' + event.target.error));
-                    };
+                    store.clear();
                 }
+
+                tx.oncomplete = function () {
+                    resolve();
+                };
+
+                tx.onerror = function (event) {
+                    reject(new Error('Failed to clear stores: ' + event.target.error));
+                };
             });
         },
 
