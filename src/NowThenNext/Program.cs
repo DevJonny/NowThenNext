@@ -16,7 +16,14 @@ builder.Services.AddScoped<ILearningCardsDataService, LearningCardsDataService>(
 
 var host = builder.Build();
 
-var jsRuntime = host.Services.GetRequiredService<IJSRuntime>();
-await jsRuntime.InvokeVoidAsync("indexedDb.initialize");
+try
+{
+    var jsRuntime = host.Services.GetRequiredService<IJSRuntime>();
+    await jsRuntime.InvokeVoidAsync("indexedDb.initialize");
+}
+catch (JSException ex)
+{
+    Console.Error.WriteLine($"IndexedDB initialization failed: {ex.Message}");
+}
 
 await host.RunAsync();
