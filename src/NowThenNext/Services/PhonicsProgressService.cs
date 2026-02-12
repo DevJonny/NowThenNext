@@ -7,7 +7,7 @@ public class PhonicsProgressService : IPhonicsProgressService
 {
     private readonly IJSRuntime _jsRuntime;
     private readonly IPhonicsDataService _phonicsData;
-    private const string StorageKey = "phonics-progress";
+    private const string StoreName = "phonics-progress";
 
     public PhonicsProgressService(IJSRuntime jsRuntime, IPhonicsDataService phonicsData)
     {
@@ -71,14 +71,14 @@ public class PhonicsProgressService : IPhonicsProgressService
 
     public async Task ResetAllAsync()
     {
-        await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", StorageKey);
+        await _jsRuntime.InvokeVoidAsync("indexedDb.removeItem", StoreName);
     }
 
     private async Task<HashSet<string>> GetCompletedSetAsync()
     {
         try
         {
-            var json = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", StorageKey);
+            var json = await _jsRuntime.InvokeAsync<string?>("indexedDb.getItem", StoreName);
             if (string.IsNullOrEmpty(json))
                 return new HashSet<string>();
 
@@ -95,7 +95,7 @@ public class PhonicsProgressService : IPhonicsProgressService
         var json = JsonSerializer.Serialize(completed);
         try
         {
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
+            await _jsRuntime.InvokeVoidAsync("indexedDb.setItem", StoreName, json);
         }
         catch (JSException ex) when (ex.Message.Contains("QuotaExceededError") ||
                                       ex.Message.Contains("quota", StringComparison.OrdinalIgnoreCase))

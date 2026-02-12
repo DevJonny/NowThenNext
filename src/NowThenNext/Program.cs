@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Microsoft.JSInterop;
 using NowThenNext;
 using NowThenNext.Services;
 
@@ -13,4 +14,9 @@ builder.Services.AddSingleton<IPhonicsDataService, PhonicsDataService>();
 builder.Services.AddScoped<IPhonicsProgressService, PhonicsProgressService>();
 builder.Services.AddScoped<ILearningCardsDataService, LearningCardsDataService>();
 
-await builder.Build().RunAsync();
+var host = builder.Build();
+
+var jsRuntime = host.Services.GetRequiredService<IJSRuntime>();
+await jsRuntime.InvokeVoidAsync("indexedDb.initialize");
+
+await host.RunAsync();
