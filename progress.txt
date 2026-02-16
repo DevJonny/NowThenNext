@@ -1,65 +1,85 @@
-# Ralph Progress Log - Phonics Card Images
+# Ralph Progress Log - Storage Breakdown
 
-Branch: ralph/phonics-card-images
-Started: 2026-02-09
+Branch: ralph/storage-breakdown
+Started: 2026-02-16
 
 ## Codebase Patterns
-- Phonics data is hardcoded in `PhonicsDataService.cs` (singleton), uses `BuildWeek` helper for most weeks
-- Phase 5 Week 3 manually constructs cards (duplicate graphemes with suffixed IDs like `oo_long`, `ch_chef`)
-- GraphemeCard ID format: `p{phase}-w{week}-{grapheme}`
-- PhonicsCard.razor uses `OnParametersSetAsync` (not OnInitializedAsync) because Blazor reuses the component for same-route navigation
-- Image path rendering pattern: relative paths like `images/dinosaurs/trex.png` work via the `card.ImageData.Contains('/')` branch in LearningCardGrid.razor
-- E2E tests use relative href selectors (e.g. `a[href='phonics']` not `a[href='/phonics']`)
+- Settings page: src/NowThenNext/Pages/Settings.razor (template + inline <style>) + Settings.razor.cs (code-behind)
+- Storage service: LocalStorageImageService.cs implements IImageStorageService, uses IndexedDB via JS interop
+- IndexedDB stores: 'images', 'phonics-progress', 'learning-cards' (all use key 'data')
+- Existing GetStorageInfoAsync() returns StorageInfo record with UsagePercentage, EstimatedRemainingImages, CurrentUsageBytes, EstimatedQuotaBytes
+- GetStorageBreakdownAsync() returns List<StorageItemInfo> sorted by SizeBytes descending
+- JS interop: indexedDb.getItem(storeName) returns raw JSON string or null
+- Calm colour palette: primary #5B9A9A, accent #7BA893, amber #D4A06A, bg #F9F7F3, text #3D4852
+- Category badge colours: Places=#5B9A9A, Food=#7BA893, Activities=#D4A06A, System=#606F7B
 - Dev server: localhost:5161
+- E2E tests use relative href selectors (e.g. `a[href='settings']` not `a[href='/settings']`)
+- E2E test data seeding: use SetLocalStorageItemAsync to seed IndexedDB directly (more reliable than UI upload)
+- E2E infra issue: blazor-devserver 10.0.3 requires .NET 10.0 GA (only RC1 installed as of 2026-02-16)
 
 ---
 
-## 2026-02-09 - US-065
-- Added `public string? ImagePath { get; set; }` to GraphemeCard in Models/PhonicsModels.cs
-- Files changed: src/NowThenNext/Models/PhonicsModels.cs
+## 2026-02-16 - US-049
+- Implemented StorageItemInfo record with Id, Label, Category, SizeBytes, ThumbnailData properties
+- Added GetStorageBreakdownAsync() to IImageStorageService interface
+- Implemented in LocalStorageImageService: iterates all images, serialises each individually, measures UTF-8 byte count
+- Also reads phonics-progress and learning-cards IndexedDB stores for system data sizes
+- Excludes null/empty entries, sorts descending by SizeBytes
+- Files changed: IImageStorageService.cs, LocalStorageImageService.cs
 - **Learnings for future iterations:**
-  - Nullable string property (string?) allows cards without images to remain unchanged
-  - Build passes clean with 0 errors
+  - StorageItemInfo.ThumbnailData holds the raw Base64Data from ImageItem (for thumbnail rendering in UI)
+  - System entries (phonics-progress, learning-cards) use `indexedDb.getItem(storeName)` directly to get raw JSON strings
+  - The `using System.Text;` import is needed for `Encoding.UTF8.GetByteCount`
+  - Images with empty labels get "Untitled" as the label in the breakdown
 ---
 
-## 2026-02-09 - US-066
-- Added tap-to-flip interaction on PhonicsCard page
-- `ShowImage` bool toggle + `ToggleImage()` method in code-behind, reset in `OnParametersSetAsync`
-- `HasImage` computed property checks `Card?.ImagePath` is not null/empty
-- Razor template: `@onclick="ToggleImage"` on `.flashcard` div, conditional rendering of image vs grapheme
-- Example word with highlighted grapheme stays visible on both sides
-- Cards without ImagePath: no cursor change, tap does nothing (guarded by `HasImage` check)
-- CSS: `.flashcard-tappable` class adds cursor pointer and hover shadow; `.card-image-display` / `.card-image` for image rendering
-- Files changed: src/NowThenNext/Pages/PhonicsCard.razor, src/NowThenNext/Pages/PhonicsCard.razor.cs
+## 2026-02-16 - US-050
+- Added Storage Usage section to Settings.razor between Data Management and Attribution
+- Progress bar uses calm-primary (#5B9A9A), switches to calm-amber (#D4A06A) at >80% usage
+- FormatBytes helper: < 1024 = "< 1 KB", < 1MB = "X.X KB", >= 1MB = "X.X MB", >= 1GB = "X.X GB"
+- Added OnInitializedAsync to Settings.razor.cs to load storage info on page load
+- Files changed: Settings.razor, Settings.razor.cs
 - **Learnings for future iterations:**
-  - The flip is not a CSS 3D flip — it's a content swap (conditional rendering) which is simpler and more accessible
-  - `HasImage` property avoids repeated null checks in both razor and code-behind
-  - The `.flashcard-tappable` class is conditionally applied so cards without images don't show pointer cursor
-  - Example word moved below the conditional block so it's always visible regardless of flip state
-  - E2E tests pass: 84/84 (no regressions)
+  - Settings.razor uses code-behind (Settings.razor.cs), not inline @code blocks
+  - The settings-container class can be reused on new sections with `style="margin-top: 1.5rem;"` for spacing
+  - Use `CultureInfo.InvariantCulture` for percentage formatting in Razor to avoid locale issues
+  - Progress bar: simple div-in-div, percentage width via inline style, conditional colour via ternary
 ---
 
-## 2026-02-09 - US-067 to US-070
-- Added Noto Color Emoji (Apache 2.0) PNG images for phonics cards across all phases
-- 56 PNG files copied to `wwwroot/images/phonics/`, named by card ID (e.g. `p2-w1-s.png`)
-- Images sourced from Google Noto Color Emoji 128px PNGs, mapped to Unicode codepoints via shell script
-- Added `CardsWithImages` HashSet and `AssignImagePaths()` method to PhonicsDataService.cs
-- Abstract/hard-to-illustrate words skipped (no ImagePath set, card doesn't flip)
-- Files changed: src/NowThenNext/Services/PhonicsDataService.cs, 56 PNG files in wwwroot/images/phonics/
+## 2026-02-16 - US-051
+- Added scrollable item list below progress bar within the storage section
+- Each image item shows: 40px rounded thumbnail, label (or "Untitled"), category badge with colour, formatted size
+- System items (phonics-progress, learning-cards) show inline SVG icons instead of thumbnails
+- Category badge colours: Places=#5B9A9A, Food=#7BA893, Activities=#D4A06A, System=#606F7B
+- Max-height 400px with overflow-y scroll
+- Files changed: Settings.razor, Settings.razor.cs
 - **Learnings for future iterations:**
-  - Centralized `AssignImagePaths` method with HashSet is cleaner than modifying `BuildWeek` helper signature
-  - Noto Color Emoji provides good coverage for concrete nouns but not all words (abstract words naturally excluded)
-  - Shell script approach for mapping card IDs to emoji codepoints was efficient for bulk operations
-  - E2E tests pass: 84/84 (no regressions)
+  - GetCategoryColor switch expression maps category string to hex colour
+  - Use data-testid attributes ("storage-item-list", "storage-item") for E2E test selectors
+  - Image thumbnails rendered as `data:image/jpeg;base64,{Base64Data}` - works for all image types
+  - Subtle borders: #E2DFD8 for section divider, #F0EDE8 for row separators
 ---
 
-## 2026-02-09 - US-071
-- Added 4 E2E tests for phonics card flip interaction to PhonicsTests.cs
-- Tests: FlashcardFlip_TappingCardWithImage_ShowsImage, FlashcardFlip_TappingAgain_ShowsGrapheme, FlashcardFlip_NavigatingToNextCard_ResetsFlipState, FlashcardFlip_GotItWorksAfterFlipping
-- Tests navigate directly to `/phonics/2/card/p2-w1-s` (the "s" card with sun image) for flip tests
-- Files changed: tests/NowThenNext.Tests.E2E/Tests/PhonicsTests.cs
+## 2026-02-16 - US-052
+- No new code changes needed - loading state was already implemented in US-050
+- IsLoadingStorage bool controls spinner display during data load
+- StorageError string shows friendly error message on failure
+- Spinner uses same animate-spin SVG as backup/restore buttons
+- try/catch in LoadStorageInfoAsync sets StorageError = "Unable to calculate storage usage" on failure
+- Files changed: none (already implemented)
 - **Learnings for future iterations:**
-  - Direct URL navigation to specific phonics cards works well for testing (no need to navigate through the UI)
-  - `.card-image` selector reliably distinguishes image-side from grapheme-side
-  - E2E tests pass: 88/88 (84 existing + 4 new)
+  - When implementing UI sections, consider adding loading/error states upfront to avoid separate stories
+---
+
+## 2026-02-16 - US-053
+- Created SettingsStorageTests.cs with 4 E2E tests for storage breakdown
+- Tests: section visibility, progress bar existence, image list with labels/sizes, descending sort order
+- Seeded test data directly via IndexedDB (SetLocalStorageItemAsync) instead of flaky file upload flow
+- E2E tests compile but cannot execute due to pre-existing infra issue: blazor-devserver 10.0.3 requires .NET 10.0 GA runtime, only RC1 installed
+- Files changed: SettingsStorageTests.cs (new)
+- **Learnings for future iterations:**
+  - All E2E tests are broken due to devserver package mismatch - needs .NET 10 GA or downgrade devserver
+  - Seeding IndexedDB directly is more reliable than going through the upload UI for test setup
+  - Use `data-testid` attributes for reliable E2E selectors (not CSS classes which may change)
+  - Category enum values: Places=0, Food=1, Activities=2 (used in JSON serialisation for seeding)
 ---
