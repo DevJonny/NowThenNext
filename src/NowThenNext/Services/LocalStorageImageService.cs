@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Microsoft.JSInterop;
 using NowThenNext.Models;
@@ -159,6 +160,73 @@ public class LocalStorageImageService : IImageStorageService
     public async Task SaveImagesAsync(List<ImageItem> images)
     {
         await SaveAllImagesAsync(images);
+    }
+
+    public async Task<List<StorageItemInfo>> GetStorageBreakdownAsync()
+    {
+        var items = new List<StorageItemInfo>();
+
+        // Calculate sizes for each image
+        var images = await GetAllImagesAsync();
+        foreach (var image in images)
+        {
+            var json = JsonSerializer.Serialize(image);
+            var sizeBytes = (long)Encoding.UTF8.GetByteCount(json);
+            items.Add(new StorageItemInfo(
+                Id: image.Id,
+                Label: string.IsNullOrWhiteSpace(image.Label) ? "Untitled" : image.Label,
+                Category: image.Category.ToString(),
+                SizeBytes: sizeBytes,
+                ThumbnailData: image.Base64Data
+            ));
+        }
+
+        // Calculate size for phonics progress
+        try
+        {
+            var phonicsJson = await _jsRuntime.InvokeAsync<string?>("indexedDb.getItem", "phonics-progress");
+            if (!string.IsNullOrEmpty(phonicsJson))
+            {
+                var sizeBytes = (long)Encoding.UTF8.GetByteCount(phonicsJson);
+                items.Add(new StorageItemInfo(
+                    Id: "phonics-progress",
+                    Label: "Phonics Progress",
+                    Category: "System",
+                    SizeBytes: sizeBytes,
+                    ThumbnailData: null
+                ));
+            }
+        }
+        catch
+        {
+            // Ignore errors reading phonics progress
+        }
+
+        // Calculate size for learning cards
+        try
+        {
+            var learningJson = await _jsRuntime.InvokeAsync<string?>("indexedDb.getItem", "learning-cards");
+            if (!string.IsNullOrEmpty(learningJson))
+            {
+                var sizeBytes = (long)Encoding.UTF8.GetByteCount(learningJson);
+                items.Add(new StorageItemInfo(
+                    Id: "learning-cards",
+                    Label: "Learning Cards Data",
+                    Category: "System",
+                    SizeBytes: sizeBytes,
+                    ThumbnailData: null
+                ));
+            }
+        }
+        catch
+        {
+            // Ignore errors reading learning cards
+        }
+
+        // Sort by size descending
+        items.Sort((a, b) => b.SizeBytes.CompareTo(a.SizeBytes));
+
+        return items;
     }
 
     private record StorageEstimate(long Usage, long Quota);
