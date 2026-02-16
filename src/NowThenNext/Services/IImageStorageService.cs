@@ -61,6 +61,11 @@ public interface IImageStorageService
     /// Save multiple images to storage (used for restore operations)
     /// </summary>
     Task SaveImagesAsync(List<ImageItem> images);
+
+    /// <summary>
+    /// Get a breakdown of storage usage per item, sorted by size descending
+    /// </summary>
+    Task<List<StorageItemInfo>> GetStorageBreakdownAsync();
 }
 
 /// <summary>
@@ -71,4 +76,15 @@ public record StorageInfo(
     int EstimatedRemainingImages,
     long CurrentUsageBytes,
     long EstimatedQuotaBytes
+);
+
+/// <summary>
+/// Contains information about an individual stored item's size
+/// </summary>
+public record StorageItemInfo(
+    string Id,
+    string Label,
+    string Category,
+    long SizeBytes,
+    string? ThumbnailData
 );
