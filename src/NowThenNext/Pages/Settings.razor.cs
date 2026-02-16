@@ -70,6 +70,8 @@ public partial class Settings
 
     private static string FormatBytes(long bytes)
     {
+        if (bytes <= 0)
+            return "0 KB";
         if (bytes < 1024)
             return "< 1 KB";
         if (bytes < 1024 * 1024)
