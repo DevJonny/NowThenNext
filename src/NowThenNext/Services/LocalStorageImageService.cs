@@ -197,9 +197,9 @@ public class LocalStorageImageService : IImageStorageService
                 ));
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore errors reading phonics progress
+            Console.Error.WriteLine($"Failed to read phonics progress for storage breakdown: {ex.Message}");
         }
 
         // Calculate size for learning cards
@@ -218,9 +218,9 @@ public class LocalStorageImageService : IImageStorageService
                 ));
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Ignore errors reading learning cards
+            Console.Error.WriteLine($"Failed to read learning cards for storage breakdown: {ex.Message}");
         }
 
         // Sort by size descending
