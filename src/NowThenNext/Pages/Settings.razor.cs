@@ -33,6 +33,7 @@ public partial class Settings
     private bool IsLoadingStorage { get; set; }
     private string? StorageError { get; set; }
     private StorageInfo? StorageUsageInfo { get; set; }
+    private List<StorageItemInfo>? StorageBreakdownItems { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -47,6 +48,7 @@ public partial class Settings
         try
         {
             StorageUsageInfo = await ImageStorage.GetStorageInfoAsync();
+            StorageBreakdownItems = await ImageStorage.GetStorageBreakdownAsync();
         }
         catch
         {
@@ -57,6 +59,14 @@ public partial class Settings
             IsLoadingStorage = false;
         }
     }
+
+    private static string GetCategoryColor(string category) => category switch
+    {
+        "Places" => "#5B9A9A",
+        "Food" => "#7BA893",
+        "Activities" => "#D4A06A",
+        _ => "#606F7B" // System and unknown
+    };
 
     private static string FormatBytes(long bytes)
     {
