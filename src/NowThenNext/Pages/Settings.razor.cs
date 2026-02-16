@@ -29,6 +29,46 @@ public partial class Settings
     private string? SuccessMessage { get; set; }
     private string? ErrorMessage { get; set; }
 
+    // Storage usage state
+    private bool IsLoadingStorage { get; set; }
+    private string? StorageError { get; set; }
+    private StorageInfo? StorageUsageInfo { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadStorageInfoAsync();
+    }
+
+    private async Task LoadStorageInfoAsync()
+    {
+        IsLoadingStorage = true;
+        StorageError = null;
+
+        try
+        {
+            StorageUsageInfo = await ImageStorage.GetStorageInfoAsync();
+        }
+        catch
+        {
+            StorageError = "Unable to calculate storage usage";
+        }
+        finally
+        {
+            IsLoadingStorage = false;
+        }
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        if (bytes < 1024)
+            return "< 1 KB";
+        if (bytes < 1024 * 1024)
+            return $"{bytes / 1024.0:F1} KB";
+        if (bytes < 1024L * 1024 * 1024)
+            return $"{bytes / (1024.0 * 1024.0):F1} MB";
+        return $"{bytes / (1024.0 * 1024.0 * 1024.0):F1} GB";
+    }
+
     private void GoBack()
     {
         Navigation.NavigateTo("");
