@@ -1,123 +1,98 @@
 {
   "project": "NowThenNext",
-  "branchName": "ralph/phonics-card-images",
-  "description": "Phonics Card Images - add illustrations for example words with tap-to-flip interaction on phonics flashcards",
+  "branchName": "ralph/storage-breakdown",
+  "description": "Storage Breakdown - show all stored items with sizes and a usage progress bar on the Settings page",
   "userStories": [
     {
-      "id": "US-065",
-      "title": "Add ImagePath field to GraphemeCard model",
-      "description": "As a developer, I need the data model to support an image path per phonics card so illustrations can be wired up.",
+      "id": "US-049",
+      "title": "Add method to calculate individual image item sizes",
+      "description": "As a developer, I need a way to calculate the approximate storage size of each ImageItem so sizes can be displayed in the UI.",
       "acceptanceCriteria": [
-        "Add ImagePath property (string, nullable) to GraphemeCard in Models/PhonicsModels.cs",
+        "Add a StorageItemInfo record/class with properties: Id (string), Label (string), Category (string), SizeBytes (long), ThumbnailData (string, nullable)",
+        "Add a method GetStorageBreakdownAsync() to IImageStorageService that returns a list of StorageItemInfo for all images, plus entries for phonics-progress and learning-cards data",
+        "Image item sizes are calculated by measuring UTF8 byte count of their serialised JSON (including base64 data and metadata)",
+        "Phonics progress size is calculated from the raw JSON string returned by indexedDb.getItem('phonics-progress')",
+        "Learning cards size is calculated from the raw JSON string returned by indexedDb.getItem('learning-cards')",
+        "Non-image entries use Label 'Phonics Progress' and 'Learning Cards Data' with Category 'System'",
+        "Entries with null or empty data are excluded from the list",
+        "List is sorted by SizeBytes descending",
         "Typecheck passes"
       ],
       "priority": 1,
       "passes": true,
-      "notes": "Simple model change. Add 'public string? ImagePath { get; set; }' to the GraphemeCard class."
+      "notes": "Add StorageItemInfo record to IImageStorageService.cs (near StorageInfo). Implement in LocalStorageImageService. For images, serialise each ImageItem individually with JsonSerializer.Serialize and measure with Encoding.UTF8.GetByteCount. For phonics/learning-cards, call _jsRuntime.InvokeAsync<string?>('indexedDb.getItem', storeName) and measure the string. Set ThumbnailData to the image's Base64Data for thumbnail rendering."
     },
     {
-      "id": "US-066",
-      "title": "Add tap-to-flip interaction on PhonicsCard page",
-      "description": "As a user, I want to tap a phonics card to flip between the grapheme view and an image of the example word so I can build visual associations.",
+      "id": "US-050",
+      "title": "Add storage usage progress bar to Settings page",
+      "description": "As a parent/carer, I want to see a visual progress bar showing total storage usage so I know at a glance how much space is used.",
       "acceptanceCriteria": [
-        "Tapping the card area (grapheme + word section) flips to show the image + word",
-        "Tapping again flips back to the grapheme view",
-        "Flip uses a gentle CSS transition (~0.4s, matching learning cards style)",
-        "The example word remains visible on both sides",
-        "If no image is set (ImagePath is null), tapping does nothing and card does not flip",
-        "The Got it! button, previous/next arrows, and back button are NOT part of the flippable area",
-        "Flip state resets when navigating to a different card (in OnParametersSetAsync)",
-        "Uses phonics colour theme (calm-phonics #7BA3C4)",
+        "A 'Storage Usage' section appears on the Settings page below the Data Management section and above the Attribution",
+        "Section has a heading 'Storage Usage' styled consistently with the existing 'Data Management' heading",
+        "A horizontal progress bar shows current usage as a proportion of estimated browser quota",
+        "Text below the bar shows 'X.X MB of Y.Y MB used (Z%)' using human-readable formatting",
+        "Progress bar uses calm-primary (#5B9A9A) fill colour",
+        "Progress bar switches to calm-amber (#D4A06A) fill when usage exceeds 80%",
+        "When no data is stored, shows 'No data stored' with an empty progress bar at 0%",
+        "The section is contained in a card matching the existing settings-container styling (white bg, rounded, shadow, max-width 32rem)",
         "Typecheck passes",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 2,
       "passes": true,
-      "notes": "Add a bool ShowImage toggle in PhonicsCard.razor.cs. The card body area gets an @onclick handler. When ShowImage is true, render an <img src='@CurrentCard.ImagePath'> instead of the grapheme/hint. The example word with highlighted grapheme stays visible on both sides. Reset ShowImage = false at the start of OnParametersSetAsync. Only enable click when CurrentCard?.ImagePath is not null."
+      "notes": "Use the existing GetStorageInfoAsync() for total usage and quota. Place the new section between the settings-container div and the attribution-section div. Format bytes: < 1024 = '< 1 KB', < 1MB = 'X.X KB', >= 1MB = 'X.X MB', >= 1GB = 'X.X GB'. The progress bar is a simple div-in-div with percentage width and rounded corners."
     },
     {
-      "id": "US-067",
-      "title": "Add Phase 2 phonics images and wire up paths",
-      "description": "As a developer, I need to add illustration PNGs for all concrete Phase 2 example words and set their ImagePath in PhonicsDataService.",
+      "id": "US-051",
+      "title": "Display sorted list of stored items with sizes",
+      "description": "As a parent/carer, I want to see a list of everything stored in the app sorted by size so I understand what's using the most space.",
       "acceptanceCriteria": [
-        "PNG files added to wwwroot/images/phonics/ for Phase 2 cards with concrete example words, named by card ID (e.g. p2-w1-s.png)",
-        "Each image clearly represents the example word (sun, ant, tap, pin, etc.)",
-        "Cards with abstract/hard-to-illustrate words (e.g. it, on, up, got, yes) are skipped — no ImagePath set, card does not flip",
-        "All illustrated Phase 2 cards in PhonicsDataService.cs have ImagePath set to images/phonics/{id}.png",
-        "Images render correctly when tapping a Phase 2 card to flip",
+        "A scrollable list appears below the storage progress bar in the same card",
+        "Each image entry shows: small thumbnail (~40px, rounded, object-fit cover), label (or 'Untitled' if empty), category badge (Places/Food/Activities with category colours), and formatted size",
+        "Phonics progress entry shows a book icon (SVG), label 'Phonics Progress', a 'System' badge, and formatted size",
+        "Learning cards entry shows a cards icon (SVG), label 'Learning Cards Data', a 'System' badge, and formatted size",
+        "Items are sorted by size descending (largest first)",
+        "List has a max-height with overflow-y scroll so it doesn't push the page layout (around 400px / ~6-8 items visible)",
+        "Sizes formatted as: < 1024 bytes = '< 1 KB', < 1 MB = 'X.X KB', >= 1 MB = 'X.X MB'",
+        "Category badge colours: Places = calm-primary (#5B9A9A), Food = calm-accent (#7BA893), Activities = calm-amber (#D4A06A), System = calm-text-light (#606F7B)",
         "Typecheck passes",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 3,
       "passes": true,
-      "notes": "Images must already exist in wwwroot/images/phonics/ before this story can be completed. The story wires up ImagePath values in PhonicsDataService.cs for Phase 2 BuildWeek calls. Abstract words to skip: 'it' (p2-w2-i), 'got' (p2-w3-g), 'on' (p2-w3-o), 'up' (p2-w4-u), 'win' (p2-w7-w), 'yes' (p2-w7-y). Concrete words to include: sun, ant, tap, pin, net, mat, dog, cat, kid, duck, egg, red, hat, bat, fan, puff, leg, bell, hiss, van, fox, zip, buzz, queen, chip, shop, thin, ring, pink."
+      "notes": "Call GetStorageBreakdownAsync() from US-049. Render each item as a flex row: thumbnail/icon on left, label + badge in centre, size on right. Use existing base64 data for image thumbnails via <img src='data:image/...;base64,...'>. For non-image items, use inline SVG icons. The list container should have a subtle top border to separate it from the progress bar section."
     },
     {
-      "id": "US-068",
-      "title": "Add Phase 3 phonics images and wire up paths",
-      "description": "As a developer, I need to add illustration PNGs for all Phase 3 example words and set their ImagePath in PhonicsDataService.",
+      "id": "US-052",
+      "title": "Add loading state for storage breakdown",
+      "description": "As a parent/carer, I want to see a loading indicator while storage data is being calculated so I know the app is working.",
       "acceptanceCriteria": [
-        "PNG files added to wwwroot/images/phonics/ for Phase 3 cards with concrete example words, named by card ID",
-        "Each image clearly represents the example word (rain, feet, night, boat, moon, book, car, fork, nurse, cow, coin, dear, fair, letter)",
-        "Cards with abstract words are skipped — no ImagePath set",
-        "All illustrated Phase 3 cards in PhonicsDataService.cs have ImagePath set",
-        "Images render correctly when tapping a Phase 3 card to flip",
+        "A spinner or 'Calculating storage...' message displays in the storage section while data loads",
+        "The storage section renders fully once calculation completes",
+        "If calculation fails, a friendly message 'Unable to calculate storage usage' appears instead of a broken UI",
+        "Loading state uses the same spinner style as the backup/restore buttons",
         "Typecheck passes",
         "Verify in browser using dev-browser skill"
       ],
       "priority": 4,
       "passes": true,
-      "notes": "Phase 3 has 14 cards and most example words are concrete. All should get images: rain, feet, night, boat, moon, book, car, fork, nurse, cow, coin, dear, fair, letter. Uses duplicate-grapheme pattern for oo_long/oo_short."
+      "notes": "Add IsLoadingStorage bool and StorageError string fields. Set IsLoadingStorage = true in OnInitializedAsync, call GetStorageInfoAsync and GetStorageBreakdownAsync in a try/catch, set IsLoadingStorage = false when done. On error, set StorageError message. Use the same animate-spin SVG spinner from the existing backup button."
     },
     {
-      "id": "US-069",
-      "title": "Add Phase 4 phonics images and wire up paths",
-      "description": "As a developer, I need to add illustration PNGs for Phase 4 cards with concrete example words and set their ImagePath in PhonicsDataService.",
+      "id": "US-053",
+      "title": "E2E test for storage breakdown display",
+      "description": "As a developer, I need E2E tests to verify the storage breakdown section renders correctly on the Settings page.",
       "acceptanceCriteria": [
-        "PNG files added to wwwroot/images/phonics/ for Phase 4 cards with concrete example words, named by card ID",
-        "Each image clearly represents the example word (crab, flag, frog, lamp, tent, sand, etc.)",
-        "Cards with abstract words (e.g. bring, glad, grip, plan, press, self, best, kept, task, next) are skipped — no ImagePath set",
-        "All illustrated Phase 4 cards in PhonicsDataService.cs have ImagePath set",
-        "Images render correctly when tapping a Phase 4 card to flip",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 5,
-      "passes": true,
-      "notes": "Phase 4 has many abstract consonant-cluster words. Concrete words to include: black, clap, crab, drop, flag, frog, skip, slip, snap, spot, stop, swim, trip, twin, lamp, sand, pink, tent. Abstract words to skip: bring, glad, grip, plan, press, scam, smell, left, self, help, felt, kept, task, best, next."
-    },
-    {
-      "id": "US-070",
-      "title": "Add Phase 5 phonics images and wire up paths",
-      "description": "As a developer, I need to add illustration PNGs for Phase 5 cards with concrete example words and set their ImagePath in PhonicsDataService.",
-      "acceptanceCriteria": [
-        "PNG files added to wwwroot/images/phonics/ for Phase 5 cards with concrete example words, named by card ID",
-        "Each image clearly represents the example word (play, cloud, pie, toy, bird, cake, snow, etc.)",
-        "Cards with abstract words (e.g. each, when, new, these, could, they, me, go) are skipped — no ImagePath set",
-        "All illustrated Phase 5 cards in PhonicsDataService.cs have ImagePath set",
-        "Images render correctly when tapping a Phase 5 card to flip",
-        "Typecheck passes",
-        "Verify in browser using dev-browser skill"
-      ],
-      "priority": 6,
-      "passes": true,
-      "notes": "Phase 5 has split digraphs and alternative pronunciations. Concrete words: play, cloud, pie, toy, bird, blue, saw, phone, toe, cake, time, home, tube, snow, cow, field, bread, shoulder, key, acorn, tiger, unicorn, fly, school, chef, write, knee, gnome, lamb. Abstract words to skip: each, when, new, these, could, they, me, go, happy, August, eat."
-    },
-    {
-      "id": "US-071",
-      "title": "E2E test for phonics card flip interaction",
-      "description": "As a developer, I need E2E tests to verify the tap-to-flip interaction works correctly.",
-      "acceptanceCriteria": [
-        "Test: tapping a phonics card with an image flips to show the image",
-        "Test: tapping again flips back to show the grapheme",
-        "Test: navigating to next card resets flip state",
-        "Test: Got it! button still works after flipping",
+        "Test: storage usage section is visible on Settings page with heading 'Storage Usage'",
+        "Test: progress bar element exists within the storage section",
+        "Test: when images are uploaded, they appear in the storage breakdown list with their label and size",
+        "Test: items in the list are sorted by size descending (verify first item is largest)",
         "All tests pass",
         "Typecheck passes"
       ],
-      "priority": 7,
+      "priority": 5,
       "passes": true,
-      "notes": "Add tests to PhonicsTests.cs. Navigate to a Phase 2 card that has an image (e.g. /phonics/2/card/p2-w1-s which shows 'sun'). Test the flip toggle, then navigate to next card and verify flip resets. Use relative href selectors per CLAUDE.md."
+      "notes": "Add tests to BackupRestoreTests.cs or create a new SettingsTests.cs file. Upload a test image first (reuse the upload helper pattern from existing tests), then navigate to /settings and verify the storage section. Use data-testid attributes if needed for reliable selectors."
     }
   ]
 }
