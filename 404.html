@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Now Next Then has moved</title>
+    <script>
+        // Deep links (e.g. /NowThenNext/schedule?ids=...) land here because this stub
+        // has no other pages. Rewrite the old repo prefix to the new one and forward,
+        // preserving the sub-path, query string and hash.
+        var dest = location.pathname.replace(/^\/NowThenNext/, "/NowNextThen")
+            + location.search + location.hash;
+        location.replace(dest);
+    </script>
+</head>
+<body>
+    <p>This app has moved to
+        <a href="https://devjonny.github.io/NowNextThen/">Now Next Then</a>.
+        Redirecting…</p>
+</body>
+</html>
